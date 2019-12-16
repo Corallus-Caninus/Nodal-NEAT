@@ -44,10 +44,12 @@ class nodeGene:
     def activate(self):
         '''
         activate the given node, returns all nodes outputted from 
-        this process that havent been activated
+        this process that havent been activated 
+        (propogate signals by node so encapsulation can make changing graph easily e.g.: recurrent nodes, dif eq nodes etc.)
+        recurrent connections are just circularity where level of recursion is the size of sequential loops
         '''
         outputSignal = 0
-        nextConnections = []  # should be next node
+        nextNodes = []  # should be next node
 
         # this doesnt handle recurrency?
         for connection in self.inConnections:
@@ -62,13 +64,13 @@ class nodeGene:
             for connection in self.outConnections:
                 if self.activated is False and connection.disabled is False:
                     connection.signal = outputSignal
-                    nextConnections.append(connection)
+                    nextNodes.append(connection.output)
                 else:
                     pass
 
             # used for recurrency activation gatekeeping
             self.activated = True
-            return nextConnections
+            return nextNodes
 
         self.activated = True
         return None

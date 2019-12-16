@@ -22,10 +22,10 @@ for i in range(0, 10):
     target.addConnectionMutation(0.1, evaluation.globalInnovations)
 print(len(evaluation.globalInnovations.connections),
       evaluation.globalInnovations.nodeId)
-target.forwardProp([1, 2, 3, 4])
-# myG = g(3, 3)
-# print('walking the network..')
-# print(myG.forwardProp([1, 2, 3]))
+outputs = target.forwardProp([1, 2, 3, 4])
+
+print('\n\n', outputs)
+
 sys.exit()
 ########### EXAMPLE ###########
 # libraries

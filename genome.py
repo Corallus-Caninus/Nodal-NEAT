@@ -85,6 +85,8 @@ class genome:
     # TODO: 'numpyify' graph for fast forward prop
     #               batch out numpified functions and return fitness from evaluator pods
     #               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
+    # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
+    #              simple loop call, this will segue to parallelization better
 
     def forwardProp(self, signals):
         '''
@@ -116,18 +118,21 @@ class genome:
                     # ensure its not an input to output connection
                     if len(initialConnection.output.outConnections) > 0:
                         unfiredNeurons.append(initialConnection.output)
-        # unfiredNeurons = self.inputNodes
-        # TODO: write a case for recurrency at input nodes like k.stanley
-        for entry in unfiredNeurons:
-            ###########PROCESS HIDDEN LAYER###########
-            # begin forward passing:
-            while len(unfiredNeurons) > 0:
-                for processingNode in unfiredNeurons:
-                    nextNeuron = processingNode.activate()
-                    if nextNeuron is not None:
-                        nextNeurons.append(nextNeuron)
-                unfiredNeurons.clear()  # TODO: this may not be necessary
+
+        ###########PROCESS HIDDEN LAYER###########
+        # begin forward passing:
+        while True:
+            print('DEBUG: Processing {} unfiredNeurons on deck: {}'.format(
+                len(unfiredNeurons), unfiredNeurons))
+            for processingNode in unfiredNeurons:
+                print('DEBUG: type of processingNode is: ', processingNode)
+                nextNeurons.extend(processingNode.activate())
+            if len(nextNeurons) > 0:
+                print(nextNeurons)
                 unfiredNeurons = nextNeurons
+                nextNeurons.clear()
+            else:
+                break
 
         ###########ACQUIRE OUTPUT SIGNALS###########
         # do something with output, have to activate manually just as with input
@@ -137,8 +142,12 @@ class genome:
                 if finalConnection.disabled is True:
                     pass
                 finalSignal += finalConnection.signal * finalConnection.weight
-                print('SIGTRACE (final): ', finalConnection.signal,
-                      ' * ', finalConnection.weight)
+                if finalConnection.disabled:
+                    print('Disabled SIGTRACE (final): ', finalConnection.signal,
+                          ' * ', finalConnection.weight)
+                else:
+                    print('SIGTRACE (final): ', finalConnection.signal,
+                          ' * ', finalConnection.weight)
 
                 # print('SIGTRACE (final): ', softmax(finalSignal),
                 #   ' * ', finalConnection.weight)
