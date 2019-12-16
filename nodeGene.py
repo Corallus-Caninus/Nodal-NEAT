@@ -49,13 +49,18 @@ class nodeGene:
         recurrent connections are just circularity where level of recursion is the size of sequential loops
         '''
         outputSignal = 0
-        nextNodes = []  # should be next node
+        nextNodes = []
+
+        if True in map(lambda x: x.signal == None, self.inConnections):
+            return self  # he wasnt reaaaddyyyyy
 
         # this doesnt handle recurrency?
         for connection in self.inConnections:
             if connection.disabled is True:
                 pass
-            outputSignal += connection.signal * connection.weight
+            else:
+                outputSignal += connection.signal * connection.weight
+                connection.signal = None
         outputSignal = softmax(outputSignal)
         print('SIGTRACE (hidden): ', outputSignal)
 
