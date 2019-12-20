@@ -1,10 +1,9 @@
 from genome import genome
 from innovation import globalConnections
 
-# TODO: make this functional
-
 
 def fitnessFunction():
+    # TODO: make this functional
     '''
     define fitness function. This must be done first for every application implementing
     this algorithm.
@@ -14,12 +13,14 @@ def fitnessFunction():
     # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
     return 0
 
+# TODO: verify proper copys are used unless reference is being passed
+# TODO: matplotlib for debugging. make a gui to test code further
+
 
 class evaluator:
     # TODO: how to make this safe for parallelism (e.g.: a connection is discovered in two seperate genomes concurrently.)
     #               how can this be interrupt handled post-generation?
-    #  TODO: consider implementing multiProcessing at the Genome level and lower, ensure its Cython friendly for free C thread pooling
-    #               possibly dask this
+    # TODO: Dask
     # TODO: add verbosity levels with logging for tracing at each level of encapsulation
     def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate):
         self.connectionMutationRate = connectionMutationRate

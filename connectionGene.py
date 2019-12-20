@@ -16,7 +16,7 @@ class connectionGene:
         self.output = outNode
         # NEAT's deactivation for addNodeMutation (and potentially random deactivation pruning)
         self.disabled = False
-        # assigned in globalConnections set to 0 to *hopefully* assign value not int object instance from globalInnovation
+        # NOTE: assigned in globalConnections set to 0 to *hopefully* assign value not int object instance from globalInnovation
         self.innovation = 0
         # add connection references in node objects
         inNode.addConnection(self)
@@ -27,6 +27,7 @@ class connectionGene:
     def copy_from(cls, connectionGene):
         '''
         copy all attributes of an existing connection to a new instance of connectionGene object
+        copy without disabled
         '''
         return cls(weight=rand.uniform(-1, 1), inNode=connectionGene.input, outNode=connectionGene.output)
 
