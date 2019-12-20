@@ -1,4 +1,6 @@
 from connectionGene import connectionGene
+from nodeGene import nodeGene
+import random as rand
 # TODO: this is so inherent to creating connections it should be in the connectionGene constructor!
 #               ConnectionGene construction is becoming spaghetti in higher order objects. Fix this.
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?
@@ -38,10 +40,15 @@ class globalConnections:
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
-    def verifyNode(self, inConnection, outConnection):
+    def verifyNode(self, input, output):
         '''
         check to see if a newly split connection has already occured
         '''
+        self.nodeId += 1
+        newNode = nodeGene(self.nodeId)
+        inConnection = connectionGene(rand.uniform(-1, 1), input, newNode)
+        outConnection = connectionGene(rand.uniform(-1, 1), output, newNode)
+
         for connection in self.connections:
             if inConnection.input.nodeId == connection:
                 firstMatch = connection
@@ -52,12 +59,13 @@ class globalConnections:
                         del inConnection, outConnection
                         connectionGene.copy_from(firstMatch)
                         connectionGene.copy_from(secondConnection)
+                        return newNode
         # novel node acquired
-        self.nodeId += 1
         self.innovation += 1
         inConnection.innovation = self.innovation
         self.innovation += 1
         outConnection.innovation = self.innovation
+        return newNode
 
         # return connectionGene.copy_from(firstMatch), connectionGene.copy_from(secondConnection)
         # return inConnection, outConnection

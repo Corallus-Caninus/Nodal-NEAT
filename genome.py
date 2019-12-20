@@ -62,31 +62,38 @@ class genome:
 
             self.addNode(randConnection, globalConnections)
 
+    # NOTE: currently circular (recurrent) just make this work
     def addConnectionMutation(self, connectionMutationRate, globalConnections):
         '''
         randomly adds a connection and adjusts innovation if novel in the genepool
         '''
         allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
         if rand.uniform(0, 1) > connectionMutationRate:
+            # TODO: ensure no duplicate connections
             globalConnections.verifyConnection(connection(rand.uniform(-1, 1), rand.choice(allNodes),
                                                           rand.choice(allNodes)))
 
     def addNode(self, replaceConnection, globalConnections):
         replaceConnection.disabled = True
-        newNode = node(globalConnections.nodeId)
+        # newNode = node(globalConnections.nodeId)
         # check if inConnection inNode and outConnection outNode already exist with a common node (must be this node)
-        globalConnections.verifyNode(connection(
-            rand.uniform(-1, 1), replaceConnection.input, newNode), connection(
-            rand.uniform(-1, 1), newNode, replaceConnection.output))
-
+        # newNode = globalConnections.verifyNode(connection(
+        #     rand.uniform(-1, 1), replaceConnection.input, newNode), connection(
+        #     rand.uniform(-1, 1), newNode, replaceConnection.output))
+        newNode = globalConnections.verifyNode(
+            replaceConnection.input, replaceConnection.output)
+        print('newNode', newNode)
         self.hiddenNodes.append(newNode)
 
-    # TODO: check for deactivated connections as well (should be fixed verify)
     # TODO: 'numpyify' graph for fast forward prop
     #               batch out numpified functions and return fitness from evaluator pods
     #               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
+
+    # TODO: graph out these network operations as a GUI/plotting exercise
     # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
     #              simple loop call, this will segue to parallelization better
+
+    # TODO: does this check if all signals have arrived before forward propagating?
 
     def forwardProp(self, signals):
         '''
@@ -116,17 +123,25 @@ class genome:
                     print('SIGTRACE (init): ', initialConnection.signal,
                           ' * ', initialConnection.weight)
                     # ensure its not an input to output connection
+                    # (which wont need forward propagation)
                     if len(initialConnection.output.outConnections) > 0:
                         unfiredNeurons.append(initialConnection.output)
 
         ###########PROCESS HIDDEN LAYER###########
-        # begin forward passing:
+        # begin forward proping
+        # TODO: ensure all inConnections have arrived at a node before continuing.
+        #               how can this be done with circulatity without tracing the topology first?
+        #               tracing may not be bad if 'numpifying' the graph first (graph ->matrix)
         while True:
             print('DEBUG: Processing {} unfiredNeurons on deck: {}'.format(
                 len(unfiredNeurons), unfiredNeurons))
             for processingNode in unfiredNeurons:
                 print('DEBUG: type of processingNode is: ', processingNode)
-                nextNeurons.extend(processingNode.activate())
+                activating = processingNode.activate()
+                # TODO: no..
+                if type(activating) is not list:
+                    activating = [activating]
+                nextNeurons.extend(activating)
             if len(nextNeurons) > 0:
                 print(nextNeurons)
                 unfiredNeurons = nextNeurons
@@ -135,12 +150,15 @@ class genome:
                 break
 
         ###########ACQUIRE OUTPUT SIGNALS###########
-        # do something with output, have to activate manually just as with input
+        # have to manually activate output just as with input since special FSM case
         for finalNode in self.outputNodes:
             finalSignal = 0
             for finalConnection in finalNode.inConnections:
                 if finalConnection.disabled is True:
                     pass
+                # TODO: corrupt signals
+                print('SIGTRACE(final): ', finalConnection.signal,
+                      finalConnection.weight)
                 finalSignal += finalConnection.signal * finalConnection.weight
                 if finalConnection.disabled:
                     print('Disabled SIGTRACE (final): ', finalConnection.signal,

@@ -52,7 +52,7 @@ class nodeGene:
         nextNodes = []
 
         if True in map(lambda x: x.signal == None, self.inConnections):
-            return self  # he wasnt reaaaddyyyyy
+            return self
 
         # this doesnt handle recurrency?
         for connection in self.inConnections:
