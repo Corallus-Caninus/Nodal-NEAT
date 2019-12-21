@@ -20,23 +20,21 @@ class globalConnections:
     #called in addConnection
     def verifyConnection(self, verifyConnection):
         '''
-        Parameters:
-            verifyConnection: takes in a connection without innovation assigned to be checked against global list.
-        Returns:
-            connection: either the new connection or a connection that is identical.
+        checks a connection to see if it already exists
         '''
         # check all connections for matching input and output
         # TODO: find a way to lambda function transform list and search for max more efficiently than iteration
+
         for connection in self.connections:
             if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
                 # if verifyConnection.innovation == connection.innovation:
                 copyConnection = connectionGene.copy_from(verifyConnection)
+                copyConnection.innovation = verifyConnection.innovation
                 del verifyConnection
                 return copyConnection
 
         self.connections.append(verifyConnection)
         self.innovation += 1
-        # TODO: does this assign int object instance or value? *sigh* just high level things
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
