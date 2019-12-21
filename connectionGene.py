@@ -24,23 +24,30 @@ class connectionGene:
 
     # @DEPRECATED all connectiongenes are checked
     @classmethod
-    def copy_from(cls, connectionGene):
+    def copy_from(cls, connectionGeneCopy):
         '''
         copy all attributes of an existing connection to a new instance of connectionGene object
         copy without disabled
         '''
-        return cls(weight=rand.uniform(-1, 1), inNode=connectionGene.input, outNode=connectionGene.output)
+        # TODO: ensure copying is done with local input and output nodes wrt Genome
+        print('copy..')
+        return cls(weight=rand.uniform(-1, 1), inNode=connectionGeneCopy.input, outNode=connectionGeneCopy.output)
 
     def __del__(self):
         # cleanup connection references in node objects
+        # TODO: correct innovation fragmentation as well
         self.input.removeConnection(self)
         self.output.removeConnection(self)
 
-    def connectionExists(self, potentialConnection):
+    def exists(self, localConnections):
         '''
         comparator for checking if a connection already exists. used for innovation assignment in evaluation crossover
         '''
-        if self.input == potentialConnection.input and self.output == potentialConnection.output:
-            return True
-        else:
-            return False
+        if self in localConnections:  # case for genome constructor
+            localConnections.remove(self)
+        for potentialConnection in localConnections:
+            if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
+                # print(self.input.nodeId, potentialConnection.input.nodeId,
+                #       self.output.nodeId, potentialConnection.output.nodeId)
+                return True
+        return False

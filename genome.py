@@ -2,6 +2,12 @@
 # different methods of crossover and mutation are implemented here
 # DEVNOTE: should recurrent connections be handled natively/on first iteration? yes
 # optimize for mat-mul when networks show this is necessary
+
+# TODO: 'numpyify' graph for fast forward prop
+#               batch out numpified functions and return fitness from evaluator pods
+#               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
+#               since evaluation environments and distribution dont fit easily into a dask/spark pipeline
+
 from nodeGene import nodeGene as node
 from connectionGene import connectionGene as connection
 import random as rand
@@ -37,7 +43,6 @@ class genome:
 
         for inNode in self.inputNodes:
             for outNode in self.outputNodes:
-                # ConnectionGene construtor automatically adds node connections
                 globalConnections.verifyConnection(connection(
                     rand.uniform(-1, 1), inNode, outNode))
         # prevents calculating after the fact and 'somewhat' less messy
@@ -62,16 +67,27 @@ class genome:
 
             self.addNode(randConnection, globalConnections)
 
-    # NOTE: currently circular (recurrent) just make this work
     def addConnectionMutation(self, connectionMutationRate, globalConnections):
         '''
-        randomly adds a connection and adjusts innovation if novel in the genepool
+        randomly adds a connection and adjusts innovation if novel in the genepool.
+        connections to input and from output nodes are allowed (circularity at all nodes)
         '''
-        allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
         if rand.uniform(0, 1) > connectionMutationRate:
-            # TODO: ensure no duplicate connections
-            globalConnections.verifyConnection(connection(rand.uniform(-1, 1), rand.choice(allNodes),
-                                                          rand.choice(allNodes)))
+            allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
+            localCheckConnection = connection(
+                rand.uniform(-1, 1), rand.choice(allNodes), rand.choice(allNodes))
+
+            for checkNode in allNodes:
+                if localCheckConnection.exists(checkNode.outConnections + checkNode.inConnections) == True:
+                    del localCheckConnection
+                    print('mutation Failed: already exists')
+                    return
+            globalConnections.verifyConnection(
+                localCheckConnection)
+            print('new connection acquired')
+            print(localCheckConnection.input.nodeId,
+                  localCheckConnection.output.nodeId)
+            return
 
     def addNode(self, replaceConnection, globalConnections):
         replaceConnection.disabled = True
@@ -84,10 +100,6 @@ class genome:
             replaceConnection.input, replaceConnection.output)
         print('newNode', newNode)
         self.hiddenNodes.append(newNode)
-
-    # TODO: 'numpyify' graph for fast forward prop
-    #               batch out numpified functions and return fitness from evaluator pods
-    #               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
 
     # TODO: graph out these network operations as a GUI/plotting exercise
     # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
