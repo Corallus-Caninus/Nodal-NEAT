@@ -24,6 +24,9 @@ class nodeGene:
             self.outConnections.append(connectionGene)
         elif self is connectionGene.output:
             self.inConnections.append(connectionGene)
+        elif self is connectionGene.output and self is connectionGene.input:
+            self.inConnections.append(connectionGene)
+            self.outConnections.append(connectionGene)
         else:  # default fallthrough error
             raise Exception('ERROR: cannot connect ',
                             connectionGene, ' with ', self)
