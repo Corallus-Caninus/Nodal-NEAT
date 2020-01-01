@@ -13,15 +13,16 @@ def fitnessFunction():
     # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
     return 0
 
-# TODO: verify proper copys are used unless reference is being passed
-# TODO: matplotlib for debugging. make a gui to test code further
-
 
 class evaluator:
+    # TODO: make a seperate NEAT package that is called in PoM/RoM. this allows seperate versioning :)
+    # TODO: branch this off into a NEAT algorithm and PoM/RoM so PoM/RoM can be selectively merged with NEAT updates
     # TODO: how to make this safe for parallelism (e.g.: a connection is discovered in two seperate genomes concurrently.)
     #               how can this be interrupt handled post-generation?
     # TODO: Dask
     # TODO: add verbosity levels with logging for tracing at each level of encapsulation
+    # TODO: can networkx be used for forward propagation given associative matrix?
+
     def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate):
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate

@@ -1,8 +1,3 @@
-# include operations such as crossover with another genome
-# different methods of crossover and mutation are implemented here
-# DEVNOTE: should recurrent connections be handled natively/on first iteration? yes
-# optimize for mat-mul when networks show this is necessary
-
 # TODO: 'numpyify' graph for fast forward prop
 #               batch out numpified functions and return fitness from evaluator pods
 #               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
@@ -15,8 +10,17 @@ from activationFunctions import softmax
 
 
 class genome:
+    # NOTE: graphs are defined by their Node objects not Connections. Node defined networks
+    # allow for more interesting encapsulation and swappable implementations as well as make
+    #  recurrent, energy based etc. networks easier to implement. Connection defined topologies are skipped
+    #  in favor of a 'numpifier' which compiles the traced network down to a series of almost if not
+    # entirely numpy operations. This network is not lightweight nor ideal for real time forward propagation
+    #  but prefered  for ease of crossover, mutability etc. (relatively low frequency operations) and high level
+    #  exploration of network topologies. The graph executor would preferably be written in the numpy C API
+    #  but this development should be empirically justified.
     '''
     a genome built with fully connected initial topology
+
     Parameters:
         inputSize: integer size of input nodes
         outputSize: integer size of output nodes
@@ -69,43 +73,109 @@ class genome:
 
     def addConnectionMutation(self, connectionMutationRate, globalConnections):
         '''
-        randomly adds a connection and adjusts innovation if novel in the genepool.
-        connections to input and from output nodes are allowed (circularity at all nodes)
+        randomly adds a connection connections to input and from output nodes are allowed (circularity at all nodes)
         '''
+        # NOTE: num nodes^2 is number of possible connections before depleted conventions.
+        #             so long as self connections and recurrent connections (but no parallel connections)
+        #             are allowed
         if rand.uniform(0, 1) > connectionMutationRate:
             allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
-            localCheckConnection = connection(
+            newConnection = connection(
                 rand.uniform(-1, 1), rand.choice(allNodes), rand.choice(allNodes))
+            self.addConnection(newConnection, globalConnections)
 
-            for checkNode in allNodes:
-                if localCheckConnection.exists(checkNode.outConnections + checkNode.inConnections) == True:
-                    del localCheckConnection
-                    print('mutation Failed: already exists')
-                    return
-            globalConnections.verifyConnection(
-                localCheckConnection)
-            print('new connection acquired')
-            print(localCheckConnection.input.nodeId,
-                  localCheckConnection.output.nodeId)
+    def addConnection(self, newConnection, globalConnections):
+        '''
+        add a unique connection into the network attaching two nodes, self connections and recurrent connections are allowed
+
+        Checks if a connection already exists locally (prevents parallel edges) or globally (innovation consistency).
+        also checks if a connection creates a loop closure and marks it as recurrent.
+        '''
+        allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
+        for checkNode in allNodes:
+            # TODO: the sum of these lists ~doubles the search space with repeats make this a set or unique
+            if newConnection.exists(checkNode.outConnections + checkNode.inConnections) == True:
+                    # TODO: this clips mutation rates probability distribution for cases:
+                    #              connectionMutationRate>>nodeMutationRate and very small, sparse networks
+                    #               instead check if numConnections = allNodes**2
+                print('mutation Failed: already in this genome')
+                print(newConnection.input.nodeId,
+                      newConnection.output.nodeId)
+                del newConnection
+                return
+
+        newConnection = globalConnections.verifyConnection(newConnection)
+        print('new connection acquired')
+        print(newConnection.input.nodeId,
+              newConnection.output.nodeId)
+
+        # Check simple recurrence
+        # TODO: EXTRACT THIS INTO ANOTHER METHOD
+        if newConnection.input == newConnection.output:
+            newConnection.loop = True
             return
+        else:
+            # TODO: this can be partly encapsulated in nodeGene just like forward propagation wrt .activate()
+            # Forward propagate this connection. if outputs are arrived at it is not recursive.
+            # if this connection's input node is found along the search it is. ignore all known loops
+            # TODO: BROKEN HERE somehow missing a loop detection and looping a loop external to newConnection on search
+            # TODO: Trace this out for external undetected loop entry. must be an edge case. occurs rarely with 1 hidden node.
+            connectionBuffer = []
+            seenOnce = False  # TODO: This is a hack but is only working version
+            # TODO: use activate as a way to note if a node has been seen
+            # NOTE: ENSURE ALL NODES ARE PROPERLY DEACTIVATED HERE AND FORWARD PROP
+            connectionList = [
+                x for x in newConnection.output.outConnections if x.loop == False]
+            while len(connectionList) > 0:
+                print('IN LOOP CHECK: step.')
+                for nextConnection in connectionList:
+                    # let this connection search path die off since its already a known loop
+                    if nextConnection.loop == False:
+                        print('IN LOOP CHECK: appending..',
+                              len(connectionBuffer))
+
+                        nextConnection.input.activated = True
+                        connectionBuffer += [
+                            x for x in nextConnection.output.outConnections if x not in connectionBuffer and x.loop == False]
+                    else:
+                        print('SKIPPING A LOOP CONNECTION')
+                        pass
+                # lookahead at all nodes to see if they have been activated
+                for checkConnection in connectionBuffer:
+                    if checkConnection.output.activated == True:
+                        print('IN LOOP CHECK: LOOP DISCOVERED FOR: ',
+                              newConnection.input.nodeId, newConnection.output.nodeId)
+                        newConnection.loop = True
+                        # Reset all connections because its easier
+                        for processedNode in self.hiddenNodes + self.outputNodes + self.inputNodes:
+                            processedNode.activated = False
+                        return
+
+                connectionList.clear()
+                connectionList.extend(connectionBuffer)
+                print(len(connectionList))
+                connectionBuffer.clear()
+            for processedNode in self.hiddenNodes + self.outputNodes + self.inputNodes:
+                processedNode.activated = False
+
+        print('done')
+        # return
 
     def addNode(self, replaceConnection, globalConnections):
+        '''
+        adds a node into the network by splitting a connection into two connections adjoined by the new node
+        '''
+        # We are splitting replaceConnection
         replaceConnection.disabled = True
-        # newNode = node(globalConnections.nodeId)
-        # check if inConnection inNode and outConnection outNode already exist with a common node (must be this node)
-        # newNode = globalConnections.verifyNode(connection(
-        #     rand.uniform(-1, 1), replaceConnection.input, newNode), connection(
-        #     rand.uniform(-1, 1), newNode, replaceConnection.output))
+        # check innovation of the two new connections and ensure loop considerations are maintained
         newNode = globalConnections.verifyNode(
-            replaceConnection.input, replaceConnection.output)
+            replaceConnection.input, replaceConnection.output, replaceConnection.loop)
         print('newNode', newNode)
+        # add this genome
         self.hiddenNodes.append(newNode)
 
-    # TODO: graph out these network operations as a GUI/plotting exercise
     # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
     #              simple loop call, this will segue to parallelization better
-
-    # TODO: does this check if all signals have arrived before forward propagating?
 
     def forwardProp(self, signals):
         '''
@@ -135,7 +205,7 @@ class genome:
                     print('SIGTRACE (init): ', initialConnection.signal,
                           ' * ', initialConnection.weight)
                     # ensure its not an input to output connection
-                    # (which wont need forward propagation)
+                    # (which wont need further forward propagation)
                     if len(initialConnection.output.outConnections) > 0:
                         unfiredNeurons.append(initialConnection.output)
 
@@ -145,41 +215,59 @@ class genome:
         #               how can this be done with circulatity without tracing the topology first?
         #               tracing may not be bad if 'numpifying' the graph first (graph ->matrix)
         while True:
-            print('DEBUG: Processing {} unfiredNeurons on deck: {}'.format(
+            print('DEBUG: Processing {} unfiredNeurons with buffer: {}'.format(
                 len(unfiredNeurons), unfiredNeurons))
             for processingNode in unfiredNeurons:
-                print('DEBUG: type of processingNode is: ', processingNode)
+                # print('DEBUG: type of processingNode is: ', processingNode)
                 activating = processingNode.activate()
-                # TODO: no..
+                # TODO: no.. fix this. this will forever be boilerplate unless singular objects can be used as iterables
+                if activating is None:
+                    pass
+
                 if type(activating) is not list:
                     activating = [activating]
                 nextNeurons.extend(activating)
+
             if len(nextNeurons) > 0:
-                print(nextNeurons)
+                # print('DEBUG: next propagation nodes: ', nextNeurons)
                 unfiredNeurons = nextNeurons
                 nextNeurons.clear()
             else:
                 break
 
         ###########ACQUIRE OUTPUT SIGNALS###########
+        # TODO: recurrent connections across output nodes causes errors here. need to rely further on encapsulated
+        # nodeGene.activate() method
         # have to manually activate output just as with input since special FSM case
         for finalNode in self.outputNodes:
             finalSignal = 0
             for finalConnection in finalNode.inConnections:
                 if finalConnection.disabled is True:
-                    pass
-                # TODO: corrupt signals
-                print('SIGTRACE(final): ', finalConnection.signal,
-                      finalConnection.weight)
-                finalSignal += finalConnection.signal * finalConnection.weight
-                if finalConnection.disabled:
                     print('Disabled SIGTRACE (final): ', finalConnection.signal,
                           ' * ', finalConnection.weight)
+                    if finalConnection.loop is True:
+                        print('Loop SIGTRACE (final): ',
+                              finalConnection.signal, finalConnection.weight)
+                    # pass
+                elif finalConnection.signal is None:
+                    print('NULL SIGTRACE (final): ',
+                          finalConnection.signal, finalConnection.weight)
+                    if finalConnection.loop is True:
+                        print('Loop SIGTRACE (final): ',
+                              finalConnection.signal, finalConnection.weight)
                 else:
+                    # print('SIGTRACE(final): ', finalConnection.signal,
+                    #       finalConnection.weight)
+                    finalSignal += finalConnection.signal * finalConnection.weight
+                    # if finalConnection.disabled:
+                    # else:
                     print('SIGTRACE (final): ', finalConnection.signal,
                           ' * ', finalConnection.weight)
 
                 # print('SIGTRACE (final): ', softmax(finalSignal),
                 #   ' * ', finalConnection.weight)
             outputs.append(softmax(finalSignal))
+        # Reset nodes
+        for processedNode in self.hiddenNodes + self.inputNodes + self.outputNodes:
+            processedNode.activated = False
         return outputs

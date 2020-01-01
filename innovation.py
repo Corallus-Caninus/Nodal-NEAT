@@ -13,8 +13,16 @@ class globalConnections:
     '''
 
     def __init__(self):
+        # TODO: ensure these are consistent with PointsOfMutation and RiverOfMutation
+        #               need to be isolated from evaluator and genepool. currently connection objects
+        #               are stored only for inNode and outNode id lookup. this should only need to be
+        #               shared across PointsOfMutation
+
+        # connection objects refered to in various genomes in the genepool
         self.connections = []
+        # innovation metric for novelty
         self.innovation = 0
+        # node metric for innovation and cross-genome similarity
         self.nodeId = 0  # This should be held here since global variable
 
     #called in addConnection
@@ -27,59 +35,54 @@ class globalConnections:
 
         for connection in self.connections:
             if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
-                # if verifyConnection.innovation == connection.innovation:
-                copyConnection = connectionGene.copy_from(verifyConnection)
-                copyConnection.innovation = verifyConnection.innovation
-                del verifyConnection
-                return copyConnection
+                verifyConnection.innovation = connection.innovation
+                return verifyConnection
 
         self.connections.append(verifyConnection)
         self.innovation += 1
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
-    def verifyNode(self, input, output):
+    def verifyNode(self, inputNode, outputNode, isLoop):
         '''
         check to see if a newly split connection has already occured
         '''
+        for firstConnection in self.connections:
+            if firstConnection.input.nodeId == inputNode.nodeId:
+                # iterate over all other connections searching for a matching connection between an isolated node
+                for secondConnection in [x for x in self.connections if x is not firstConnection]:
+                    if secondConnection.output.nodeId == outputNode.nodeId:
+                        if secondConnection.input.nodeId == firstConnection.output.nodeId:
+                            # a match is found
+                            # create a copy of the node for the new Genome locally
+                            newNode = nodeGene(firstConnection.output.nodeId)
+                            inConnection = connectionGene(
+                                rand.uniform(-1, 1), inputNode, newNode)
+                            inConnection.innovation = firstConnection.innovation
+
+                            outConnection = connectionGene(
+                                rand.uniform(-1, 1), newNode, outputNode)
+                            outConnection.innovation = secondConnection.innovation
+
+                            if isLoop is True:
+                                outConnection.loop = True
+
+                            return newNode
+
+        # a novel node has been acquired, update innovations
         self.nodeId += 1
         newNode = nodeGene(self.nodeId)
-        inConnection = connectionGene(rand.uniform(-1, 1), input, newNode)
-        outConnection = connectionGene(rand.uniform(-1, 1), output, newNode)
-
-        for connection in self.connections:
-            if inConnection.input.nodeId == connection:
-                firstMatch = connection
-                check = inConnection.output.nodeId
-                for secondConnection in (self.connections - inConnection):
-                    if outConnection.output.nodeId == secondConnection.output.nodeId and outConnection.input.nodeId == check:
-                        # undo the created connections and return new objects of the matches
-                        del inConnection, outConnection
-                        connectionGene.copy_from(firstMatch)
-                        connectionGene.copy_from(secondConnection)
-                        return newNode
-        # novel node acquired
         self.innovation += 1
+        inConnection = connectionGene(
+            rand.uniform(-1, 1), inputNode, newNode)
         inConnection.innovation = self.innovation
+
         self.innovation += 1
+        outConnection = connectionGene(
+            rand.uniform(-1, 1), newNode, outputNode)
         outConnection.innovation = self.innovation
+
+        if isLoop is True:
+            outConnection.loop = True
+
         return newNode
-
-        # return connectionGene.copy_from(firstMatch), connectionGene.copy_from(secondConnection)
-        # return inConnection, outConnection
-
-        # @DEPRECATED
-        # def update(self, connections):
-        #     '''
-        #     update the list of global connections without verification
-        #     Parameters:
-        #         connections or connection to be added to global list
-        #     Returns:
-        #         None
-        #     '''
-        #     if isinstance(connections, list):
-        #         self.connections.extend(connections)
-        #         self.innovation += len(connections)  # TODO: ?
-        #     else:  # is one connection
-        #         self.connections.append(connections)
-        #         self.innovation += 1

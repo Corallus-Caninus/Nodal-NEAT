@@ -18,15 +18,15 @@ class nodeGene:
         '''
         add a connection reference to this node and orients the edge based on input or output direction.
         '''
-        # TODO: may be too many instances of connection diagram. connections should be encapsulated in one object. optimize this later..
         # check if connection exists first
-        if self is connectionGene.input:
+        # TODO: Really ought to clean up the self loop case here..
+        if self is connectionGene.output and self is connectionGene.input:
+            self.inConnections.append(connectionGene)
+            self.outConnections.append(connectionGene)
+        elif self is connectionGene.input:
             self.outConnections.append(connectionGene)
         elif self is connectionGene.output:
             self.inConnections.append(connectionGene)
-        elif self is connectionGene.output and self is connectionGene.input:
-            self.inConnections.append(connectionGene)
-            self.outConnections.append(connectionGene)
         else:  # default fallthrough error
             raise Exception('ERROR: cannot connect ',
                             connectionGene, ' with ', self)
@@ -35,7 +35,10 @@ class nodeGene:
         '''
         removes an existing connection from this node
         '''
-        if self is connectionGene.input:
+        if self is connectionGene.input and self is connectionGene.output:
+            self.outConnections.remove(connectionGene)
+            self.inConnections.remove(connectionGene)
+        elif self is connectionGene.input:
             self.outConnections.remove(connectionGene)
         elif self is connectionGene.output:
             self.inConnections.remove(connectionGene)
@@ -54,16 +57,27 @@ class nodeGene:
         outputSignal = 0
         nextNodes = []
 
-        if True in map(lambda x: x.signal == None, self.inConnections):
-            return self
+        for availableConnection in self.inConnections:
+            if availableConnection.signal is None and availableConnection.loop is False:
+                print('SIGTRACE (hidden): unready connection {} at node {}'.format(
+                    availableConnection, self))
+                return self
+        # TODO: ENSURE THIS DOESNT PREMATURELY ACTIVATE
 
-        # this doesnt handle recurrency?
-        for connection in self.inConnections:
+        # ignore first pass with recurrency unavailable
+        readyConnections = \
+            [connection for connection in self.inConnections if connection.signal is not None]
+
+        # TODO: merge this condition with readyConnection filter should be gaurunteed from genome forwardPropagation
+        for connection in readyConnections:
             if connection.disabled is True:
                 pass
             else:
                 outputSignal += connection.signal * connection.weight
                 connection.signal = None
+                # TODO: ..unless recurrent? this should reset current recurrent signals (T-1)
+                #              for incoming recurrent signal.
+                # handles general circularity but not recurrence from node A to node A.
         outputSignal = softmax(outputSignal)
         print('SIGTRACE (hidden): ', outputSignal)
 
@@ -74,17 +88,11 @@ class nodeGene:
                     connection.signal = outputSignal
                     nextNodes.append(connection.output)
                 else:
+                    # TODO: can test with this using a list collecting nodes here to verify no hanging nodes
                     pass
 
             # used for recurrency activation gatekeeping
             self.activated = True
             return nextNodes
 
-        self.activated = True
-        return None
-
-    def deactivate(self):
-        '''
-        called after forwardProp and outputs are received
-        '''
-        self.activated = False
+        assert "ERROR: FAILED NEURON"

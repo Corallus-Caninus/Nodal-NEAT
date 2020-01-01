@@ -16,38 +16,35 @@ class connectionGene:
         self.output = outNode
         # NEAT's deactivation for addNodeMutation (and potentially random deactivation pruning)
         self.disabled = False
+        # declares a connection as recursive for ease of forward propagation
+        self.loop = False
         # NOTE: assigned in globalConnections set to 0 to *hopefully* assign value not int object instance from globalInnovation
         self.innovation = 0
-        # add connection references in node objects
-        inNode.addConnection(self)
-        outNode.addConnection(self)
 
-    # @DEPRECATED all connectiongenes are checked
-    @classmethod
-    def copy_from(cls, connectionGeneCopy):
-        '''
-        copy all attributes of an existing connection to a new instance of connectionGene object
-        copy without disabled
-        '''
-        # TODO: ensure copying is done with local input and output nodes wrt Genome
-        print('copy..')
-        return cls(weight=rand.uniform(-1, 1), inNode=connectionGeneCopy.input, outNode=connectionGeneCopy.output)
+        # add connection references in node objects
+        # Check for recurrency
+        if inNode.nodeId == outNode.nodeId:
+            inNode.addConnection(self)
+        else:
+            inNode.addConnection(self)
+            outNode.addConnection(self)
 
     def __del__(self):
-        # cleanup connection references in node objects
         # TODO: correct innovation fragmentation as well
-        self.input.removeConnection(self)
-        self.output.removeConnection(self)
+        # cleanup connection references in node objects
+        if self.input is self.output:
+            # this is kludgey would rather fix in nodeGene removeConnection method
+            # class method overload removeConnection for self.removeConnection() case
+            self.input.removeConnection(self)
+        else:
+            self.input.removeConnection(self)
+            self.output.removeConnection(self)
 
     def exists(self, localConnections):
         '''
         comparator for checking if a connection already exists. used for innovation assignment in evaluation crossover
         '''
-        if self in localConnections:  # case for genome constructor
-            localConnections.remove(self)
-        for potentialConnection in localConnections:
+        for potentialConnection in [x for x in localConnections if x is not self]:
             if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
-                # print(self.input.nodeId, potentialConnection.input.nodeId,
-                #       self.output.nodeId, potentialConnection.output.nodeId)
                 return True
         return False
