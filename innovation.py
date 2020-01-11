@@ -43,10 +43,12 @@ class globalConnections:
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
-    def verifyNode(self, inputNode, outputNode, isLoop):
+    def verifyNode(self, replaceConnection, isLoop):
         '''
         check to see if a newly split connection has already occured
         '''
+        inputNode = replaceConnection.input
+        outputNode = replaceConnection.output
         for firstConnection in self.connections:
             if firstConnection.input.nodeId == inputNode.nodeId:
                 # iterate over all other connections searching for a matching connection between an isolated node
@@ -61,7 +63,8 @@ class globalConnections:
                             inConnection.innovation = firstConnection.innovation
 
                             outConnection = connectionGene(
-                                rand.uniform(-1, 1), newNode, outputNode)
+                                replaceConnection.weight, newNode, outputNode)
+                            # TODO: outConnection should keep original connection weight
                             outConnection.innovation = secondConnection.innovation
 
                             if isLoop is True:
@@ -79,7 +82,7 @@ class globalConnections:
 
         self.innovation += 1
         outConnection = connectionGene(
-            rand.uniform(-1, 1), newNode, outputNode)
+            replaceConnection.weight, newNode, outputNode)
         outConnection.innovation = self.innovation
 
         if isLoop is True:
