@@ -2,6 +2,8 @@
 #               batch out numpified functions and return fitness from evaluator pods
 #               can use a shared queue or manager that sends results back to a genepool pod and genomes (numpy array ops) to game pods
 #               since evaluation environments and distribution dont fit easily into a dask/spark pipeline
+# TODO: use numpy with recarray for forward propagation and partition into respective ndarray matrix for each
+#              layer with weights, signals and isActivated entries respectively
 
 from nodeGene import nodeGene as node
 from connectionGene import connectionGene as connection
@@ -114,12 +116,23 @@ class genome:
         if newConnection.input == newConnection.output:
             newConnection.loop = True
             return
+        elif newConnection.input in self.inputNodes and newConnection.output in self.inputNodes:
+            newConnection.loop = True
+            return
+        elif newConnection.output in self.outputNodes and newConnection.input in self.outputNodes:
+            newConnection.loop = True
+            return
+        # is this a case? Should still be caught since connection would remain unactivated
+        # elif newConnection.input in self.outputNodes and newConnection.output in self.inputNodes:
+        #     newConnection.loop = True
+        #     return
         else:
             # TODO: this can be partly encapsulated in nodeGene just like forward propagation wrt .activate()
             # Forward propagate this connection. if outputs are arrived at it is not recursive.
             # if this connection's input node is found along the search it is. ignore all known loops
             # TODO: BROKEN HERE somehow missing a loop detection and looping a loop external to newConnection on search
-            # TODO: Trace this out for external undetected loop entry. must be an edge case. occurs rarely with 1 hidden node.
+            #               This does not handle an output to an output. must propagate the entire network
+            #                doesnt cycle but gets stuck in unready state
             connectionBuffer = []
             seenOnce = False  # TODO: This is a hack but is only working version
             # TODO: use activate as a way to note if a node has been seen
@@ -135,6 +148,7 @@ class genome:
                               len(connectionBuffer))
 
                         nextConnection.input.activated = True
+                        # TODO: shouldnt have to track activation if loops are consistently detected.
                         connectionBuffer += [
                             x for x in nextConnection.output.outConnections if x not in connectionBuffer and x.loop == False]
                     else:
@@ -155,11 +169,11 @@ class genome:
                 connectionList.extend(connectionBuffer)
                 print(len(connectionList))
                 connectionBuffer.clear()
+
             for processedNode in self.hiddenNodes + self.outputNodes + self.inputNodes:
                 processedNode.activated = False
 
         print('done')
-        # return
 
     def addNode(self, replaceConnection, globalConnections):
         '''
@@ -175,7 +189,7 @@ class genome:
         self.hiddenNodes.append(newNode)
 
     # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
-    #              simple loop call, this will segue to parallelization better
+    #              simple loop call, this will segue to parallelization better. CURRENTLY BROKEN HERE
 
     def forwardProp(self, signals):
         '''
@@ -193,8 +207,8 @@ class genome:
         unfiredNeurons = []
         nextNeurons = []
         outputs = []
-
         ###########INITIALIZE INPUT SIGNALS###########
+        # TODO: need to handle loop and self connections in input and output state
         for sig, inputNode in zip(signals, self.inputNodes):
             for initialConnection in inputNode.outConnections:
                 if initialConnection.disabled is True:
@@ -211,26 +225,30 @@ class genome:
 
         ###########PROCESS HIDDEN LAYER###########
         # begin forward proping
-        # TODO: ensure all inConnections have arrived at a node before continuing.
-        #               how can this be done with circulatity without tracing the topology first?
-        #               tracing may not be bad if 'numpifying' the graph first (graph ->matrix)
+        # TODO: this only loops forever when a loop is missed in connectionGene creation
         while True:
-            print('DEBUG: Processing {} unfiredNeurons with buffer: {}'.format(
-                len(unfiredNeurons), unfiredNeurons))
             for processingNode in unfiredNeurons:
+
                 # print('DEBUG: type of processingNode is: ', processingNode)
                 activating = processingNode.activate()
-                # TODO: no.. fix this. this will forever be boilerplate unless singular objects can be used as iterables
+                # TODO: this should never happen as same state is asserted in nodeGene.activate()
                 if activating is None:
+                    assert "ERROR: IMPOSIBLE STATE IN FORWARD PROPAGATION"
                     pass
-
-                if type(activating) is not list:
-                    activating = [activating]
-                nextNeurons.extend(activating)
+                # TODO: cycling here
+                if activating is not None:
+                    if type(activating) is not list:
+                        activating = [activating]
+                    nextNeurons.extend(activating)
 
             if len(nextNeurons) > 0:
                 # print('DEBUG: next propagation nodes: ', nextNeurons)
-                unfiredNeurons = nextNeurons
+                print(nextNeurons, unfiredNeurons)
+                unfiredNeurons.clear()
+                unfiredNeurons.extend(nextNeurons)
+                print('now: ', unfiredNeurons)
+                print('DEBUG: Processing {} unfiredNeurons'.format(
+                    len(unfiredNeurons)), unfiredNeurons)
                 nextNeurons.clear()
             else:
                 break
