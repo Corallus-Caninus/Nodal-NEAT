@@ -29,12 +29,8 @@ class connectionGene:
             inNode.addConnection(self)
             outNode.addConnection(self)
 
-    def __del__(self):
-        # TODO: correct innovation fragmentation as well
-        # cleanup connection references in node objects
-        if self.input is self.output:
-            # this is kludgey would rather fix in nodeGene removeConnection method
-            # class method overload removeConnection for self.removeConnection() case
+    def remove(self):
+        if self.input == self.output:
             self.input.removeConnection(self)
         else:
             self.input.removeConnection(self)
