@@ -10,7 +10,7 @@ class connectionGene:
     def __init__(self, weight, inNode, outNode):
         # initialize
         self.weight = weight
-        self.signal = 0
+        self.signal = None
         # assign references
         self.input = inNode
         self.output = outNode
