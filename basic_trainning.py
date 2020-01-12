@@ -7,7 +7,9 @@ import matplotlib as mp
 import matplotlib.pyplot as plt
 # NATIVE PACKAGES
 import sys
-from multiprocessing import Process
+import logging
+import os
+import re
 # NOTE: if this ever goes to linux use graphviz for graphics
 
 
@@ -35,7 +37,7 @@ def graphNEAT(network):
         allConnects.extend(
             [x for x in n.outConnections if x not in allConnects])
 
-    print('BASIC TRAINNING (Graph): ', allConnects)
+    logging.info('BASIC TRAINNING (Graph): {}'.format(allConnects))
     for c in allConnects:
         myg.add_edge(c.input, c.output)
 
@@ -43,7 +45,7 @@ def graphNEAT(network):
     pos = nx.drawing.layout.circular_layout(G)
 
     # SET COLORS BASED ON NODE TYPE:
-    #input, output, hidden
+    # input, output, hidden
     ins, outs, hids = [], [], []
     labels = {}
     for node in G.nodes:
@@ -63,7 +65,7 @@ def graphNEAT(network):
         G, pos, nodelist=hids, label='hidden', node_size=22, node_color='black')
 
     # SET COLORS BASED ON CONNECTION TYPE
-    #loop, disabled, normal
+    # loop, disabled, normal
     loops, dis, norms = [], [], []
     for connection in G.edges:
         # get inNode in connection-node tuple
@@ -98,6 +100,8 @@ def graphNEAT(network):
 
 
 if __name__ == '__main__':
+    # NOTE: Currently this is the top level API for NEAT.
+    # Evaluator with fitness function will be the final API for NEAT and RoM
     '''
     A test ground for the NEAT algorithm.
 
@@ -105,20 +109,35 @@ if __name__ == '__main__':
     with feature additions and is only commited to Git
     for aligning test code at a given revision
     '''
-    print('begin trainning..')
+    for _, _, files in os.walk('logs'):
+        fileNums = []
+        if len(files) == 0:
+            biggestNum = 1
+        else:
+            for name in files:
+                chopFile = re.compile('[-,.]').split(name)
+                fileNums.append(int(chopFile[1]))
+
+            biggestNum = max(fileNums)
+
+    logFile = 'logs/test-{}.log'.format(biggestNum+1)
+    logging.basicConfig(
+        filename=logFile, level=logging.INFO)
+
+    logging.info('begin trainning..')
     ########### THIS IS TEST CODE ###########
     evaluation = e(inputs=4, outputs=2, population=1,
                    connectionMutationRate=0.5, nodeMutationRate=0.2)
-    print(len(evaluation.globalInnovations.connections),
-          evaluation.globalInnovations.nodeId)
+    logging.info('{} {}'.format(len(evaluation.globalInnovations.connections),
+                                evaluation.globalInnovations.nodeId))
     target = evaluation.genepool[0]
 
     for _ in range(0, 11):
         target.addNodeMutation(.0001, evaluation.globalInnovations)
 
     for _ in range(0, 100):
-        print('with total globalInnovations: ', len(
-            evaluation.globalInnovations.connections))
+        logging.info('with total globalInnovations: {}'.format(len(
+            evaluation.globalInnovations.connections)))
         target.addConnectionMutation(0.0001, evaluation.globalInnovations)
 
     # print('CONNECTION PRINTOUT')
@@ -139,4 +158,7 @@ if __name__ == '__main__':
     graphNEAT(target)
 
     outputs = target.forwardProp([1, 2, 3, 4])
-    print('\n\n', outputs)
+    logging.info('\n\n {}'.format(outputs))
+    outputs = target.forwardProp([1, 2, 3, 4])
+    logging.info('\n\n {}'.format(outputs))
+    logging.info('End of Test')

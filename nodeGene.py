@@ -1,6 +1,7 @@
 # define input, output and hidden nodes. define activation function.
 # not many features will go here at first, but may be implemented further in future research so encapsulate
 from activationFunctions import softmax
+import logging
 
 
 class nodeGene:
@@ -55,7 +56,7 @@ class nodeGene:
         nextNodes = []
         for availableConnection in self.inConnections:
             if availableConnection.signal is None and availableConnection.loop is False and availableConnection.disabled is False:
-                print('SIGTRACE (hidden): unready connection {}->{} at node {}'.format(
+                logging.info('SIGTRACE (hidden): unready connection {}->{} at node {}'.format(
                     availableConnection.input.nodeId, availableConnection.output.nodeId, self.nodeId))
                 return self
 
@@ -64,20 +65,21 @@ class nodeGene:
             [connection for connection in self.inConnections if connection.signal is not None]
 
         for connection in readyConnections:
+            #TODO: REDUNDANT
             if connection.disabled is True:
                 pass
             else:
                 outputSignal += connection.signal * connection.weight
                 connection.signal = None
-                print('SIGTRACE (hidden) Received: ', self.nodeId, outputSignal, connection.input.nodeId,
-                      ' -> ', connection.output.nodeId)
+                logging.info('SIGTRACE (hidden) Received: {} {} {} -> {}'.format(self.nodeId, outputSignal, connection.input.nodeId,
+                                                                                 connection.output.nodeId))
         outputSignal = softmax(outputSignal)
 
         # output nodes have no outConnections
         if(len(self.outConnections) > 0):
             for connection in self.outConnections:
-                print('SIGTRACE (hidden) Sending: ', self.nodeId, outputSignal, '\t\t', connection.input.nodeId,
-                      ' -> ', connection.output.nodeId)
+                logging.info('SIGTRACE (hidden) Sending: {} {} \t\t {} -> {}'.format(
+                    self.nodeId, outputSignal, connection.input.nodeId, connection.output.nodeId))
                 if connection.disabled is False:
                     connection.signal = outputSignal
                     if connection.loop is False:

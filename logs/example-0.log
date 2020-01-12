@@ -1,0 +1,907 @@
+INFO:root:begin trainning..
+INFO:root:8 6
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75C98AB08>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CDE2A48>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CE23CC8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CE0AB08>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CCD00C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CF22188>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CF225C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CF4CF48>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CF587C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CF1FDC8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001E75CDE2288>
+INFO:root:with total globalInnovations: 8
+INFO:root:mutation Failed: already in this genome
+INFO:root:with total globalInnovations: 8
+INFO:root:new connection acquired
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 9
+INFO:root:new connection acquired
+INFO:root:3
+INFO:root:3
+INFO:root:2
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 10
+INFO:root:new connection acquired
+INFO:root:with total globalInnovations: 11
+INFO:root:mutation Failed: already in this genome
+INFO:root:with total globalInnovations: 11
+INFO:root:new connection acquired
+INFO:root:2
+INFO:root:2
+INFO:root:3
+INFO:root:3
+INFO:root:2
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 12
+INFO:root:new connection acquired
+INFO:root:2
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 13
+INFO:root:new connection acquired
+INFO:root:with total globalInnovations: 14
+INFO:root:new connection acquired
+INFO:root:begin trainning..
+INFO:root:8 6
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD6785B1C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD67849E08>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD6702E4C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD6799B108>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD679620C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD67962948>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD67997B48>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD67822488>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD679D13C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD679626C8>
+INFO:root:newNode <nodeGene.nodeGene object at 0x000001AD679D1548>
+INFO:root:with total globalInnovations: 8
+INFO:root:new connection acquired
+INFO:root:9 1
+INFO:root:with total globalInnovations: 9
+INFO:root:mutation Failed: already in this genome
+INFO:root:11 7
+INFO:root:with total globalInnovations: 9
+INFO:root:new connection acquired
+INFO:root:9 17
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 10
+INFO:root:new connection acquired
+INFO:root:2 1
+INFO:root:with total globalInnovations: 11
+INFO:root:mutation Failed: already in this genome
+INFO:root:11 7
+INFO:root:with total globalInnovations: 11
+INFO:root:mutation Failed: already in this genome
+INFO:root:11 7
+INFO:root:with total globalInnovations: 11
+INFO:root:new connection acquired
+INFO:root:14 4
+INFO:root:with total globalInnovations: 12
+INFO:root:new connection acquired
+INFO:root:1 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 13
+INFO:root:mutation Failed: already in this genome
+INFO:root:4 5
+INFO:root:with total globalInnovations: 13
+INFO:root:new connection acquired
+INFO:root:3 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 14
+INFO:root:new connection acquired
+INFO:root:15 1
+INFO:root:with total globalInnovations: 15
+INFO:root:mutation Failed: already in this genome
+INFO:root:3 5
+INFO:root:with total globalInnovations: 15
+INFO:root:new connection acquired
+INFO:root:16 5
+INFO:root:done
+INFO:root:with total globalInnovations: 16
+INFO:root:new connection acquired
+INFO:root:4 9
+INFO:root:2
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 17
+INFO:root:new connection acquired
+INFO:root:7 6
+INFO:root:done
+INFO:root:with total globalInnovations: 18
+INFO:root:new connection acquired
+INFO:root:9 11
+INFO:root:2
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 19
+INFO:root:mutation Failed: already in this genome
+INFO:root:4 16
+INFO:root:with total globalInnovations: 19
+INFO:root:new connection acquired
+INFO:root:3 17
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 20
+INFO:root:mutation Failed: already in this genome
+INFO:root:10 5
+INFO:root:with total globalInnovations: 20
+INFO:root:new connection acquired
+INFO:root:14 17
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 21
+INFO:root:new connection acquired
+INFO:root:5 16
+INFO:root:with total globalInnovations: 22
+INFO:root:new connection acquired
+INFO:root:6 12
+INFO:root:with total globalInnovations: 23
+INFO:root:new connection acquired
+INFO:root:17 11
+INFO:root:2
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 24
+INFO:root:new connection acquired
+INFO:root:9 5
+INFO:root:done
+INFO:root:with total globalInnovations: 25
+INFO:root:new connection acquired
+INFO:root:2 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 26
+INFO:root:new connection acquired
+INFO:root:8 3
+INFO:root:with total globalInnovations: 27
+INFO:root:mutation Failed: already in this genome
+INFO:root:14 6
+INFO:root:with total globalInnovations: 27
+INFO:root:new connection acquired
+INFO:root:14 1
+INFO:root:with total globalInnovations: 28
+INFO:root:new connection acquired
+INFO:root:4 7
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 29
+INFO:root:new connection acquired
+INFO:root:17 17
+INFO:root:with total globalInnovations: 30
+INFO:root:new connection acquired
+INFO:root:13 6
+INFO:root:done
+INFO:root:with total globalInnovations: 31
+INFO:root:new connection acquired
+INFO:root:13 16
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 32
+INFO:root:new connection acquired
+INFO:root:15 5
+INFO:root:done
+INFO:root:with total globalInnovations: 33
+INFO:root:new connection acquired
+INFO:root:6 8
+INFO:root:with total globalInnovations: 34
+INFO:root:new connection acquired
+INFO:root:1 17
+INFO:root:3
+INFO:root:2
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 35
+INFO:root:new connection acquired
+INFO:root:5 9
+INFO:root:with total globalInnovations: 36
+INFO:root:new connection acquired
+INFO:root:16 12
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 37
+INFO:root:new connection acquired
+INFO:root:16 13
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 16  13
+INFO:root:5
+INFO:root:5
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 38
+INFO:root:mutation Failed: already in this genome
+INFO:root:5 16
+INFO:root:with total globalInnovations: 38
+INFO:root:mutation Failed: already in this genome
+INFO:root:1 10
+INFO:root:with total globalInnovations: 38
+INFO:root:new connection acquired
+INFO:root:16 1
+INFO:root:with total globalInnovations: 39
+INFO:root:new connection acquired
+INFO:root:13 8
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 40
+INFO:root:new connection acquired
+INFO:root:13 4
+INFO:root:with total globalInnovations: 41
+INFO:root:mutation Failed: already in this genome
+INFO:root:16 1
+INFO:root:with total globalInnovations: 41
+INFO:root:new connection acquired
+INFO:root:11 12
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 42
+INFO:root:new connection acquired
+INFO:root:4 11
+INFO:root:3
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 43
+INFO:root:mutation Failed: already in this genome
+INFO:root:1 5
+INFO:root:with total globalInnovations: 43
+INFO:root:mutation Failed: already in this genome
+INFO:root:5 9
+INFO:root:with total globalInnovations: 43
+INFO:root:new connection acquired
+INFO:root:2 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 44
+INFO:root:new connection acquired
+INFO:root:7 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 45
+INFO:root:new connection acquired
+INFO:root:7 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 46
+INFO:root:new connection acquired
+INFO:root:14 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 47
+INFO:root:new connection acquired
+INFO:root:17 13
+INFO:root:6
+INFO:root:7
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 48
+INFO:root:new connection acquired
+INFO:root:7 14
+INFO:root:4
+INFO:root:8
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 7  14
+INFO:root:12
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 49
+INFO:root:mutation Failed: already in this genome
+INFO:root:7 6
+INFO:root:with total globalInnovations: 49
+INFO:root:mutation Failed: already in this genome
+INFO:root:6 12
+INFO:root:with total globalInnovations: 49
+INFO:root:mutation Failed: already in this genome
+INFO:root:15 5
+INFO:root:with total globalInnovations: 49
+INFO:root:new connection acquired
+INFO:root:5 17
+INFO:root:with total globalInnovations: 50
+INFO:root:new connection acquired
+INFO:root:17 5
+INFO:root:done
+INFO:root:with total globalInnovations: 51
+INFO:root:new connection acquired
+INFO:root:11 5
+INFO:root:done
+INFO:root:with total globalInnovations: 52
+INFO:root:new connection acquired
+INFO:root:13 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 53
+INFO:root:mutation Failed: already in this genome
+INFO:root:15 1
+INFO:root:with total globalInnovations: 53
+INFO:root:new connection acquired
+INFO:root:12 11
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 12  11
+INFO:root:6
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 54
+INFO:root:new connection acquired
+INFO:root:10 11
+INFO:root:5
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 10  11
+INFO:root:5
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 55
+INFO:root:mutation Failed: already in this genome
+INFO:root:7 6
+INFO:root:with total globalInnovations: 55
+INFO:root:new connection acquired
+INFO:root:11 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 56
+INFO:root:new connection acquired
+INFO:root:9 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 57
+INFO:root:new connection acquired
+INFO:root:11 10
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 58
+INFO:root:mutation Failed: already in this genome
+INFO:root:4 17
+INFO:root:with total globalInnovations: 58
+INFO:root:mutation Failed: already in this genome
+INFO:root:16 15
+INFO:root:with total globalInnovations: 58
+INFO:root:new connection acquired
+INFO:root:3 2
+INFO:root:with total globalInnovations: 59
+INFO:root:new connection acquired
+INFO:root:12 17
+INFO:root:12
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 12  17
+INFO:root:18
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 60
+INFO:root:mutation Failed: already in this genome
+INFO:root:4 6
+INFO:root:with total globalInnovations: 60
+INFO:root:new connection acquired
+INFO:root:1 9
+INFO:root:12
+INFO:root:18
+INFO:root:17
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 61
+INFO:root:new connection acquired
+INFO:root:9 2
+INFO:root:with total globalInnovations: 62
+INFO:root:new connection acquired
+INFO:root:4 12
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 63
+INFO:root:mutation Failed: already in this genome
+INFO:root:17 11
+INFO:root:with total globalInnovations: 63
+INFO:root:new connection acquired
+INFO:root:6 7
+INFO:root:with total globalInnovations: 64
+INFO:root:mutation Failed: already in this genome
+INFO:root:4 7
+INFO:root:with total globalInnovations: 64
+INFO:root:new connection acquired
+INFO:root:15 17
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 15  17
+INFO:root:13
+INFO:root:17
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 65
+INFO:root:new connection acquired
+INFO:root:10 4
+INFO:root:with total globalInnovations: 66
+INFO:root:new connection acquired
+INFO:root:6 6
+INFO:root:with total globalInnovations: 67
+INFO:root:new connection acquired
+INFO:root:6 14
+INFO:root:with total globalInnovations: 68
+INFO:root:new connection acquired
+INFO:root:15 15
+INFO:root:with total globalInnovations: 69
+INFO:root:new connection acquired
+INFO:root:2 14
+INFO:root:5
+INFO:root:12
+INFO:root:17
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 70
+INFO:root:mutation Failed: already in this genome
+INFO:root:3 2
+INFO:root:with total globalInnovations: 70
+INFO:root:mutation Failed: already in this genome
+INFO:root:8 3
+INFO:root:with total globalInnovations: 70
+INFO:root:mutation Failed: already in this genome
+INFO:root:6 12
+INFO:root:with total globalInnovations: 70
+INFO:root:new connection acquired
+INFO:root:8 4
+INFO:root:with total globalInnovations: 71
+INFO:root:mutation Failed: already in this genome
+INFO:root:12 8
+INFO:root:with total globalInnovations: 71
+INFO:root:mutation Failed: already in this genome
+INFO:root:7 5
+INFO:root:with total globalInnovations: 71
+INFO:root:new connection acquired
+INFO:root:2 13
+INFO:root:10
+INFO:root:8
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 72
+INFO:root:mutation Failed: already in this genome
+INFO:root:2 9
+INFO:root:with total globalInnovations: 72
+INFO:root:new connection acquired
+INFO:root:3 12
+INFO:root:1
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 73
+INFO:root:new connection acquired
+INFO:root:1 15
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 74
+INFO:root:new connection acquired
+INFO:root:3 13
+INFO:root:10
+INFO:root:8
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 75
+INFO:root:mutation Failed: already in this genome
+INFO:root:17 11
+INFO:root:with total globalInnovations: 75
+INFO:root:new connection acquired
+INFO:root:2 3
+INFO:root:with total globalInnovations: 76
+INFO:root:new connection acquired
+INFO:root:12 13
+INFO:root:10
+INFO:root:IN LOOP CHECK: LOOP DISCOVERED FOR: 12  13
+INFO:root:9
+INFO:root:4
+INFO:root:0
+INFO:root:done
+INFO:root:with total globalInnovations: 77
+INFO:root:new connection acquired
+INFO:root:13 15
+INFO:root:0
+INFO:root:done
+INFO:root:BASIC TRAINNING (Graph): [<connectionGene.connectionGene object at 0x000001AD675C9FC8>, <connectionGene.connectionGene object at 0x000001AD67962548>, <connectionGene.connectionGene object at 0x000001AD679D1B08>, <connectionGene.connectionGene object at 0x000001AD679DA908>, <connectionGene.connectionGene object at 0x000001AD67864F08>, <connectionGene.connectionGene object at 0x000001AD679D1788>, <connectionGene.connectionGene object at 0x000001AD679DA048>, <connectionGene.connectionGene object at 0x000001AD679DA0C8>, <connectionGene.connectionGene object at 0x000001AD679DA348>, <connectionGene.connectionGene object at 0x000001AD6770F488>, <connectionGene.connectionGene object at 0x000001AD6770F648>, <connectionGene.connectionGene object at 0x000001AD6798D308>, <connectionGene.connectionGene object at 0x000001AD679D1D48>, <connectionGene.connectionGene object at 0x000001AD679D1F48>, <connectionGene.connectionGene object at 0x000001AD6770F208>, <connectionGene.connectionGene object at 0x000001AD679D1AC8>, <connectionGene.connectionGene object at 0x000001AD6798D208>, <connectionGene.connectionGene object at 0x000001AD6770F348>, <connectionGene.connectionGene object at 0x000001AD679D18C8>, <connectionGene.connectionGene object at 0x000001AD679D1D88>, <connectionGene.connectionGene object at 0x000001AD679DA988>, <connectionGene.connectionGene object at 0x000001AD679D1648>, <connectionGene.connectionGene object at 0x000001AD673CBC48>, <connectionGene.connectionGene object at 0x000001AD679D17C8>, <connectionGene.connectionGene object at 0x000001AD679D19C8>, <connectionGene.connectionGene object at 0x000001AD679DA6C8>, <connectionGene.connectionGene object at 0x000001AD679DA7C8>, <connectionGene.connectionGene object at 0x000001AD6795FFC8>, <connectionGene.connectionGene object at 0x000001AD679D16C8>, <connectionGene.connectionGene object at 0x000001AD679DA188>, <connectionGene.connectionGene object at 0x000001AD679DA288>, <connectionGene.connectionGene object at 0x000001AD679DA088>, <connectionGene.connectionGene object at 0x000001AD679DA648>, <connectionGene.connectionGene object at 0x000001AD67962508>, <connectionGene.connectionGene object at 0x000001AD679DA448>, <connectionGene.connectionGene object at 0x000001AD679D1CC8>, <connectionGene.connectionGene object at 0x000001AD67962188>, <connectionGene.connectionGene object at 0x000001AD678224C8>, <connectionGene.connectionGene object at 0x000001AD679D1A08>, <connectionGene.connectionGene object at 0x000001AD679DA108>, <connectionGene.connectionGene object at 0x000001AD679DA408>, <connectionGene.connectionGene object at 0x000001AD679D1FC8>, <connectionGene.connectionGene object at 0x000001AD679DA488>, <connectionGene.connectionGene object at 0x000001AD679DA4C8>, <connectionGene.connectionGene object at 0x000001AD67962588>, <connectionGene.connectionGene object at 0x000001AD679D1948>, <connectionGene.connectionGene object at 0x000001AD679D1C88>, <connectionGene.connectionGene object at 0x000001AD679DAC08>, <connectionGene.connectionGene object at 0x000001AD679DA748>, <connectionGene.connectionGene object at 0x000001AD679DA888>, <connectionGene.connectionGene object at 0x000001AD679DC448>, <connectionGene.connectionGene object at 0x000001AD67997B88>, <connectionGene.connectionGene object at 0x000001AD679D1DC8>, <connectionGene.connectionGene object at 0x000001AD679DA1C8>, <connectionGene.connectionGene object at 0x000001AD679DADC8>, <connectionGene.connectionGene object at 0x000001AD678226C8>, <connectionGene.connectionGene object at 0x000001AD679D1B88>, <connectionGene.connectionGene object at 0x000001AD679D1D08>, <connectionGene.connectionGene object at 0x000001AD679D1E08>, <connectionGene.connectionGene object at 0x000001AD679DC1C8>, <connectionGene.connectionGene object at 0x000001AD67822248>, <connectionGene.connectionGene object at 0x000001AD679DAB88>, <connectionGene.connectionGene object at 0x000001AD679DA3C8>, <connectionGene.connectionGene object at 0x000001AD67822108>, <connectionGene.connectionGene object at 0x000001AD679D1708>, <connectionGene.connectionGene object at 0x000001AD67244DC8>, <connectionGene.connectionGene object at 0x000001AD679D1BC8>, <connectionGene.connectionGene object at 0x000001AD679D1408>, <connectionGene.connectionGene object at 0x000001AD679D14C8>, <connectionGene.connectionGene object at 0x000001AD679D15C8>, <connectionGene.connectionGene object at 0x000001AD679D1748>, <connectionGene.connectionGene object at 0x000001AD679D1B48>, <connectionGene.connectionGene object at 0x000001AD679DA588>, <connectionGene.connectionGene object at 0x000001AD679DAFC8>, <connectionGene.connectionGene object at 0x000001AD679D1448>, <connectionGene.connectionGene object at 0x000001AD679D1808>, <connectionGene.connectionGene object at 0x000001AD679D1A88>, <connectionGene.connectionGene object at 0x000001AD679DACC8>, <connectionGene.connectionGene object at 0x000001AD679D1488>, <connectionGene.connectionGene object at 0x000001AD679D1988>, <connectionGene.connectionGene object at 0x000001AD679D1608>, <connectionGene.connectionGene object at 0x000001AD679D1C48>, <connectionGene.connectionGene object at 0x000001AD679D1588>, <connectionGene.connectionGene object at 0x000001AD679D1908>, <connectionGene.connectionGene object at 0x000001AD679D1C08>, <connectionGene.connectionGene object at 0x000001AD679D1E48>, <connectionGene.connectionGene object at 0x000001AD67822348>, <connectionGene.connectionGene object at 0x000001AD679DA208>, <connectionGene.connectionGene object at 0x000001AD675CACC8>, <connectionGene.connectionGene object at 0x000001AD65173DC8>, <connectionGene.connectionGene object at 0x000001AD673CBB88>, <connectionGene.connectionGene object at 0x000001AD6773C848>, <connectionGene.connectionGene object at 0x000001AD675896C8>, <connectionGene.connectionGene object at 0x000001AD673CBA88>, <connectionGene.connectionGene object at 0x000001AD6773C188>, <connectionGene.connectionGene object at 0x000001AD67244E08>, <connectionGene.connectionGene object at 0x000001AD679DAAC8>, <connectionGene.connectionGene object at 0x000001AD679D1688>, <connectionGene.connectionGene object at 0x000001AD679D1A48>, <connectionGene.connectionGene object at 0x000001AD679DC088>]
+INFO:root:SIGTRACE (init): -0.6248819138625521 		 1 -> 6
+INFO:root:SIGTRACE (init): -0.047648967685111954 		 1 -> 13
+INFO:root:SIGTRACE (init): 0.29527667657559936 		 1 -> 10
+INFO:root:SIGTRACE (init): -0.5741925561118622 		 1 -> 17
+INFO:root:SIGTRACE (init): -0.507337428683429 		 1 -> 9
+INFO:root:SIGTRACE (init): -0.07993743996426676 		 1 -> 15
+INFO:root:SIGTRACE (init): -0.7157283479749628 		 2 -> 6
+INFO:root:SIGTRACE (init): 0.5301374937891092 		 2 -> 9
+INFO:root:SIGTRACE (init): -0.6761137011143926 		 2 -> 12
+INFO:root:SIGTRACE (init): -0.18460201184049366 		 2 -> 1
+INFO:root:SIGTRACE (init): -0.7499951179911778 		 2 -> 15
+INFO:root:SIGTRACE (init): -0.7480875197481068 		 2 -> 10
+INFO:root:SIGTRACE (init): 0.5950892139356322 		 2 -> 14
+INFO:root:SIGTRACE (init): 0.6330654343886841 		 2 -> 13
+INFO:root:SIGTRACE (init): 0.5668922376907646 		 2 -> 3
+INFO:root:SIGTRACE (init): 0.5483640397183687 		 3 -> 6
+INFO:root:SIGTRACE (init): 0.6021038742232802 		 3 -> 10
+INFO:root:SIGTRACE (init): 0.9385833092680338 		 3 -> 15
+INFO:root:SIGTRACE (init): 0.4473702327544193 		 3 -> 17
+INFO:root:SIGTRACE (init): 0.12670098717718314 		 3 -> 2
+INFO:root:SIGTRACE (init): -0.09888601265784777 		 3 -> 12
+INFO:root:SIGTRACE (init): 0.48394678437492683 		 3 -> 13
+INFO:root:SIGTRACE (init): -0.5524656560211919 		 4 -> 5
+INFO:root:SIGTRACE (init): 0.9602491841898854 		 4 -> 14
+INFO:root:SIGTRACE (init): -0.5154123428735219 		 4 -> 16
+INFO:root:SIGTRACE (init): -0.31536971252375084 		 4 -> 17
+INFO:root:SIGTRACE (init): 0.6843079505586325 		 4 -> 9
+INFO:root:SIGTRACE (init): 0.6533202560198956 		 4 -> 7
+INFO:root:SIGTRACE (init): -0.23211594586559797 		 4 -> 11
+INFO:root:SIGTRACE (init): -0.5040359930064867 		 4 -> 12
+INFO:root:at step: 1 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 17->13 at node 13
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden): unready connection 9->17 at node 17
+INFO:root:SIGTRACE (hidden) Received: 9 0.5301374937891092 2 -> 9
+INFO:root:SIGTRACE (hidden) Received: 9 1.2144454443477417 4 -> 9
+INFO:root:SIGTRACE (hidden) Received: 9 0.7071080156643127 1 -> 9
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 2
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden) Received: 14 0.9602491841898854 4 -> 14
+INFO:root:SIGTRACE (hidden) Received: 14 1.5553383981255176 2 -> 14
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8256834254964825 		 14 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8256834254964825 		 14 -> 4
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8256834254964825 		 14 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8256834254964825 		 14 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8256834254964825 		 14 -> 10
+INFO:root:SIGTRACE (hidden): unready connection 13->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:Finished with neurons: [13, 10, 17, 9, 15, 12, 14, 16, 7, 11]
+INFO:root:Preparing 9 neurons: [13, 10, 17, 8, 11, 15, 12, 16, 7]
+INFO:root:at step: 2 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 17->13 at node 13
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden) Received: 17 -0.31536971252375084 4 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.06528285624602687 9 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.5126530890004461 3 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 1.1923857746981783 14 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.6181932185863162 1 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 17 0.6498075129011324 		 17 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 17 0.6498075129011324 		 17 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 17 0.6498075129011324 		 17 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 17 0.6498075129011324 		 17 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 17 0.6498075129011324 		 17 -> 5
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden): unready connection 13->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:Finished with neurons: [13, 10, 17, 8, 11, 15, 12, 16, 7]
+INFO:root:Preparing 8 neurons: [13, 10, 15, 11, 8, 12, 16, 7]
+INFO:root:at step: 3 in forward propagation.
+INFO:root:SIGTRACE (hidden) Received: 13 -0.047648967685111954 1 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 -0.10947896208672814 17 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 0.523586472301956 2 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 1.0075332566768829 3 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 16
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 4
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 13 0.7325371262017972 		 13 -> 15
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden) Received: 11 -0.615360795623196 13 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 0.011894632374636838 9 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.36200472127271305 17 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.594120667138311 4 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 11 0.3556899414746804 		 11 -> 7
+INFO:root:SIGTRACE (hidden) Sending: 11 0.3556899414746804 		 11 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 11 0.3556899414746804 		 11 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 11 0.3556899414746804 		 11 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 11 0.3556899414746804 		 11 -> 10
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden) Received: 16 -0.5154123428735219 4 -> 16
+INFO:root:SIGTRACE (hidden) Received: 16 0.1441137437142559 13 -> 16
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5359662096334146 		 16 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5359662096334146 		 16 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5359662096334146 		 16 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5359662096334146 		 16 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5359662096334146 		 16 -> 1
+INFO:root:SIGTRACE (hidden) Received: 7 -0.21509077584407618 11 -> 7
+INFO:root:SIGTRACE (hidden) Received: 7 0.4382294801758194 4 -> 7
+INFO:root:SIGTRACE (hidden) Sending: 7 0.6078370705453221 		 7 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 7 0.6078370705453221 		 7 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 7 0.6078370705453221 		 7 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 7 0.6078370705453221 		 7 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 7 0.6078370705453221 		 7 -> 14
+INFO:root:Finished with neurons: [13, 10, 15, 11, 8, 12, 16, 7]
+INFO:root:Preparing 7 neurons: [11, 16, 8, 10, 15, 7, 12]
+INFO:root:at step: 4 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:SIGTRACE (hidden): unready connection 4->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden) Received: 10 0.6021038742232802 3 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.8973805507988795 1 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.14929303105077263 2 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 -0.07981873763148101 7 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.6776168353549128 14 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 1.221945766673441 13 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 1.5011488949992975 11 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8177457672905258 		 10 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8177457672905258 		 10 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8177457672905258 		 10 -> 4
+INFO:root:SIGTRACE (hidden) Received: 15 0.17947710873633718 16 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 0.39707585200489864 17 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.3356591612729325 3 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 0.5856640432817547 2 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.110798417060949 7 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.3695669574834923 11 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.6649779701734553 9 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.5850405302091886 1 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.7229150234158772 13 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 15 0.848503928851864 		 15 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 15 0.848503928851864 		 15 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 15 0.848503928851864 		 15 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 15 0.848503928851864 		 15 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 15 0.848503928851864 		 15 -> 15
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:SIGTRACE (hidden) Received: 12 -0.6761137011143926 2 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.106475356366218 16 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.0314218765945977 11 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.5354578696010845 4 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.6343438822589322 3 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 12 0.1632361615388519 		 12 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 12 0.1632361615388519 		 12 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 12 0.1632361615388519 		 12 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 12 0.1632361615388519 		 12 -> 13
+INFO:root:Finished with neurons: [11, 16, 8, 10, 15, 7, 12]
+INFO:root:Preparing 1 neurons: [8]
+INFO:root:at step: 5 in forward propagation.
+INFO:root:SIGTRACE (hidden) Received: 8 -0.5571131022684557 9 -> 8
+INFO:root:SIGTRACE (hidden) Received: 8 -0.6928942132842364 12 -> 8
+INFO:root:SIGTRACE (hidden) Received: 8 -0.25032575822440156 13 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 8 0.43774332053713116 		 8 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 8 0.43774332053713116 		 8 -> 3
+INFO:root:SIGTRACE (hidden) Sending: 8 0.43774332053713116 		 8 -> 4
+INFO:root:Disabled SIGTRACE (final): None * 0.719678753325758
+INFO:root:Disabled SIGTRACE (final): None * -0.36527897143123567
+INFO:root:Disabled SIGTRACE (final): None * -0.7532987979214818
+INFO:root:SIGTRACE (final): 0.9820137900379085 * -0.5625844174753036
+INFO:root:SIGTRACE (final): 0.6078370705453221 * 0.719678753325758
+INFO:root:SIGTRACE (final): 0.43774332053713116 * -0.36527897143123567
+INFO:root:SIGTRACE (final): 0.8177457672905258 * -0.7532987979214818
+INFO:root:SIGTRACE (final): 0.5359662096334146 * -0.16942213673497397
+INFO:root:SIGTRACE (final): 0.6697618223696464 * 0.20768983077562253
+INFO:root:SIGTRACE (final): 0.848503928851864 * -0.9321172882529358
+INFO:root:SIGTRACE (final): 0.6498075129011324 * -0.4510984981670232
+INFO:root:SIGTRACE (final): 0.3556899414746804 * -0.17722336859913956
+INFO:root:SIGTRACE (final): 0.7310585786300049 * -0.8547631231324491
+INFO:root:SIGTRACE (final): 0.8807970779778823 * -0.8125916466686274
+INFO:root:SIGTRACE (final): 0.9525741268224334 * 0.5756654776543051
+INFO:root:Disabled SIGTRACE (final): None * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.8256834254964825 * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.848503928851864 * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.6078370705453221 * 0.6248264418593916
+INFO:root:SIGTRACE (final): 0.7325371262017972 * -0.6966780663322296
+INFO:root:Loop SIGTRACE (final): None -0.22371966918311936
+INFO:root:
+
+ [0.12028920471392957, 0.6270605010627665]
+INFO:root:SIGTRACE (init): -0.6248819138625521 		 1 -> 6
+INFO:root:SIGTRACE (init): -0.047648967685111954 		 1 -> 13
+INFO:root:SIGTRACE (init): 0.29527667657559936 		 1 -> 10
+INFO:root:SIGTRACE (init): -0.5741925561118622 		 1 -> 17
+INFO:root:SIGTRACE (init): -0.507337428683429 		 1 -> 9
+INFO:root:SIGTRACE (init): -0.07993743996426676 		 1 -> 15
+INFO:root:SIGTRACE (init): -0.7157283479749628 		 2 -> 6
+INFO:root:SIGTRACE (init): 0.5301374937891092 		 2 -> 9
+INFO:root:SIGTRACE (init): -0.6761137011143926 		 2 -> 12
+INFO:root:SIGTRACE (init): -0.18460201184049366 		 2 -> 1
+INFO:root:SIGTRACE (init): -0.7499951179911778 		 2 -> 15
+INFO:root:SIGTRACE (init): -0.7480875197481068 		 2 -> 10
+INFO:root:SIGTRACE (init): 0.5950892139356322 		 2 -> 14
+INFO:root:SIGTRACE (init): 0.6330654343886841 		 2 -> 13
+INFO:root:SIGTRACE (init): 0.5668922376907646 		 2 -> 3
+INFO:root:SIGTRACE (init): 0.5483640397183687 		 3 -> 6
+INFO:root:SIGTRACE (init): 0.6021038742232802 		 3 -> 10
+INFO:root:SIGTRACE (init): 0.9385833092680338 		 3 -> 15
+INFO:root:SIGTRACE (init): 0.4473702327544193 		 3 -> 17
+INFO:root:SIGTRACE (init): 0.12670098717718314 		 3 -> 2
+INFO:root:SIGTRACE (init): -0.09888601265784777 		 3 -> 12
+INFO:root:SIGTRACE (init): 0.48394678437492683 		 3 -> 13
+INFO:root:SIGTRACE (init): -0.5524656560211919 		 4 -> 5
+INFO:root:SIGTRACE (init): 0.9602491841898854 		 4 -> 14
+INFO:root:SIGTRACE (init): -0.5154123428735219 		 4 -> 16
+INFO:root:SIGTRACE (init): -0.31536971252375084 		 4 -> 17
+INFO:root:SIGTRACE (init): 0.6843079505586325 		 4 -> 9
+INFO:root:SIGTRACE (init): 0.6533202560198956 		 4 -> 7
+INFO:root:SIGTRACE (init): -0.23211594586559797 		 4 -> 11
+INFO:root:SIGTRACE (init): -0.5040359930064867 		 4 -> 12
+INFO:root:at step: 1 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 17->13 at node 13
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden): unready connection 9->17 at node 17
+INFO:root:SIGTRACE (hidden) Received: 9 0.5301374937891092 2 -> 9
+INFO:root:SIGTRACE (hidden) Received: 9 1.2144454443477417 4 -> 9
+INFO:root:SIGTRACE (hidden) Received: 9 0.7071080156643127 1 -> 9
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 9 0.6697618223696464 		 9 -> 2
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden) Received: 14 0.9602491841898854 4 -> 14
+INFO:root:SIGTRACE (hidden) Received: 14 1.550784709459128 7 -> 14
+INFO:root:SIGTRACE (hidden) Received: 14 2.14587392339476 2 -> 14
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8952825806824848 		 14 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8952825806824848 		 14 -> 4
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8952825806824848 		 14 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8952825806824848 		 14 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 14 0.8952825806824848 		 14 -> 10
+INFO:root:SIGTRACE (hidden): unready connection 13->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:Finished with neurons: [13, 10, 17, 9, 15, 12, 14, 16, 7, 11]
+INFO:root:Preparing 9 neurons: [13, 10, 17, 8, 11, 15, 12, 16, 7]
+INFO:root:at step: 2 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 17->13 at node 13
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden) Received: 17 -0.31536971252375084 4 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.06528285624602687 9 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.5126530890004461 3 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 1.2496823356027744 14 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.8354645600663757 17 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.26127200395451355 1 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.37474806520476917 12 -> 17
+INFO:root:SIGTRACE (hidden) Received: 17 0.9768793754751808 15 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 17 0.7264885775773711 		 17 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 17 0.7264885775773711 		 17 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 17 0.7264885775773711 		 17 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 17 0.7264885775773711 		 17 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 17 0.7264885775773711 		 17 -> 5
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden): unready connection 13->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:Finished with neurons: [13, 10, 17, 8, 11, 15, 12, 16, 7]
+INFO:root:Preparing 8 neurons: [13, 10, 15, 11, 8, 12, 16, 7]
+INFO:root:at step: 3 in forward propagation.
+INFO:root:SIGTRACE (hidden) Received: 13 -0.047648967685111954 1 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 -0.511689267146664 16 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 -0.5808155603837218 17 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 0.05224987400496228 2 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 0.5361966583798892 3 -> 13
+INFO:root:SIGTRACE (hidden) Received: 13 0.5661608268046088 12 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 16
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 4
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 13 0.6378768348732101 		 13 -> 15
+INFO:root:SIGTRACE (hidden): unready connection 7->10 at node 10
+INFO:root:SIGTRACE (hidden): unready connection 16->15 at node 15
+INFO:root:SIGTRACE (hidden) Received: 11 -0.5358423246783715 13 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 0.0914131033194614 9 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.32660854800867656 17 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.5587244938742746 4 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.6132161784131979 12 -> 11
+INFO:root:SIGTRACE (hidden) Received: 11 -0.17801325097047083 10 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 11 0.45561383711403153 		 11 -> 7
+INFO:root:SIGTRACE (hidden) Sending: 11 0.45561383711403153 		 11 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 11 0.45561383711403153 		 11 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 11 0.45561383711403153 		 11 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 11 0.45561383711403153 		 11 -> 10
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden): unready connection 16->12 at node 12
+INFO:root:SIGTRACE (hidden) Received: 16 -0.5154123428735219 4 -> 16
+INFO:root:SIGTRACE (hidden) Received: 16 0.05888812270183541 13 -> 16
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5147177777153115 		 16 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5147177777153115 		 16 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5147177777153115 		 16 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5147177777153115 		 16 -> 13
+INFO:root:SIGTRACE (hidden) Sending: 16 0.5147177777153115 		 16 -> 1
+INFO:root:SIGTRACE (hidden) Received: 7 -0.27551617935512956 11 -> 7
+INFO:root:SIGTRACE (hidden) Received: 7 0.37780407666476606 4 -> 7
+INFO:root:SIGTRACE (hidden) Sending: 7 0.593343363940375 		 7 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 7 0.593343363940375 		 7 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 7 0.593343363940375 		 7 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 7 0.593343363940375 		 7 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 7 0.593343363940375 		 7 -> 14
+INFO:root:Finished with neurons: [13, 10, 15, 11, 8, 12, 16, 7]
+INFO:root:Preparing 7 neurons: [11, 16, 8, 10, 15, 7, 12]
+INFO:root:at step: 4 in forward propagation.
+INFO:root:SIGTRACE (hidden): unready connection 13->11 at node 11
+INFO:root:SIGTRACE (hidden): unready connection 4->16 at node 16
+INFO:root:SIGTRACE (hidden): unready connection 12->8 at node 8
+INFO:root:SIGTRACE (hidden) Received: 10 0.6021038742232802 3 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.8973805507988795 1 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.14929303105077263 2 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 -0.07435563096040887 7 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 0.7469262956765743 14 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 1.2209156723511567 13 -> 10
+INFO:root:SIGTRACE (hidden) Received: 10 1.5785552730195946 11 -> 10
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8289998120823391 		 10 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8289998120823391 		 10 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 10 0.8289998120823391 		 10 -> 4
+INFO:root:SIGTRACE (hidden) Received: 15 0.1723617215024098 16 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 0.41563838165369515 17 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.354221690921729 3 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 0.6042265729305513 2 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.1168392630044397 7 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.4483035915640508 11 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.7437146042540137 9 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.0845120068407934 15 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.0045745668765267 1 -> 15
+INFO:root:SIGTRACE (hidden) Received: 15 1.1246325710249785 13 -> 15
+INFO:root:SIGTRACE (hidden) Sending: 15 0.7548469993979664 		 15 -> 6
+INFO:root:SIGTRACE (hidden) Sending: 15 0.7548469993979664 		 15 -> 1
+INFO:root:SIGTRACE (hidden) Sending: 15 0.7548469993979664 		 15 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 15 0.7548469993979664 		 15 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 15 0.7548469993979664 		 15 -> 15
+INFO:root:SIGTRACE (hidden): unready connection 11->7 at node 7
+INFO:root:SIGTRACE (hidden) Received: 12 -0.6761137011143926 2 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.089413627161246 16 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -0.9932753901176706 11 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.4973113831241573 4 -> 12
+INFO:root:SIGTRACE (hidden) Received: 12 -1.596197395782005 3 -> 12
+INFO:root:SIGTRACE (hidden) Sending: 12 0.16851375245165323 		 12 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 12 0.16851375245165323 		 12 -> 11
+INFO:root:SIGTRACE (hidden) Sending: 12 0.16851375245165323 		 12 -> 17
+INFO:root:SIGTRACE (hidden) Sending: 12 0.16851375245165323 		 12 -> 13
+INFO:root:Finished with neurons: [11, 16, 8, 10, 15, 7, 12]
+INFO:root:Preparing 1 neurons: [8]
+INFO:root:at step: 5 in forward propagation.
+INFO:root:SIGTRACE (hidden) Received: 8 -0.5571131022684557 9 -> 8
+INFO:root:SIGTRACE (hidden) Received: 8 -0.6972841545256346 12 -> 8
+INFO:root:SIGTRACE (hidden) Received: 8 -0.3119055092246924 13 -> 8
+INFO:root:SIGTRACE (hidden) Sending: 8 0.422649693953506 		 8 -> 5
+INFO:root:SIGTRACE (hidden) Sending: 8 0.422649693953506 		 8 -> 3
+INFO:root:SIGTRACE (hidden) Sending: 8 0.422649693953506 		 8 -> 4
+INFO:root:Disabled SIGTRACE (final): None * 0.719678753325758
+INFO:root:Disabled SIGTRACE (final): None * -0.36527897143123567
+INFO:root:Disabled SIGTRACE (final): None * -0.7532987979214818
+INFO:root:SIGTRACE (final): 0.9820137900379085 * -0.5625844174753036
+INFO:root:SIGTRACE (final): 0.593343363940375 * 0.719678753325758
+INFO:root:SIGTRACE (final): 0.422649693953506 * -0.36527897143123567
+INFO:root:SIGTRACE (final): 0.8289998120823391 * -0.7532987979214818
+INFO:root:SIGTRACE (final): 0.5147177777153115 * -0.16942213673497397
+INFO:root:SIGTRACE (final): 0.6697618223696464 * 0.20768983077562253
+INFO:root:SIGTRACE (final): 0.7548469993979664 * -0.9321172882529358
+INFO:root:SIGTRACE (final): 0.7264885775773711 * -0.4510984981670232
+INFO:root:SIGTRACE (final): 0.45561383711403153 * -0.17722336859913956
+INFO:root:SIGTRACE (final): 0.7310585786300049 * -0.8547631231324491
+INFO:root:SIGTRACE (final): 0.8807970779778823 * -0.8125916466686274
+INFO:root:SIGTRACE (final): 0.9525741268224334 * 0.5756654776543051
+INFO:root:Disabled SIGTRACE (final): None * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.8952825806824848 * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.7548469993979664 * 0.8615660108806014
+INFO:root:SIGTRACE (final): 0.593343363940375 * 0.6248264418593916
+INFO:root:SIGTRACE (final): 0.6378768348732101 * -0.6966780663322296
+INFO:root:Loop SIGTRACE (final): None -0.22371966918311936
+INFO:root:
+
+ [0.12298197119575507, 0.6354781378990749]
+INFO:root:End of Test
