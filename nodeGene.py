@@ -46,50 +46,45 @@ class nodeGene:
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
 
-    # TODO: implement this in cython
     def activate(self):
         '''
-        activate the given node, returns all nodes outputted from 
-        this process that havent been activated 
-        (propogate signals by node so encapsulation can make changing graph easily e.g.: recurrent nodes, dif eq nodes etc.)
+        activate the given node, returns all nodes in output connections
         recurrent connections are just circularity where level of recursion is the size of sequential loops
         '''
         outputSignal = 0
         nextNodes = []
-
         for availableConnection in self.inConnections:
-            if availableConnection.signal is None and availableConnection.loop is False:
-                print('SIGTRACE (hidden): unready connection {} at node {}'.format(
-                    availableConnection, self))
+            if availableConnection.signal is None and availableConnection.loop is False and availableConnection.disabled is False:
+                print('SIGTRACE (hidden): unready connection {}->{} at node {}'.format(
+                    availableConnection.input.nodeId, availableConnection.output.nodeId, self.nodeId))
                 return self
-        # TODO: ENSURE THIS DOESNT PREMATURELY ACTIVATE
 
         # ignore first pass with recurrency unavailable
         readyConnections = \
             [connection for connection in self.inConnections if connection.signal is not None]
 
-        # TODO: merge this condition with readyConnection filter should be gaurunteed from genome forwardPropagation
         for connection in readyConnections:
             if connection.disabled is True:
                 pass
             else:
                 outputSignal += connection.signal * connection.weight
                 connection.signal = None
-                # TODO: ..unless recurrent? this should reset current recurrent signals (T-1)
-                #              for incoming recurrent signal.
-                # handles general circularity but not recurrence from node A to node A.
+                print('SIGTRACE (hidden) Received: ', self.nodeId, outputSignal, connection.input.nodeId,
+                      ' -> ', connection.output.nodeId)
         outputSignal = softmax(outputSignal)
-        print('SIGTRACE (hidden): ', outputSignal)
 
         # output nodes have no outConnections
         if(len(self.outConnections) > 0):
             for connection in self.outConnections:
-                if self.activated is False and connection.disabled is False:
+                print('SIGTRACE (hidden) Sending: ', self.nodeId, outputSignal, '\t\t', connection.input.nodeId,
+                      ' -> ', connection.output.nodeId)
+                if connection.disabled is False:
                     connection.signal = outputSignal
-                    nextNodes.append(connection.output)
+                    if connection.loop is False:
+                        nextNodes.append(connection.output)
                 else:
-                    # TODO: can test with this using a list collecting nodes here to verify no hanging nodes
-                    pass
+                    # TODO: trace and remove
+                    assert 'SIGTRACE (hidden): BAD STATE!!'
 
             # used for recurrency activation gatekeeping
             self.activated = True

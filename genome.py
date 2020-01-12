@@ -100,10 +100,13 @@ class genome:
                     # TODO: this clips mutation rates probability distribution for cases:
                     #              connectionMutationRate>>nodeMutationRate and very small, sparse networks
                     #               instead check if numConnections = allNodes**2
+                    #               NEAT must be robust for further development wrt prob distribution in both
+                    #               latent and environment sampling
                 print('mutation Failed: already in this genome')
                 print(newConnection.input.nodeId,
                       newConnection.output.nodeId)
-                del newConnection
+                # TODO: Broken with case: input.nodeId = output.nodeId
+                newConnection.remove()
                 return
 
         newConnection = globalConnections.verifyConnection(newConnection)
@@ -112,86 +115,61 @@ class genome:
               newConnection.output.nodeId)
 
         # Check simple recurrence
-        # TODO: EXTRACT THIS INTO ANOTHER METHOD
         if newConnection.input == newConnection.output:
             newConnection.loop = True
             return
-        elif newConnection.input in self.inputNodes and newConnection.output in self.inputNodes:
+        elif newConnection.output in self.inputNodes:
             newConnection.loop = True
             return
-        elif newConnection.output in self.outputNodes and newConnection.input in self.outputNodes:
+        elif newConnection.input in self.outputNodes:
             newConnection.loop = True
             return
-        # is this a case? Should still be caught since connection would remain unactivated
-        # elif newConnection.input in self.outputNodes and newConnection.output in self.inputNodes:
-        #     newConnection.loop = True
-        #     return
         else:
             # TODO: this can be partly encapsulated in nodeGene just like forward propagation wrt .activate()
             # Forward propagate this connection. if outputs are arrived at it is not recursive.
             # if this connection's input node is found along the search it is. ignore all known loops
-            # TODO: BROKEN HERE somehow missing a loop detection and looping a loop external to newConnection on search
-            #               This does not handle an output to an output. must propagate the entire network
-            #                doesnt cycle but gets stuck in unready state
             connectionBuffer = []
             seenOnce = False  # TODO: This is a hack but is only working version
-            # TODO: use activate as a way to note if a node has been seen
-            # NOTE: ENSURE ALL NODES ARE PROPERLY DEACTIVATED HERE AND FORWARD PROP
             connectionList = [
                 x for x in newConnection.output.outConnections if x.loop == False]
             while len(connectionList) > 0:
-                print('IN LOOP CHECK: step.')
                 for nextConnection in connectionList:
                     # let this connection search path die off since its already a known loop
                     if nextConnection.loop == False:
-                        print('IN LOOP CHECK: appending..',
-                              len(connectionBuffer))
-
-                        nextConnection.input.activated = True
-                        # TODO: shouldnt have to track activation if loops are consistently detected.
                         connectionBuffer += [
                             x for x in nextConnection.output.outConnections if x not in connectionBuffer and x.loop == False]
                     else:
-                        print('SKIPPING A LOOP CONNECTION')
                         pass
-                # lookahead at all nodes to see if they have been activated
                 for checkConnection in connectionBuffer:
-                    if checkConnection.output.activated == True:
+                    if checkConnection == newConnection:
                         print('IN LOOP CHECK: LOOP DISCOVERED FOR: ',
                               newConnection.input.nodeId, newConnection.output.nodeId)
                         newConnection.loop = True
-                        # Reset all connections because its easier
-                        for processedNode in self.hiddenNodes + self.outputNodes + self.inputNodes:
-                            processedNode.activated = False
-                        return
 
                 connectionList.clear()
                 connectionList.extend(connectionBuffer)
                 print(len(connectionList))
                 connectionBuffer.clear()
-
-            for processedNode in self.hiddenNodes + self.outputNodes + self.inputNodes:
-                processedNode.activated = False
-
         print('done')
+        return
 
     def addNode(self, replaceConnection, globalConnections):
         '''
         adds a node into the network by splitting a connection into two connections adjoined by the new node
         '''
-        # We are splitting replaceConnection
         replaceConnection.disabled = True
-        # check innovation of the two new connections and ensure loop considerations are maintained
+        # check global innovation of the two new connections
         newNode = globalConnections.verifyNode(
-            replaceConnection.input, replaceConnection.output, replaceConnection.loop)
+            replaceConnection, replaceConnection.loop)
         print('newNode', newNode)
         # add this genome
         self.hiddenNodes.append(newNode)
 
-    # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
-    #              simple loop call, this will segue to parallelization better. CURRENTLY BROKEN HERE
-
     def forwardProp(self, signals):
+        # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
+        #              simple loop call, this will segue to parallelization better.
+        #              THIS NEEDS COMPLETE REWRITE.
+        #               many regularities are becoming apparent across the 3 states (in, hid, out) as bugs are removed
         '''
         propagate a list of signals through the network.
 
@@ -208,7 +186,6 @@ class genome:
         nextNeurons = []
         outputs = []
         ###########INITIALIZE INPUT SIGNALS###########
-        # TODO: need to handle loop and self connections in input and output state
         for sig, inputNode in zip(signals, self.inputNodes):
             for initialConnection in inputNode.outConnections:
                 if initialConnection.disabled is True:
@@ -216,47 +193,56 @@ class genome:
                 else:
                     initialConnection.signal = softmax(
                         sig)  # called statically for input
-                    print('SIGTRACE (init): ', initialConnection.signal,
-                          ' * ', initialConnection.weight)
+                    print('SIGTRACE (init): ',
+                          initialConnection.signal*initialConnection.weight,
+                          '\t\t', initialConnection.input.nodeId,
+                          ' -> ', initialConnection.output.nodeId)
                     # ensure its not an input to output connection
                     # (which wont need further forward propagation)
-                    if len(initialConnection.output.outConnections) > 0:
-                        unfiredNeurons.append(initialConnection.output)
+                    if len(initialConnection.output.outConnections) > 0 and initialConnection.loop is False:
+                        # why does this occur? reduce as soon as functional
+                        if initialConnection.output not in unfiredNeurons:
+                            if initialConnection.output not in self.inputNodes and initialConnection.output not in self.outputNodes:
+                                unfiredNeurons.append(initialConnection.output)
 
         ###########PROCESS HIDDEN LAYER###########
         # begin forward proping
-        # TODO: this only loops forever when a loop is missed in connectionGene creation
+        step = 0
         while True:
+            step += 1
+            print('at step: ', step, ' in forward propagation.')
             for processingNode in unfiredNeurons:
-
-                # print('DEBUG: type of processingNode is: ', processingNode)
                 activating = processingNode.activate()
                 # TODO: this should never happen as same state is asserted in nodeGene.activate()
                 if activating is None:
                     assert "ERROR: IMPOSIBLE STATE IN FORWARD PROPAGATION"
                     pass
-                # TODO: cycling here
-                if activating is not None:
-                    if type(activating) is not list:
-                        activating = [activating]
-                    nextNeurons.extend(activating)
+                if type(activating) is not list:
+                    if activating not in nextNeurons \
+                            and activating not in self.outputNodes \
+                            and activating not in self.inputNodes \
+                            and activating.activated is False:
+                        nextNeurons.append(activating)
+                else:
+                    nextNeurons.extend(
+                        [x for x in activating if x not in nextNeurons
+                            and x not in self.outputNodes
+                            and x not in self.inputNodes
+                            and x.activated is False])
 
             if len(nextNeurons) > 0:
-                # print('DEBUG: next propagation nodes: ', nextNeurons)
-                print(nextNeurons, unfiredNeurons)
+                print('Finished with neurons: ', [
+                      x.nodeId for x in unfiredNeurons])
+                print('Preparing {} neurons: '.format(
+                    len(nextNeurons)), [x.nodeId for x in nextNeurons])
                 unfiredNeurons.clear()
                 unfiredNeurons.extend(nextNeurons)
-                print('now: ', unfiredNeurons)
-                print('DEBUG: Processing {} unfiredNeurons'.format(
-                    len(unfiredNeurons)), unfiredNeurons)
                 nextNeurons.clear()
             else:
                 break
 
         ###########ACQUIRE OUTPUT SIGNALS###########
-        # TODO: recurrent connections across output nodes causes errors here. need to rely further on encapsulated
-        # nodeGene.activate() method
-        # have to manually activate output just as with input since special FSM case
+        # TODO: trace this
         for finalNode in self.outputNodes:
             finalSignal = 0
             for finalConnection in finalNode.inConnections:
@@ -274,16 +260,9 @@ class genome:
                         print('Loop SIGTRACE (final): ',
                               finalConnection.signal, finalConnection.weight)
                 else:
-                    # print('SIGTRACE(final): ', finalConnection.signal,
-                    #       finalConnection.weight)
                     finalSignal += finalConnection.signal * finalConnection.weight
-                    # if finalConnection.disabled:
-                    # else:
                     print('SIGTRACE (final): ', finalConnection.signal,
                           ' * ', finalConnection.weight)
-
-                # print('SIGTRACE (final): ', softmax(finalSignal),
-                #   ' * ', finalConnection.weight)
             outputs.append(softmax(finalSignal))
         # Reset nodes
         for processedNode in self.hiddenNodes + self.inputNodes + self.outputNodes:
