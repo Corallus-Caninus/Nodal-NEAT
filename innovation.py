@@ -1,6 +1,7 @@
 from connectionGene import connectionGene
 from nodeGene import nodeGene
 import random as rand
+import logging
 # TODO: this is so inherent to creating connections it should be in the connectionGene constructor!
 #               ConnectionGene construction is becoming spaghetti in higher order objects. Fix this.
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?
@@ -43,21 +44,29 @@ class globalConnections:
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
-    def verifyNode(self, replaceConnection, isLoop):
+    def verifyNode(self, nodeId, replaceConnection, isLoop):
+        # TODO: broken here with global diversity, verifyConnection might also do this
         '''
         check to see if a newly split connection has already occured
         '''
         inputNode = replaceConnection.input
         outputNode = replaceConnection.output
+        # TODO: reuse verifyConnection code
         for firstConnection in self.connections:
+            # if firstConnection.input.nodeId == inputNode.nodeId:
             if firstConnection.input.nodeId == inputNode.nodeId:
                 # iterate over all other connections searching for a matching connection between an isolated node
                 for secondConnection in [x for x in self.connections if x is not firstConnection]:
+                    # if secondConnection.output.nodeId == outputNode.nodeId:
                     if secondConnection.output.nodeId == outputNode.nodeId:
-                        if secondConnection.input.nodeId == firstConnection.output.nodeId:
+                        #     if secondConnection.input.nodeId == firstConnection.output.nodeId:
+                        if secondConnection.input.nodeId == nodeId and firstConnection.output.nodeId == nodeId:
                             # a match is found
                             # create a copy of the node for the new Genome locally
-                            newNode = nodeGene(firstConnection.output.nodeId)
+                            # TODO: Broken here. nodeId needs to be iterated locally and this needs to be traced.
+                            newNode = nodeGene(
+                                nodeId)
+                            # firstConnection.output.nodeId)
                             inConnection = connectionGene(
                                 rand.uniform(-1, 1), inputNode, newNode)
                             inConnection.innovation = firstConnection.innovation
@@ -70,11 +79,15 @@ class globalConnections:
                             if isLoop is True:
                                 outConnection.loop = True
 
+                            logging.info('Global Innovation: Node global match exists: {} -> {} -> {}'.format(
+                                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+
                             return newNode
 
         # a novel node has been acquired, update innovations
-        self.nodeId += 1
-        newNode = nodeGene(self.nodeId)
+        # self.nodeId += 1
+        # newNode = nodeGene(self.nodeId)
+        newNode = nodeGene(nodeId)
         self.innovation += 1
         inConnection = connectionGene(
             rand.uniform(-1, 1), inputNode, newNode)
@@ -84,6 +97,8 @@ class globalConnections:
         outConnection = connectionGene(
             replaceConnection.weight, newNode, outputNode)
         outConnection.innovation = self.innovation
+        logging.info('Global Innovation: Node innovation discovered: {} -> {} -> {}'.format(
+            inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
 
         if isLoop is True:
             outConnection.loop = True

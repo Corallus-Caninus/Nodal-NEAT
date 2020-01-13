@@ -102,6 +102,7 @@ def graphNEAT(network):
 if __name__ == '__main__':
     # NOTE: Currently this is the top level API for NEAT.
     # Evaluator with fitness function will be the final API for NEAT and RoM
+    # when moving to evaluator, need to move logger configuration
     '''
     A test ground for the NEAT algorithm.
 
@@ -126,12 +127,13 @@ if __name__ == '__main__':
 
     logging.info('begin trainning..')
     ########### THIS IS TEST CODE ###########
-    evaluation = e(inputs=4, outputs=2, population=1,
+    evaluation = e(inputs=4, outputs=2, population=2,
                    connectionMutationRate=0.5, nodeMutationRate=0.2)
     logging.info('{} {}'.format(len(evaluation.globalInnovations.connections),
                                 evaluation.globalInnovations.nodeId))
     target = evaluation.genepool[0]
 
+    logging.info('BEGIN FIRST GENOME')
     for _ in range(0, 11):
         target.addNodeMutation(.0001, evaluation.globalInnovations)
 
@@ -139,6 +141,17 @@ if __name__ == '__main__':
         logging.info('with total globalInnovations: {}'.format(len(
             evaluation.globalInnovations.connections)))
         target.addConnectionMutation(0.0001, evaluation.globalInnovations)
+
+    secondTarget = evaluation.genepool[1]
+    logging.info('BEGIN SECOND GENOME')
+    for _ in range(0, 11):
+        secondTarget.addNodeMutation(.0001, evaluation.globalInnovations)
+
+    for _ in range(0, 100):
+        logging.info('with total globalInnovations: {}'.format(len(
+            evaluation.globalInnovations.connections)))
+        secondTarget.addConnectionMutation(
+            0.0001, evaluation.globalInnovations)
 
     # print('CONNECTION PRINTOUT')
     # connections = []

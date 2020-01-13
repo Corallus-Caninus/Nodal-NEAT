@@ -4,6 +4,8 @@ import random as rand
 from activationFunctions import softmax
 import logging
 
+# TODO: allow for reactivating connections in crossover (possibly in mutation as well)
+
 
 class genome:
     # NOTE: graphs are defined by their Node objects not Connections. Node defined networks
@@ -36,22 +38,22 @@ class genome:
         self.outputNodes = []
         self.hiddenNodes = []
         self.fitness = 0
-        nodeId = 0
+        self.nodeId = 0
 
         for newNode in range(0, inputSize):
-            nodeId += 1
-            self.inputNodes.append(node(nodeId))
+            self.nodeId += 1
+            self.inputNodes.append(node(self.nodeId))
 
         for outNode in range(0, outputSize):
-            nodeId += 1
-            self.outputNodes.append(node(nodeId))
+            self.nodeId += 1
+            self.outputNodes.append(node(self.nodeId))
 
         for inNode in self.inputNodes:
             for outNode in self.outputNodes:
                 globalConnections.verifyConnection(connection(
                     rand.uniform(-1, 1), inNode, outNode))
         # prevents calculating after the fact and 'somewhat' less messy
-        globalConnections.nodeId = nodeId
+        globalConnections.nodeId = self.nodeId
 
     def addNodeMutation(self, nodeMutationRate, globalConnections):
         '''
@@ -63,14 +65,31 @@ class genome:
             if randNode in self.hiddenNodes:
                 if rand.uniform(0, 1) > 0.5:
                     randConnection = rand.choice(randNode.outConnections)
+                    # [x for x in randNode.outConnections if x.disabled is False])
                 else:
                     randConnection = rand.choice(randNode.inConnections)
+                    # [x for x in randNode.inConnections if x.disabled is False])
             elif randNode in self.outputNodes:
                 randConnection = rand.choice(randNode.inConnections)
+                # [x for x in randNode.inConnections if x.disabled is False])
             elif randNode in self.inputNodes:
                 randConnection = rand.choice(randNode.outConnections)
+                # [x for x in randNode.outConnections if x.disabled is False])
 
             self.addNode(randConnection, globalConnections)
+
+    def addNode(self, replaceConnection, globalConnections):
+        '''
+        adds a node into the network by splitting a connection into two connections adjoined by the new node
+        '''
+        replaceConnection.disabled = True
+        self.nodeId = self.nodeId + 1
+        # check global innovation of the two new connections
+        newNode = globalConnections.verifyNode(
+            self.nodeId, replaceConnection, replaceConnection.loop)
+        logging.info('newNode {}'.format(newNode.nodeId))
+        # add this genome
+        self.hiddenNodes.append(newNode)
 
     def addConnectionMutation(self, connectionMutationRate, globalConnections):
         '''
@@ -149,20 +168,8 @@ class genome:
                 connectionList.extend(connectionBuffer)
                 logging.info(len(connectionList))
                 connectionBuffer.clear()
-        logging.info('done')
+        # logging.info('done')
         return
-
-    def addNode(self, replaceConnection, globalConnections):
-        '''
-        adds a node into the network by splitting a connection into two connections adjoined by the new node
-        '''
-        replaceConnection.disabled = True
-        # check global innovation of the two new connections
-        newNode = globalConnections.verifyNode(
-            replaceConnection, replaceConnection.loop)
-        logging.info('newNode {}'.format(newNode))
-        # add this genome
-        self.hiddenNodes.append(newNode)
 
     def forwardProp(self, signals):
         # TODO: encapsulate the 3 states (input hidden output) to nodegene.activate to make code here a
