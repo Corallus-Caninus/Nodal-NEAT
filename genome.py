@@ -5,6 +5,10 @@ from activationFunctions import softmax
 import logging
 
 # TODO: allow for reactivating connections in crossover (possibly in mutation as well)
+# TODO: crossover should consider node topology for crossover THEN randomly add connections
+#              based on excess or disjoints. this is more stable mathematically and biologically. K.stanley crossover
+#              is either broken or sloppy. find a Genetics agreeable representation for this operation. distance is still
+#               relevant so RoM will be possible.
 
 
 class genome:
@@ -15,7 +19,7 @@ class genome:
     # entirely numpy operations. This network is not lightweight nor ideal for real time forward propagation
     #  but prefered  for ease of crossover, mutability etc. (relatively low frequency operations) and high level
     #  exploration of network topologies. The graph executor would preferably be written in the numpy C API
-    #  but this development should be empirically justified.
+    #  and embedded or saved in a npy format but this development should be empirically justified.
     #
     # Use numpy recarray for compiling and slice
     #  matrix into forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
@@ -34,26 +38,27 @@ class genome:
     '''
 
     def __init__(self, inputSize, outputSize, globalConnections):
+        # TODO: this isnt the most flexible solution wrt globalConnections. remove globalConnections from here
         self.inputNodes = []
         self.outputNodes = []
         self.hiddenNodes = []
         self.fitness = 0
-        self.nodeId = 0
+        initNodeId = 0
 
         for newNode in range(0, inputSize):
-            self.nodeId += 1
-            self.inputNodes.append(node(self.nodeId))
+            initNodeId += 1
+            self.inputNodes.append(node(initNodeId))
 
         for outNode in range(0, outputSize):
-            self.nodeId += 1
-            self.outputNodes.append(node(self.nodeId))
+            initNodeId += 1
+            self.outputNodes.append(node(initNodeId))
 
         for inNode in self.inputNodes:
             for outNode in self.outputNodes:
                 globalConnections.verifyConnection(connection(
                     rand.uniform(-1, 1), inNode, outNode))
         # prevents calculating after the fact and 'somewhat' less messy
-        globalConnections.nodeId = self.nodeId
+        globalConnections.nodeId = initNodeId
 
     def addNodeMutation(self, nodeMutationRate, globalConnections):
         '''

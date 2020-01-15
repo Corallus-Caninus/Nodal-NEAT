@@ -56,10 +56,11 @@ class globalConnections:
         PARAMETERS:
             localParallelNodes: all nodes that appear locally from splitting replaceConnection.
             replaceConnection: the connection being split to create a new node.
-            isLoop: if the replaceConnections is a loop, the outputConnection from newly formed node must also indicated a loop
+            isLoop: if the replaceConnection is a loop, the outputConnection from newly formed node must also indicated a loop
         RETURNS:
             a newNode with proper global innovation backing.
         '''
+        # TODO: TRACE THIS. probability of connection split collision without RoM and pressurized crossover is exponential decay
         inputNode = replaceConnection.input
         outputNode = replaceConnection.output
         globalMatches = []
@@ -78,7 +79,7 @@ class globalConnections:
 
         if localSplits - len(globalMatches) >= 0:
             # NOVEL
-            # TODO: would rather move the node creation stuff to genome.addNode method
+            # TODO: would rather move the node creation stuff to genome.addNode method. lots of jumping around
             self.nodeId += 1
             newNode = nodeGene(self.nodeId)
             # dont create split from global pool as will connect across genepool
@@ -108,20 +109,18 @@ class globalConnections:
             # NOT NOVEL
             # TODO: would rather move the node creation stuff to genome.addNode method
 
-            # TODO: Should this always be the last one? need to align splitDepth or gene markings will get crossed
-            # match = globalMatches.pop()
-            # TODO: Trace this this should be more correct given the above TODO
-            thisSplit = globalMatches[localSplits-1]
+            # thisSplit = globalMatches[localSplits-1]
+            # TODO: could this also be [0]? if novel nodes are only introduced sequentially (no parallel crossover or mutations)
+            #              shouldnt make a difference but should be noted
+            thisSplit = [
+                x for x in globalMatches if self.splitConnections[x][0].output not in localParallelNodes].pop()
+
             match = self.splitConnections[thisSplit]
 
-            # need to trace if this is the proper splitDepth splitConnections gets appended so should work
-            # TODO: return to dictionary for getting nodeId from splitConnection?
             newNode = nodeGene(match[0].output.nodeId)
 
             inConnection = connectionGene(
                 rand.uniform(-1, 1), inputNode, newNode)
-            # How does innovation assignment get chosen with non-novel nodeSplit?
-            # This means that the node is not
             inConnection.innovation = match[0].innovation
 
             outConnection = connectionGene(

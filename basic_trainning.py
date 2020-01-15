@@ -14,7 +14,6 @@ import re
 
 
 def graphNEAT(network):
-
     # translate graph to networkx
     # TODO: this feature will make debuging much faster (with painting) and code more understandable (with animations)
     myg = nx.DiGraph()
@@ -131,27 +130,35 @@ if __name__ == '__main__':
                    connectionMutationRate=0.5, nodeMutationRate=0.2)
     logging.info('{} {}'.format(len(evaluation.globalInnovations.connections),
                                 evaluation.globalInnovations.nodeId))
-    target = evaluation.genepool[0]
+    # target = evaluation.genepool[0]
+    i = 0
+    for target in evaluation.genepool:
+        logging.info('BEGIN {} GENOME'.format(i))
+        i += 1
+        for _ in range(0, 400):
+            logging.info('with total globalInnovations: {}'.format(len(
+                evaluation.globalInnovations.connections)))
+            target.addNodeMutation(.0001, evaluation.globalInnovations)
 
-    logging.info('BEGIN FIRST GENOME')
-    for _ in range(0, 11):
-        target.addNodeMutation(.0001, evaluation.globalInnovations)
+    # for _ in range(0, 1000):
+    #     i = 0
+    #     for target in evaluation.genepool:
+    #         i += 1
+    #         logging.info('BEGIN {} GENOME'.format(i))
+    #         target.addConnectionMutation(0.0001, evaluation.globalInnovations)
+    #         logging.info('with total globalInnovations: {}'.format(len(
+    #             evaluation.globalInnovations.connections)))
 
-    for _ in range(0, 100):
-        logging.info('with total globalInnovations: {}'.format(len(
-            evaluation.globalInnovations.connections)))
-        target.addConnectionMutation(0.0001, evaluation.globalInnovations)
+    # secondTarget = evaluation.genepool[1]
+    # logging.info('BEGIN SECOND GENOME')
+    # for _ in range(0, 11):
+    #     secondTarget.addNodeMutation(.0001, evaluation.globalInnovations)
 
-    secondTarget = evaluation.genepool[1]
-    logging.info('BEGIN SECOND GENOME')
-    for _ in range(0, 11):
-        secondTarget.addNodeMutation(.0001, evaluation.globalInnovations)
-
-    for _ in range(0, 100):
-        logging.info('with total globalInnovations: {}'.format(len(
-            evaluation.globalInnovations.connections)))
-        secondTarget.addConnectionMutation(
-            0.0001, evaluation.globalInnovations)
+    # for _ in range(0, 100):
+    #     logging.info('with total globalInnovations: {}'.format(len(
+    #         evaluation.globalInnovations.connections)))
+    #     secondTarget.addConnectionMutation(
+    #         0.0001, evaluation.globalInnovations)
 
     # print('CONNECTION PRINTOUT')
     # connections = []
