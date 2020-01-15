@@ -2,7 +2,7 @@ from connectionGene import connectionGene
 from nodeGene import nodeGene
 import random as rand
 import logging
-# TODO: this is so inherent to creating connections it should be in the connectionGene constructor!
+# TODO: this is so inherent to creating connections it should be in the connectionGene constructor! maybe not..
 #               ConnectionGene construction is becoming spaghetti in higher order objects. Fix this.
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?
 
@@ -21,12 +21,17 @@ class globalConnections:
 
         # connection objects refered to in various genomes in the genepool
         self.connections = []
+
+        # TODO: easier to keep track of split connections and count how many times a connection has been split for local match
+        # self.nodes = []
+        # used to keep track of node innovations splitConnection: (inConnection, outConnection)
+        self.splitConnections = {}
         # innovation metric for novelty
         self.innovation = 0
         # node metric for innovation and cross-genome similarity
         self.nodeId = 0  # This should be held here since global variable
 
-    #called in addConnection
+    # called in addConnection
     def verifyConnection(self, verifyConnection):
         '''
         checks a connection to see if it already exists
@@ -35,6 +40,7 @@ class globalConnections:
         # TODO: find a way to lambda function transform list and search for max more efficiently than iteration
 
         for connection in self.connections:
+            # TODO: should be using connection.exists method
             if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
                 verifyConnection.innovation = connection.innovation
                 return verifyConnection
@@ -44,63 +50,91 @@ class globalConnections:
         verifyConnection.innovation = self.innovation
         return verifyConnection
 
-    def verifyNode(self, nodeId, replaceConnection, isLoop):
-        # TODO: broken here with global diversity, verifyConnection might also do this
+    def verifyNode(self, localParallelNodes, replaceConnection, isLoop):
         '''
         check to see if a newly split connection has already occured
+        PARAMETERS:
+            localParallelNodes: all nodes that appear locally from splitting replaceConnection.
+            replaceConnection: the connection being split to create a new node.
+            isLoop: if the replaceConnections is a loop, the outputConnection from newly formed node must also indicated a loop
+        RETURNS:
+            a newNode with proper global innovation backing.
         '''
         inputNode = replaceConnection.input
         outputNode = replaceConnection.output
-        # TODO: reuse verifyConnection code
-        for firstConnection in self.connections:
-            # if firstConnection.input.nodeId == inputNode.nodeId:
-            if firstConnection.input.nodeId == inputNode.nodeId:
-                # iterate over all other connections searching for a matching connection between an isolated node
-                for secondConnection in [x for x in self.connections if x is not firstConnection]:
-                    # if secondConnection.output.nodeId == outputNode.nodeId:
-                    if secondConnection.output.nodeId == outputNode.nodeId:
-                        #     if secondConnection.input.nodeId == firstConnection.output.nodeId:
-                        if secondConnection.input.nodeId == nodeId and firstConnection.output.nodeId == nodeId:
-                            # a match is found
-                            # create a copy of the node for the new Genome locally
-                            # TODO: Broken here. nodeId needs to be iterated locally and this needs to be traced.
-                            newNode = nodeGene(
-                                nodeId)
-                            # firstConnection.output.nodeId)
-                            inConnection = connectionGene(
-                                rand.uniform(-1, 1), inputNode, newNode)
-                            inConnection.innovation = firstConnection.innovation
+        globalMatches = []
+        localSplits = len(localParallelNodes)
+        # check first inConnection and outConnection in node since other connections are always appended.
+        # NOTE: this only works if connections are never deleted from node once added.
+        #             Crossover can break this if done via k.stanley method.
+        #             Crossover needs to consider exactly whole nodes and accessory connections as genes
 
-                            outConnection = connectionGene(
-                                replaceConnection.weight, newNode, outputNode)
-                            # TODO: outConnection should keep original connection weight
-                            outConnection.innovation = secondConnection.innovation
+        for split in self.splitConnections:
+            if split.input.nodeId == inputNode.nodeId and split.output.nodeId == outputNode.nodeId:
+                    # TODO: collect all matches (maybe a filter operation?) and subtract against local node. if difference ==1 create new node
+                globalMatches.append(split)
+        logging.info('localSplits {}   global matches {}'.format(
+            localSplits, globalMatches))
 
-                            if isLoop is True:
-                                outConnection.loop = True
+        if localSplits - len(globalMatches) >= 0:
+            # NOVEL
+            # TODO: would rather move the node creation stuff to genome.addNode method
+            self.nodeId += 1
+            newNode = nodeGene(self.nodeId)
+            # dont create split from global pool as will connect across genepool
 
-                            logging.info('Global Innovation: Node global match exists: {} -> {} -> {}'.format(
-                                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+            self.innovation += 1
+            inConnection = connectionGene(
+                rand.uniform(-1, 1), inputNode, newNode)
+            inConnection.innovation = self.innovation
 
-                            return newNode
+            self.innovation += 1
+            outConnection = connectionGene(
+                replaceConnection.weight, newNode, outputNode)
+            outConnection.innovation = self.innovation
 
-        # a novel node has been acquired, update innovations
-        # self.nodeId += 1
-        # newNode = nodeGene(self.nodeId)
-        newNode = nodeGene(nodeId)
-        self.innovation += 1
-        inConnection = connectionGene(
-            rand.uniform(-1, 1), inputNode, newNode)
-        inConnection.innovation = self.innovation
+            if isLoop is True:
+                outConnection.loop = True
 
-        self.innovation += 1
-        outConnection = connectionGene(
-            replaceConnection.weight, newNode, outputNode)
-        outConnection.innovation = self.innovation
-        logging.info('Global Innovation: Node innovation discovered: {} -> {} -> {}'.format(
-            inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+            logging.info('Global Innovation: Global node found: {} -> {} -> {}'.format(
+                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
 
-        if isLoop is True:
-            outConnection.loop = True
+            self.splitConnections.update(
+                {replaceConnection: (inConnection, outConnection)})
 
-        return newNode
+            return newNode
+
+        elif localSplits - len(globalMatches) < 0:
+            # NOT NOVEL
+            # TODO: would rather move the node creation stuff to genome.addNode method
+
+            # TODO: Should this always be the last one? need to align splitDepth or gene markings will get crossed
+            # match = globalMatches.pop()
+            # TODO: Trace this this should be more correct given the above TODO
+            thisSplit = globalMatches[localSplits-1]
+            match = self.splitConnections[thisSplit]
+
+            # need to trace if this is the proper splitDepth splitConnections gets appended so should work
+            # TODO: return to dictionary for getting nodeId from splitConnection?
+            newNode = nodeGene(match[0].output.nodeId)
+
+            inConnection = connectionGene(
+                rand.uniform(-1, 1), inputNode, newNode)
+            # How does innovation assignment get chosen with non-novel nodeSplit?
+            # This means that the node is not
+            inConnection.innovation = match[0].innovation
+
+            outConnection = connectionGene(
+                replaceConnection.weight, newNode, outputNode)
+            outConnection.innovation = match[1].innovation
+
+            if isLoop is True:
+                outConnection.loop = True
+
+            logging.info('Global Innovation: Global node match exists: {} -> {} -> {}'.format(
+                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+
+            return newNode
+        else:
+            # TODO: impossible state
+            assert "Unidentified node creation missed in verifyNode!"

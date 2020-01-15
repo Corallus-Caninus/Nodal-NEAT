@@ -30,7 +30,7 @@ class connectionGene:
             outNode.addConnection(self)
 
     def remove(self):
-        if self.input == self.output:
+        if self.input.nodeId == self.output.nodeId:
             self.input.removeConnection(self)
         else:
             self.input.removeConnection(self)
@@ -43,4 +43,25 @@ class connectionGene:
         for potentialConnection in [x for x in localConnections if x is not self]:
             if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
                 return True
+        return False
+
+    def splits(self, localNodes):
+        '''
+        static method for getting all nodes created from splitting this connection and creating parallel nodes
+        '''
+        matches = []
+        for node in localNodes:
+            primalInput = node.inConnections[0].input.nodeId
+            primalOutput = node.outConnections[0].output.nodeId
+            if self.input.nodeId == primalInput and self.output.nodeId == primalOutput:
+                matches.append(node)
+        return matches
+
+    def matches(self, potentialConnection):
+        # TODO: use this more often
+        '''
+        comparator for checking if a connection matches another connection. This is the singular case of exists.
+        '''
+        if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
+            return True
         return False

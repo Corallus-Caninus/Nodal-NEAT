@@ -83,10 +83,13 @@ class genome:
         adds a node into the network by splitting a connection into two connections adjoined by the new node
         '''
         replaceConnection.disabled = True
-        self.nodeId = self.nodeId + 1
+        # check splitDepth, the equivalent to checking localConnections
+        # but parallel nodes are allowed as apposed to parallel connections
+        splitDepth = replaceConnection.splits(self.hiddenNodes)
         # check global innovation of the two new connections
         newNode = globalConnections.verifyNode(
-            self.nodeId, replaceConnection, replaceConnection.loop)
+            splitDepth, replaceConnection, replaceConnection.loop)
+
         logging.info('newNode {}'.format(newNode.nodeId))
         # add this genome
         self.hiddenNodes.append(newNode)
