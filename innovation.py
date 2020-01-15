@@ -22,8 +22,6 @@ class globalConnections:
         # connection objects refered to in various genomes in the genepool
         self.connections = []
 
-        # TODO: easier to keep track of split connections and count how many times a connection has been split for local match
-        # self.nodes = []
         # used to keep track of node innovations splitConnection: (inConnection, outConnection)
         self.splitConnections = {}
         # innovation metric for novelty
@@ -60,7 +58,6 @@ class globalConnections:
         RETURNS:
             a newNode with proper global innovation backing.
         '''
-        # TODO: TRACE THIS. probability of connection split collision without RoM and pressurized crossover is exponential decay
         inputNode = replaceConnection.input
         outputNode = replaceConnection.output
         globalMatches = []
@@ -71,11 +68,12 @@ class globalConnections:
         #             Crossover needs to consider exactly whole nodes and accessory connections as genes
 
         for split in self.splitConnections:
-            if split.input.nodeId == inputNode.nodeId and split.output.nodeId == outputNode.nodeId:
-                    # TODO: collect all matches (maybe a filter operation?) and subtract against local node. if difference ==1 create new node
-                globalMatches.append(split)
+            if split == replaceConnection.innovation:
+                globalMatches = self.splitConnections[split]
+                # NOTE: Unique because dictionary so done here
+                break
         logging.info('localSplits {}   global matches {}'.format(
-            localSplits, globalMatches))
+            localSplits, len(globalMatches)))
 
         if localSplits - len(globalMatches) >= 0:
             # NOVEL
@@ -100,8 +98,12 @@ class globalConnections:
             logging.info('Global Innovation: Global node found: {} -> {} -> {}'.format(
                 inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
 
-            self.splitConnections.update(
-                {replaceConnection: (inConnection, outConnection)})
+            if replaceConnection.innovation in self.splitConnections:
+                self.splitConnections[replaceConnection.innovation].append(
+                    (inConnection, outConnection))
+            else:
+                self.splitConnections[replaceConnection.innovation] = [
+                    (inConnection, outConnection)]
 
             return newNode
 
@@ -109,13 +111,12 @@ class globalConnections:
             # NOT NOVEL
             # TODO: would rather move the node creation stuff to genome.addNode method
 
-            # thisSplit = globalMatches[localSplits-1]
-            # TODO: could this also be [0]? if novel nodes are only introduced sequentially (no parallel crossover or mutations)
-            #              shouldnt make a difference but should be noted
+            # TODO: Consider overriding object reflection builtins for nodeId and innovation in
+            #               NodeGene and ConnectionGene this code needs a bit of housekeeping
             thisSplit = [
-                x for x in globalMatches if self.splitConnections[x][0].output not in localParallelNodes].pop()
+                x for x in globalMatches if x[0].output.nodeId not in [x.nodeId for x in localParallelNodes]][0]
 
-            match = self.splitConnections[thisSplit]
+            match = thisSplit
 
             newNode = nodeGene(match[0].output.nodeId)
 
@@ -134,6 +135,3 @@ class globalConnections:
                 inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
 
             return newNode
-        else:
-            # TODO: impossible state
-            assert "Unidentified node creation missed in verifyNode!"

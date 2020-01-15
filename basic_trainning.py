@@ -94,20 +94,14 @@ def graphNEAT(network):
     ax = plt.gca()
     ax.set_axis_off()
     # plt.show()
+    # TODO: log svg with logfile based on number
     with open('curFig.svg', 'wb') as c:
         plt.savefig(c, format='svg')
 
 
-if __name__ == '__main__':
-    # NOTE: Currently this is the top level API for NEAT.
-    # Evaluator with fitness function will be the final API for NEAT and RoM
-    # when moving to evaluator, need to move logger configuration
+def configLogfile():
     '''
-    A test ground for the NEAT algorithm.
-
-    This is a scratch space that will not be consistent
-    with feature additions and is only commited to Git
-    for aligning test code at a given revision
+    configures logFile name and directory
     '''
     for _, _, files in os.walk('logs'):
         fileNums = []
@@ -124,13 +118,27 @@ if __name__ == '__main__':
     logging.basicConfig(
         filename=logFile, level=logging.INFO)
 
+
+if __name__ == '__main__':
+    # NOTE: Currently this is the top level API for NEAT.
+    # Evaluator with fitness function will be the final API for NEAT and RoM
+    # when moving to evaluator, need to move logger configuration
+    '''
+    A test ground for the NEAT algorithm.
+
+    This is a scratch space that will not be consistent
+    with feature additions and is only commited to Git
+    for aligning test code at a given revision
+    '''
+    configLogfile()
+
     logging.info('begin trainning..')
     ########### THIS IS TEST CODE ###########
     evaluation = e(inputs=4, outputs=2, population=2,
                    connectionMutationRate=0.5, nodeMutationRate=0.2)
     logging.info('{} {}'.format(len(evaluation.globalInnovations.connections),
                                 evaluation.globalInnovations.nodeId))
-    # target = evaluation.genepool[0]
+
     i = 0
     for target in evaluation.genepool:
         logging.info('BEGIN {} GENOME'.format(i))
@@ -138,42 +146,11 @@ if __name__ == '__main__':
         for _ in range(0, 400):
             logging.info('with total globalInnovations: {}'.format(len(
                 evaluation.globalInnovations.connections)))
-            target.addNodeMutation(.0001, evaluation.globalInnovations)
-
-    # for _ in range(0, 1000):
-    #     i = 0
-    #     for target in evaluation.genepool:
-    #         i += 1
-    #         logging.info('BEGIN {} GENOME'.format(i))
-    #         target.addConnectionMutation(0.0001, evaluation.globalInnovations)
-    #         logging.info('with total globalInnovations: {}'.format(len(
-    #             evaluation.globalInnovations.connections)))
-
-    # secondTarget = evaluation.genepool[1]
-    # logging.info('BEGIN SECOND GENOME')
-    # for _ in range(0, 11):
-    #     secondTarget.addNodeMutation(.0001, evaluation.globalInnovations)
-
-    # for _ in range(0, 100):
-    #     logging.info('with total globalInnovations: {}'.format(len(
-    #         evaluation.globalInnovations.connections)))
-    #     secondTarget.addConnectionMutation(
-    #         0.0001, evaluation.globalInnovations)
-
-    # print('CONNECTION PRINTOUT')
-    # connections = []
-    # for node in target.hiddenNodes + target.outputNodes + target.inputNodes:
-    #     for connection in node.outConnections + node.inConnections:
-    #         if connection.exists(connections) == True:
-    #             pass
-    #         else:
-    #             connections.append(connection)
-    # connections = sorted(connections, key=lambda x: x.input.nodeId)
-    # for connection in connections:
-    #     #     for connection in list(set(node.outConnections + node.inConnections)):
-    #     if connection.loop is True:
-    #         print('THIS IS A RECURRENT CONNECTION')
-    #     print(connection.input.nodeId, connection.output.nodeId)
+            # target.addNodeMutation(.0001, evaluation.globalInnovations)
+            # split a specific connection multiple times TODO: call this many times for genome one then for genome 2 to ensure splitDepth
+            #  is preserved when genome 2 catches up
+            target.addNode(
+                replaceConnection=target.inputNodes[0].outConnections[0], globalConnections=evaluation.globalInnovations)
 
     graphNEAT(target)
 
