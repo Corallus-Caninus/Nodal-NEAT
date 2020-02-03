@@ -45,20 +45,20 @@ class connectionGene:
                 return True
         return False
 
+    # TODO: BELOW IS UNUSED
     def splits(self, localNodes):
         '''
         static method for getting all nodes created from splitting this connection and creating parallel nodes
         '''
-        matches = []
+        splits = []
         for node in localNodes:
             primalInput = node.inConnections[0].input.nodeId
             primalOutput = node.outConnections[0].output.nodeId
             if self.input.nodeId == primalInput and self.output.nodeId == primalOutput:
-                matches.append(node)
-        return matches
+                splits.append(node)
+        return splits
 
     def matches(self, potentialConnection):
-        # TODO: use this more often
         '''
         comparator for checking if a connection matches another connection. This is the singular case of exists.
         '''
