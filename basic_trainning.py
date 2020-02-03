@@ -1,6 +1,7 @@
 # USER DEFINED MODULES
 from genome import genome as g  # TODO: fix directory structure
 from evaluator import evaluator as e
+from network import getDepths
 # PLOTTING PACKAGES
 import networkx as nx
 import matplotlib as mp
@@ -13,7 +14,7 @@ import re
 # NOTE: if this ever goes to linux use graphviz for graphics
 
 
-def graphNEAT(network):
+def graphNEAT(network, name):
     # translate graph to networkx
     # TODO: this feature will make debuging much faster (with painting) and code more understandable (with animations)
     myg = nx.DiGraph()
@@ -42,7 +43,7 @@ def graphNEAT(network):
 
     G = myg
     pos = nx.drawing.layout.circular_layout(G)
-
+    # TODO: redundant declaration by node for painting
     # SET COLORS BASED ON NODE TYPE:
     # input, output, hidden
     ins, outs, hids = [], [], []
@@ -57,11 +58,11 @@ def graphNEAT(network):
         labels.update({node: node.nodeId})
 
     nx.draw_networkx_nodes(
-        G, pos, nodelist=ins, label='Input', node_size=22, node_color='green')
+        G, pos, nodelist=ins, label='Input', node_size=44, node_color='green')
     nx.draw_networkx_nodes(
-        G, pos, nodelist=outs, label='output', node_size=22, node_color='red')
+        G, pos, nodelist=outs, label='output', node_size=44, node_color='red')
     nx.draw_networkx_nodes(
-        G, pos, nodelist=hids, label='hidden', node_size=22, node_color='black')
+        G, pos, nodelist=hids, label='hidden', node_size=44, node_color='black')
 
     # SET COLORS BASED ON CONNECTION TYPE
     # loop, disabled, normal
@@ -79,13 +80,14 @@ def graphNEAT(network):
             else:
                 assert "ERROR: NETWORK CONNECTION NOT ASSOCIATED WITH GENOME"
 
-    nx.draw_networkx_edges(G, pos, edgelist=dis, node_size=22, arrowstyle='- >',
+    # TODO: redundant node_size declaration
+    nx.draw_networkx_edges(G, pos, edgelist=dis, node_size=44, arrowstyle='- >',
                            arrowsize=10, edge_color='yellow',
                            width=2)
-    nx.draw_networkx_edges(G, pos, edgelist=loops, node_size=22, arrowstyle='->',
+    nx.draw_networkx_edges(G, pos, edgelist=loops, node_size=44, arrowstyle='->',
                            arrowsize=10, edge_color='blue',
                            width=2)
-    nx.draw_networkx_edges(G, pos, edgelist=norms, node_size=22, arrowstyle='->',
+    nx.draw_networkx_edges(G, pos, edgelist=norms, node_size=44, arrowstyle='->',
                            arrowsize=10, edge_color='black',
                            width=2)
 
@@ -95,11 +97,12 @@ def graphNEAT(network):
     ax.set_axis_off()
     # plt.show()
     # TODO: log svg with logfile based on number
-    with open('curFig.svg', 'wb') as c:
+    with open(name + '.svg', 'wb') as c:
         plt.savefig(c, format='svg')
 
 
 def configLogfile():
+    # TODO: call a seperate logging file for each object. this will make the code easier to understand for first timers
     '''
     configures logFile name and directory
     '''
@@ -134,7 +137,7 @@ if __name__ == '__main__':
 
     logging.info('begin trainning..')
     ########### THIS IS TEST CODE ###########
-    evaluation = e(inputs=4, outputs=2, population=2,
+    evaluation = e(inputs=2, outputs=2, population=2,
                    connectionMutationRate=0.5, nodeMutationRate=0.2)
     logging.info('{} {}'.format(len(evaluation.globalInnovations.connections),
                                 evaluation.globalInnovations.nodeId))
@@ -143,19 +146,24 @@ if __name__ == '__main__':
     for target in evaluation.genepool:
         logging.info('BEGIN {} GENOME'.format(i))
         i += 1
-        for _ in range(0, 400):
+        for _ in range(0, 5):
+            print(' TOP O\' THE LOOP TO YA\n\n\n\n')
             logging.info('with total globalInnovations: {}'.format(len(
                 evaluation.globalInnovations.connections)))
-            # target.addNodeMutation(.0001, evaluation.globalInnovations)
+            target.addNodeMutation(.0001, evaluation.globalInnovations)
             # split a specific connection multiple times TODO: call this many times for genome one then for genome 2 to ensure splitDepth
             #  is preserved when genome 2 catches up
-            target.addNode(
-                replaceConnection=target.inputNodes[0].outConnections[0], globalConnections=evaluation.globalInnovations)
+            target.addConnectionMutation(.0001, evaluation.globalInnovations)
 
-    graphNEAT(target)
+    # TODO: possibly getting connections across genomes
+    # graphNEAT(evaluation.genepool[1], 'secFig')
+    graphNEAT(evaluation.genepool[0], 'firFig')
 
-    outputs = target.forwardProp([1, 2, 3, 4])
+    print('\n\nBEGIN FORWARD PROPAGATION: \n\n')
+    outputs = evaluation.genepool[0].forwardProp([1, 2])
     logging.info('\n\n {}'.format(outputs))
-    outputs = target.forwardProp([1, 2, 3, 4])
+    graphNEAT(evaluation.genepool[0], 'firFig')
+    # NOTE: second propagation bugs due to improper loop detection
+    outputs = evaluation.genepool[0].forwardProp([1, 2])
     logging.info('\n\n {}'.format(outputs))
     logging.info('End of Test')
