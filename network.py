@@ -1,5 +1,8 @@
 import genome
-import networkx as nx
+from graphviz import Digraph
+# @DEPRECATED
+# import networkx as nx
+# import matplotlib.pyplot as plt
 # TODO: basic_trainning networkx operations should be extracted here
 
 # NOTE: this contains utility functions for graph analysis and analysing/preparing topologies for genetic operations
@@ -20,7 +23,7 @@ def processSequences(targetGenome):
     gets all split depths of all nodes in the given topology then assign node sequence by checking node depths for shorting connections.
     PARAMETERS:
         targetGenome: the genome to be processed
-    RETURNS: 
+    RETURNS:
         sequences: order of arrival for each node that will be found in forward propagation.
     '''
     sequences = {}
@@ -62,4 +65,48 @@ def processSequences(targetGenome):
                 # update sequences
                 sequences[node] = sequences[inConnection.input] + 1
 
+    graphvizNEAT(targetGenome, sequences)
+    # TODO: graph insight: can we say all connections with sequence[inConnection.output] < sequence[inConnection.input] are loops
     return sequences
+
+
+def graphvizNEAT(network, sequences):
+    f = Digraph('finite_state_machine', filename='graphvizSequences.svg')
+    f.attr(rankdir='LR', size='8,5')
+
+    f.attr('node', shape='doublecircle')
+
+    for node in sequences:
+        f.node(str(node.nodeId))
+    for node in network.inputNodes:
+        f.node(str(node.nodeId))
+    for node in network.outputNodes:
+        f.node(str(node.nodeId))
+
+    f.attr('node', shape='circle')
+
+    allConnects = []
+    for n in network.hiddenNodes:
+        allConnects.extend(
+            [x for x in n.inConnections if x not in allConnects])
+        allConnects.extend(
+            [x for x in n.outConnections if x not in allConnects])
+    for n in network.outputNodes:
+        allConnects.extend(
+            [x for x in n.inConnections if x not in allConnects])
+        allConnects.extend(
+            [x for x in n.outConnections if x not in allConnects])
+    for n in network.inputNodes:
+        allConnects.extend(
+            [x for x in n.inConnections if x not in allConnects])
+        allConnects.extend(
+            [x for x in n.outConnections if x not in allConnects])
+
+    for c in allConnects:
+        if c.disabled is True:
+            continue
+        else:
+            f.edge(str(c.input.nodeId), str(
+                c.output.nodeId), label=str(c.loop))
+
+    f.view()
