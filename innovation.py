@@ -2,13 +2,18 @@ from connectionGene import connectionGene
 from nodeGene import nodeGene
 import random as rand
 import logging
+from copy import copy
 # TODO: this is so inherent to creating connections it should be in the connectionGene constructor! maybe not..
 #               ConnectionGene construction is becoming spaghetti in higher order objects. Fix this.
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?
 
+# TODO: Ensure copy is used properly.. ugh.. python.
+
+# NOTE: copying objects increases reference count and allows equivalence comparison in reflection
+
 
 class globalConnections:
-    # TODO: refactor name since more than connections 'globalMaps'?
+    # TODO: refactor name since more than connections-- 'globalMaps'?
     '''
     keep a record of all global variables that define the fitness landscape mapping
     '''
@@ -40,12 +45,12 @@ class globalConnections:
         for connection in self.connections:
             # TODO: should be using connection.exists method
             if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
-                verifyConnection.innovation = connection.innovation
+                verifyConnection.innovation = copy(connection.innovation)
                 return verifyConnection
 
         self.connections.append(verifyConnection)
         self.innovation += 1
-        verifyConnection.innovation = self.innovation
+        verifyConnection.innovation = copy(self.innovation)
         return verifyConnection
 
     def verifyNode(self, localParallelNodes, replaceConnection, isLoop):
@@ -79,21 +84,18 @@ class globalConnections:
             # NOVEL
             # TODO: would rather move the node creation stuff to genome.addNode method. lots of jumping around
             self.nodeId += 1
-            newNode = nodeGene(self.nodeId)
+            newNode = nodeGene(copy(self.nodeId))
             # dont create split from global pool as will connect across genepool
 
             self.innovation += 1
             inConnection = connectionGene(
                 rand.uniform(-1, 1), inputNode, newNode)
-            inConnection.innovation = self.innovation
+            inConnection.innovation = copy(self.innovation)
 
             self.innovation += 1
             outConnection = connectionGene(
-                replaceConnection.weight, newNode, outputNode)
-            outConnection.innovation = self.innovation
-
-            if isLoop is True:
-                outConnection.loop = True
+                copy(replaceConnection.weight), newNode, outputNode)
+            outConnection.innovation = copy(self.innovation)
 
             logging.info('Global Innovation: Global node found: {} -> {} -> {}'.format(
                 inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
@@ -118,18 +120,15 @@ class globalConnections:
 
             match = thisSplit
 
-            newNode = nodeGene(match[0].output.nodeId)
+            newNode = nodeGene(copy(match[0].output.nodeId))
 
             inConnection = connectionGene(
                 rand.uniform(-1, 1), inputNode, newNode)
-            inConnection.innovation = match[0].innovation
+            inConnection.innovation = copy(match[0].innovation)
 
             outConnection = connectionGene(
-                replaceConnection.weight, newNode, outputNode)
-            outConnection.innovation = match[1].innovation
-
-            if isLoop is True:
-                outConnection.loop = True
+                copy(replaceConnection.weight), newNode, outputNode)
+            outConnection.innovation = copy(match[1].innovation)
 
             logging.info('Global Innovation: Global node match exists: {} -> {} -> {}'.format(
                 inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
