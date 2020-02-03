@@ -1,7 +1,6 @@
 # USER DEFINED MODULES
 from genome import genome as g  # TODO: fix directory structure
 from evaluator import evaluator as e
-from network import getDepths
 # PLOTTING PACKAGES
 import networkx as nx
 import matplotlib as mp

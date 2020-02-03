@@ -1,6 +1,6 @@
 from nodeGene import nodeGene as node
 from connectionGene import connectionGene as connection
-from network import getDepths, processSequences
+from network import processSequences
 import random as rand
 from activationFunctions import softmax
 import logging
@@ -223,10 +223,9 @@ class genome:
         nextNodes = []
         nodeBuffer = []
 
-        #NOTE: Overestimate
         nodeTimeout = {}
-        # depths = buildChromosome(self)
         orders = processSequences(self)
+        #NOTE: Overestimate
         largestCircle = 2*(len(self.inputNodes) +
                            len(self.hiddenNodes) + len(self.outputNodes))
         currentLoopLength = largestCircle
