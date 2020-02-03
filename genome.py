@@ -179,6 +179,7 @@ class genome:
         self.resetLoops()
         self.resetSignals()
 
+    ###FORWARD PROPAGATION SPECIFIC OPERATIONS###
     def resetLoops(self):
         '''
         resets all connections in this genome to connection.loop = False 
@@ -191,8 +192,6 @@ class genome:
                     connect.loop = True
                 else:
                     connect.loop = False
-
-    ###FORWARD PROPAGATION SPECIFIC OPERATIONS###
 
     def resetSignals(self):
         '''
@@ -276,7 +275,6 @@ class genome:
                     if step not in nextNodes and step.activated is False:
                         nextNodes.append(step)
                         # start counting loop timer
-                        # TODO: shouldnt need >0 check
                         if step in nodeTimeout and nodeTimeout[step] > 0:
                             print('tick @ node: {}'.format(step.nodeId))
                             nodeTimeout[step] -= 1
@@ -284,42 +282,40 @@ class genome:
                             nodeTimeout.update({step: largestCircle})
                             # reset counter on all deeper nodes to ensure
                             # skip connections wait for all other connections
-                            # TODO: deepest sequence is usually attributed to recurrent connections
+                            # TODO: Still getting ties. get unreadyConnection with lowest sequence input
                             for stepNode in nodeTimeout:
-                                # TODO: keyerror here
-                                if orders[stepNode] > orders[step]:
-                                    print('RESETING TIMER ON: ',
-                                          stepNode.nodeId)
-                                    print('since {} {} is less than {} {}'.format(
-                                        step.nodeId, step, stepNode.nodeId, stepNode))
-                                    # TODO: does this need to be larger than newly added step?
-                                    #             since we are overestimating this is fine for now
-                                    nodeTimeout.update(
-                                        {stepNode: largestCircle+1})
+                                # TODO: keyerror here, still exists
+                                if step in orders:  # hackey solution
+                                    if orders[stepNode] < orders[step]:
+                                        print('RESETING TIMER ON: ',
+                                              stepNode.nodeId)
+                                        print('since {} {} is less than {} {}'.format(
+                                            stepNode.nodeId, stepNode, step.nodeId, step))
+                                        # TODO: does this need to be larger than newly added step?
+                                        #             since we are overestimating this is fine for now
+                                        nodeTimeout.update(
+                                            {stepNode: largestCircle+1})
 
             # trigger timeout or update timer tick
             for timer in nodeTimeout:
                 if nodeTimeout[timer] == 0:
                     print('requesting blockage from node: {}'.format(timer.nodeId))
-                    # TODO: need to get unreadyConnection with lowest sequence
-                    # TODO: need sequence connections (depths is connection based but doesnt consider shorts)
-                    #               legit attempts to retrieve unreadyConnection from unblocked node
                     unreadyConnections = timer.getUnreadyConnections()
                     # get the connection with the highest inConnection node sequence.
-                    max([x for x in unreadyConnections],
-                        key=lambda x: orders[x.input]).loop=True
+                    # TODO: still getting key errors
+                    min([x for x in unreadyConnections],
+                        key=lambda x: orders[x.input] if x.input in self.hiddenNodes else float('inf')).loop=True
 
                     nodeTimeout[timer] = largestCircle
+                    # reset all timers
+                    for t in nodeTimeout:
+                        nodeTimeout[t] = largestCircle
                     break
                 assert nodeTimeout[timer] >= 0, "node clocked largestLoop"
 
             nodeBuffer.clear()
             nodeBuffer = nextNodes.copy()
             nextNodes.clear()
-
-        # TODO: can this be encapsulated in activate? return a different type is sloppy
-        #               adding a non-connected outConnection is kludgey
-        #               this is somewhat more readable as its a true edge case
 
         # harvest output signals
         outputs = []

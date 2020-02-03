@@ -13,6 +13,7 @@ import re
 # NOTE: if this ever goes to linux use graphviz for graphics
 
 
+# TODO: sort by sequence into depth layers for intuitive loop detection comparison
 def graphNEAT(network, name):
     # translate graph to networkx
     # TODO: this feature will make debuging much faster (with painting) and code more understandable (with animations)
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     for target in evaluation.genepool:
         logging.info('BEGIN {} GENOME'.format(i))
         i += 1
-        for _ in range(0, 5):
+        for _ in range(0, 10):
             print(' TOP O\' THE LOOP TO YA\n\n\n\n')
             logging.info('with total globalInnovations: {}'.format(len(
                 evaluation.globalInnovations.connections)))

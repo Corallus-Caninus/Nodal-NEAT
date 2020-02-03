@@ -29,6 +29,7 @@ def processSequences(targetGenome):
     hiddenNodes = targetGenome.hiddenNodes
 
     # ACQUIRE SPLIT DEPTHS FOR HIDDEN NODES
+    # TODO: extract splitDepths for crossover (chromosome alignment of skeleton/primal topologies)
     curDepth = 0
     for node in targetGenome.inputNodes:
         # add all initial topology connections
