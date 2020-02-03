@@ -8,6 +8,9 @@ class nodeGene:
     '''
     handles activation gatekeeping and encapsulates activation propogation of signals
     '''
+    # TODO: nodeGene can only be created with
+    #              input and output connections should
+    #              be included in constructor
 
     def __init__(self, identifier):
         self.inConnections = []
@@ -46,50 +49,116 @@ class nodeGene:
         else:  # default fallthrough error
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
+    # @DEPRECATED
+    # def getUnreadyConnection(self):
+    #     # unreadys = []
+    #     incs = [x for x in self.inConnections if x.disabled is False]
+    #     if any([x.signal is None and x.loop is False for x in incs]):
+    #         # persist this node to next step due to skip connection
+    #         for inc in incs:
+    #             if inc.signal is None and inc.loop is False:
+    #                 firstBlockage = [
+    #                     x for x in incs if x.loop is False and x.signal is None][0]
+    #                 print('retrieving recurrent connection.. {} -> {}'.format(
+    #                     inc.input.nodeId, inc.output.nodeId))
+    #                 return firstBlockage
+    #         #         unreadys.append(inc)
+    #         # return unreadys
+    #     else:
+    #         assert "UNREADY NODE WITHOUT UNREADY CONNECTIONS!"
 
-    def activate(self):
-        '''
-        activate the given node, returns all nodes in output connections
-        recurrent connections are just circularity where level of recursion is the size of sequential loops
-        '''
-        outputSignal = 0
+    def getUnreadyConnections(self):
+        unreadys = []
+        incs = [x for x in self.inConnections if x.disabled is False]
+        if any([x.signal is None and x.loop is False for x in incs]):
+            # persist this node to next step due to skip connection
+            blockages = [
+                x for x in self.inConnections if x.signal is None and x.loop is False]
+            # for inc in incs:
+            #     if inc.signal is None and inc.loop is False:
+            #         blockages = [
+            #             x for x in incs if x.loop is False and x.signal is None]
+            #         print('retrieving recurrent connection.. {} -> {}'.format(
+            #             inc.input.nodeId, inc.output.nodeId))
+            #         # return firstBlockage
+            #         unreadys.append(inc)
+            return blockages
+        else:
+            assert "UNREADY NODE WITHOUT UNREADY CONNECTIONS!"
+
+    def activate(self, signal):
+        activeSignal = 0
         nextNodes = []
-        for availableConnection in self.inConnections:
-            if availableConnection.signal is None and availableConnection.loop is False and availableConnection.disabled is False:
-                logging.info('SIGTRACE (hidden): unready connection {}->{} at node {}'.format(
-                    availableConnection.input.nodeId, availableConnection.output.nodeId, self.nodeId))
-                return self
+        assert self.activated is False, "@ node {}".format(self.nodeId)
 
-        # ignore first pass with recurrency unavailable
-        readyConnections = \
-            [connection for connection in self.inConnections if connection.signal is not None]
+        if signal is not None and signal is not False:  # INPUT NODE CASE
+            # passively accept loop signals to input
+            for inc in self.inConnections:
+                if inc.signal is not None and inc.disabled is False:
+                    activeSignal += inc.signal
+            activeSignal = softmax(activeSignal + signal)
 
-        for connection in readyConnections:
-            #TODO: REDUNDANT
-            if connection.disabled is True:
-                pass
-            else:
-                outputSignal += connection.signal * connection.weight
-                connection.signal = None
-                logging.info('SIGTRACE (hidden) Received: {} {} {} -> {}'.format(self.nodeId, outputSignal, connection.input.nodeId,
-                                                                                 connection.output.nodeId))
-        outputSignal = softmax(outputSignal)
-
-        # output nodes have no outConnections
-        if(len(self.outConnections) > 0):
-            for connection in self.outConnections:
-                logging.info('SIGTRACE (hidden) Sending: {} {} \t\t {} -> {}'.format(
-                    self.nodeId, outputSignal, connection.input.nodeId, connection.output.nodeId))
-                if connection.disabled is False:
-                    connection.signal = outputSignal
-                    if connection.loop is False:
-                        nextNodes.append(connection.output)
-                else:
-                    # TODO: trace and remove
-                    assert 'SIGTRACE (hidden): BAD STATE!!'
-
-            # used for recurrency activation gatekeeping
+            for outc in [x for x in self.outConnections if x.disabled is False]:
+                outc.signal = activeSignal
+                # dampen reverb
+                if outc.output not in nextNodes and outc.output.activated is False:
+                    nextNodes.append(outc.output)
             self.activated = True
-            return nextNodes
 
-        assert "ERROR: FAILED NEURON"
+        elif signal is False:  # OUTPUT NODE CASE
+            incs = [x for x in self.inConnections if x.disabled is False]
+            if any([x.signal is None and x.loop is False for x in incs]):
+                # persist this node to next step due to skip connection
+                for inc in incs:
+                    if inc.signal is None and inc.loop is False:
+                        print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                            inc.input.nodeId, inc.output.nodeId))
+                return [self]
+            else:
+                for inc in [x for x in incs if x.signal is not None]:
+                    activeSignal += inc.signal*inc.weight
+                    # inc.signal = None
+
+                activeSignal = softmax(activeSignal)
+
+                for outc in [x for x in self.outConnections if x.disabled is False]:
+                    outc.signal = activeSignal
+                self.activated = True
+                # TODO: leaves hanging node connections that never get activated
+                #              need to handle propagating but graph is functional
+        else:  # HIDDEN NODE CASE
+            incs = [x for x in self.inConnections if x.disabled is False]
+            if any([x.signal is None and x.loop is False for x in incs]):
+                # persist this node to next step due to skip connection
+                for inc in incs:
+                    if inc.signal is None and inc.loop is False:
+                        print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                            inc.input.nodeId, inc.output.nodeId))
+                return [self]
+            else:
+                for inc in [x for x in incs if x.signal is not None]:
+                    # assert inc.signal is not None and inc.loop is False, " @ node {}".format(self.nodeId)
+                    # if inc.signal is None:
+                    #     # unready recurrent connection
+                    #     continue
+                    activeSignal += inc.signal*inc.weight
+                    inc.signal = None
+
+                activeSignal = softmax(activeSignal)
+
+                for outc in [x for x in self.outConnections if x.disabled is False]:
+                    outc.signal = activeSignal
+                    # dampen reverb
+                    if outc.output not in nextNodes and outc.output.activated is False:
+                        # if outc.output.activated:
+                        #     outc.loop = True
+                        nextNodes.append(outc.output)
+                self.activated = True
+
+        # TODO: trace this case (recurrence) could this also be x.loop is False?
+        checkNodes = []
+        for node in nextNodes:
+            if node.activated is False:
+                checkNodes.append(node)
+        return checkNodes
+        # return [x for x in nextNodes if x.activated is False]
