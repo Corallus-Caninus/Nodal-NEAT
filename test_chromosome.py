@@ -10,6 +10,7 @@ class TestPrimalAlignment(unittest.TestCase):
     '''
     unittest for chromosome's crossover method and supporting methods
     '''
+    # TODO: recurring removal in start of evolution. need to debug this either just here or here and basic_trainning
 
     def test_primalOperations(self):
         evaluation = evaluator(inputs=2, outputs=2, population=2,
@@ -46,6 +47,8 @@ class TestPrimalAlignment(unittest.TestCase):
             evaluation.genepool[0], evaluation.genepool[1], evaluation.globalInnovations)
 
         print(child)
+        child.forwardProp([1, 2])
+        child.forwardProp([1, 2])
         # TODO: child doesnt get added connections or nodes (just initialTopology)
         graphvizNEAT(child, 'child')
         graphvizNEAT(evaluation.genepool[0], 'superior')

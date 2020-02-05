@@ -1,7 +1,8 @@
 from copy import copy
 
 from genome import genome
-import connectionGene
+# import connectionGene
+from connectionGene import connectionGene
 from nodeGene import nodeGene
 import random as rand
 from copy import deepcopy
@@ -131,7 +132,7 @@ class chromosome:
                 for inc in cnode.inConnections:
                     if inc not in allConnections:
                         allConnections.append(inc)
-
+            # TODO: still getting novel nodes
             for connection in allConnections:
                 if node.outConnections[0].output.nodeId == connection.output.nodeId and \
                         node.inConnections[0].input.nodeId == connection.input.nodeId:
@@ -142,22 +143,30 @@ class chromosome:
         # ADDING CONNECTIONS
         allChildNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
 
-        lessFitParentConnections = [
-            x.outConnections for x in lessFitParent.inputNodes + lessFitParent.hiddenNodes + lessFitParent.outputNodes]
-        lessFitParentConnections.extend(
-            [x.inConnections for x in lessFitParent.inputNodes + lessFitParent.hiddenNodes + lessFitParent.outputNodes])
+        # TODO: dont verifyConnection
+        for node in allChildNodes:
+            # get node in parent topologies
+            for parentNode in moreFitParent.hiddenNodes:
+                if parentNode.nodeId == node.nodeId:
+                    for outc in parentNode.outConnections:
+                        if outc.output.nodeId in [x.nodeId for x in allChildNodes]:
+                            # get corresponding node in child topology
+                            for onode in allChildNodes:
+                                if onode.nodeId == outc.output.nodeId:
+                                    # add output connection
+                                    print('add connection')
+                                    child.addConnection(connectionGene(weight=copy(
+                                        outc.weight), inNode=node, outNode=onode), globalInnovations)
 
-        for node in moreFitParent.inputNodes + moreFitParent.hiddenNodes + moreFitParent.outputNodes:
-            for connection in node.outConnections + node.inConnections:
-                if connection.output.nodeId not in allChildNodes or connection.input.nodeId not in allChildNodes:
-                    # connection is lost due to not being aligned in chromosomes
-                    continue
-                else:
-                    if connection in lessFitParentConnections:
-                        # get input node and output node of this connection from child and add connection to respective nodes
-                        child.addConnection(connection, globalInnovations)
-                    elif rand.uniform(0, 1) > 0.5:
-                        child.addConnection(connection, globalInnovations)
+                    for inc in parentNode.inConnections:
+                        if inc.input.nodeId in [x.nodeId for x in allChildNodes]:
+                            # add input connection
+                            for inode in allChildNodes:
+                                if inode.nodeId == inc.input.nodeId:
+                                    print('add connection')
+                                    child.addConnection(connectionGene(
+                                        weight=copy(inc.weight), inNode=inode, outNode=node), globalInnovations)
+            # now iterate over connections in less fit topology with random chance to add
 
         return child
 
