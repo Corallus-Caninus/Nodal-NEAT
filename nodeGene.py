@@ -24,21 +24,24 @@ class nodeGene:
         '''
         # check if connection exists first
         # TODO: Really ought to clean up the self loop case here..
-        if self is connectionGene.output and self is connectionGene.input:
+        # TODO: testing nodeId comparison instead
+        if self.nodeId is connectionGene.output.nodeId and self is connectionGene.input.nodeId:
             self.inConnections.append(connectionGene)
             self.outConnections.append(connectionGene)
-        elif self is connectionGene.input:
+        elif self.nodeId is connectionGene.input.nodeId:
             self.outConnections.append(connectionGene)
-        elif self is connectionGene.output:
+        elif self.nodeId is connectionGene.output.nodeId:
             self.inConnections.append(connectionGene)
         else:  # default fallthrough error
             raise Exception('ERROR: cannot connect ',
-                            connectionGene, ' with ', self)
+                            connectionGene.input.nodeId, '->', connectionGene.output.nodeId, ' with ', self.nodeId)
 
     def removeConnection(self, connectionGene):
         '''
         removes an existing connection from this node
         '''
+        # TODO: decide whether to use object comparison or nodeId/innovation.
+        #              nodeId/innovation is de facto
         if self is connectionGene.input and self is connectionGene.output:
             self.outConnections.remove(connectionGene)
             self.inConnections.remove(connectionGene)
@@ -49,23 +52,19 @@ class nodeGene:
         else:  # default fallthrough error
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
-    # @DEPRECATED
-    # def getUnreadyConnection(self):
-    #     # unreadys = []
-    #     incs = [x for x in self.inConnections if x.disabled is False]
-    #     if any([x.signal is None and x.loop is False for x in incs]):
-    #         # persist this node to next step due to skip connection
-    #         for inc in incs:
-    #             if inc.signal is None and inc.loop is False:
-    #                 firstBlockage = [
-    #                     x for x in incs if x.loop is False and x.signal is None][0]
-    #                 print('retrieving recurrent connection.. {} -> {}'.format(
-    #                     inc.input.nodeId, inc.output.nodeId))
-    #                 return firstBlockage
-    #         #         unreadys.append(inc)
-    #         # return unreadys
-    #     else:
-    #         assert "UNREADY NODE WITHOUT UNREADY CONNECTIONS!"
+
+    def comparePrimal(self, otherNode):
+        '''
+        compares this primal node against another primal node, used for chromosome alignment operations.
+        '''
+        assert len(self.outConnections) == 1 and len(self.inConnections) == 1 and len(
+            otherNode.outConnections) == 1 and len(otherNode.inConnections) == 1, "non-primal nodes passed to primal node comparison"
+
+        if self.outConnections[0].output.nodeId == otherNode.outConnections[0].output.nodeId and \
+           self.inConnections[0].input.nodeId == otherNode.inConnections[0].input.nodeId:
+            return True
+        else:
+            return False
 
     def getUnreadyConnections(self):
         unreadys = []
