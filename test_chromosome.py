@@ -4,6 +4,7 @@ from evaluator import evaluator
 import unittest
 import logging
 from network import graphvizNEAT
+import uuid
 
 
 class TestPrimalAlignment(unittest.TestCase):
@@ -21,17 +22,13 @@ class TestPrimalAlignment(unittest.TestCase):
             # TODO: change order of mutations to test globalInnovations
             # logging.info('BEGIN {} GENOME'.format(i))
             i += 1
-            for _ in range(0, 25):
-                # print(' TOP O\' THE LOOP TO YA\n\n\n\n')
-                # logging.info('with total globalInnovations: {}'.format(len(
-                # evaluation.globalInnovations.connections)))
+            for _ in range(0, 20):
                 target.addNodeMutation(.0001, evaluation.globalInnovations)
-                # split a specific connection multiple times TODO: call this many times for genome one then for genome 2 to ensure splitDepth
-                #  is preserved when genome 2 catches up.
                 target.addConnectionMutation(.0001,
                                              evaluation.globalInnovations)
             evaluation.genepool[0].fitness = 4
             evaluation.genepool[1].fitness = 1
+        # NOTE: everything above is a test fixture for most things
 
         chromosomes = chromosome()
 
@@ -43,14 +40,25 @@ class TestPrimalAlignment(unittest.TestCase):
             for i in chromosomes.primalGenes[x]:
                 print(i)
 
-        child = chromosomes.crossover(
-            evaluation.genepool[0], evaluation.genepool[1], evaluation.globalInnovations)
+        nextGeneration = []
+        for _ in range(0, 5):
+            child = chromosomes.crossover(
+                evaluation.genepool[0], evaluation.genepool[1], evaluation.globalInnovations)
+            nextGeneration.append(child)
 
-        print(child)
-        child.forwardProp([1, 2])
-        child.forwardProp([1, 2])
+        print(nextGeneration)
+        nextGeneration[0].forwardProp([1, 2])
+        nextGeneration[0].forwardProp([1, 2])
         # TODO: child doesnt get added connections or nodes (just initialTopology)
-        graphvizNEAT(child, 'child')
+        for child in nextGeneration:
+            graphvizNEAT(child, 'child ' + str(uuid.uuid1()))
+            print('nodes lost in child from superior parent: {}'.format(
+                len(evaluation.genepool[0].hiddenNodes) - len(child.hiddenNodes)))
+        # NOTE: graphically confirmed levels of complexification is functioning.
+        #             need to add logistic probability of adding node to prevent too much pruning
+        #              otherwise risk losing innovations faster than mutation rate.
+        #              (also forces crossover to follow a path as a genepool so this is interesting)
+        #               ready for unittest of fitness function xor to examine behaviour in pressure.
         graphvizNEAT(evaluation.genepool[0], 'superior')
         graphvizNEAT(evaluation.genepool[1], 'inferior')
 

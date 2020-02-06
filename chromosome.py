@@ -15,6 +15,8 @@ class chromosome:
     #              (next step is making basic_trainning a unittest)
 
     # TODO: handle connection reactivation
+    #               CORR: this isnt necessarily necessary for functional equivalence, skip connections still exist and a
+    #                           weight of 1 in a parallelNodes inConnection can make a node split essentially a skip connection
 
     '''
     Chromosome class for crossover, stores skeleton topologies of genomes to allow quick
@@ -91,7 +93,7 @@ class chromosome:
     #   from the length of attachment (read more on this, however it is only abstractly pertinent)
 
     def crossover(self, moreFitParent, lessFitParent, globalInnovations):
-        # TODO: globalInnovations shouldnt need to be passed in, consider implementing chromosome from evaluator
+        # TODO: pass in probabilities
         # NOTE: remember to only compare nodeId and innovation number for nodes and connections respectively.
         #              NOT virtual object addresses. only exception is addConnection and addNode methods should
         #              handle comparison with passed object internally.
@@ -105,16 +107,25 @@ class chromosome:
         assert moreFitParent in self.primalGenes and lessFitParent in self.primalGenes, "depths have not been processed and cannot be aligned"
         assert moreFitParent.fitness >= lessFitParent.fitness, "less fit parent passed into the wrong positional parameter"
         childSkeleton = []
+
+        # add fit parent nodes
         for depth in self.primalGenes[moreFitParent]:
-            # TODO: should also consider less fit parent, this is purely pruning
-            # since nodes are globally consistent we can compare with nodeId here
-            # does this comparison really work?
+            # TODO: fix nodeId comparisons. remove all bugs that cause novel nodes in child topologies
+            # TODO: it is believed novel nodes occur when nodes are added deeper than a split that was missed.
+            #               can either write a condition in chromosome alignment (add node) or
+            #               make tree based rule here forcing fully connected tree.
             if any([x.comparePrimal(depth) for x in self.primalGenes[lessFitParent]]):
-                if depth not in childSkeleton:
+                if depth.nodeId not in [x.nodeId for x in childSkeleton]:
                     print('in both parents')
                     childSkeleton.append(depth)
-            elif rand.uniform(a=0, b=1) > 0.5:
-                if depth not in childSkeleton:
+            elif rand.uniform(a=0, b=1) > 0.50:
+                if depth.nodeId not in [x.nodeId for x in childSkeleton]:
+                    childSkeleton.append(depth)
+
+        # add less fit parent nodes
+        for depth in self.primalGenes[lessFitParent]:
+            if rand.uniform(a=0, b=1) > 0.25:
+                if depth.nodeId not in [x.nodeId for x in childSkeleton]:
                     childSkeleton.append(depth)
 
         child = genome(len(moreFitParent.inputNodes), len(
@@ -132,91 +143,132 @@ class chromosome:
                 for inc in cnode.inConnections:
                     if inc not in allConnections:
                         allConnections.append(inc)
+
             # TODO: still getting novel nodes
             for connection in allConnections:
                 if node.outConnections[0].output.nodeId == connection.output.nodeId and \
                         node.inConnections[0].input.nodeId == connection.input.nodeId:
                     # this is the split
-                    child.addNode(connection, globalInnovations)
 
-        # TODO: stochastically add connections based on available connections from child skeleton topology
+                    # TODO: need to force this to not innovate no nodes are novel
+                    #               could globalInnovations be broke?
+                    #               why are some working and others not?
+                    #
+                    # SOLUTION: something from depth 5 added to a
+                    #                      network that only has depth 3.
+                    # #TODO: need to stop split search if node isnt added.
+                    #                could this also be from splitting out of order?
+                    # OR is innovation here okay, combining different orders of nodes from different topologies
+                    # can cause new splits NEEDS A TRACE
+                    child.addNode(connection, globalInnovations)
+                    break
+
         # ADDING CONNECTIONS
-        allChildNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
+        # NOTE: this seems to be working appropriately.
+        # TODO: add stochastics based on more AND less fit parent
 
         # TODO: dont verifyConnection
+        allChildNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
         for node in allChildNodes:
-            # get node in parent topologies
-            for parentNode in moreFitParent.hiddenNodes:
-                if parentNode.nodeId == node.nodeId:
-                    for outc in parentNode.outConnections:
-                        if outc.output.nodeId in [x.nodeId for x in allChildNodes]:
-                            # get corresponding node in child topology
-                            for onode in allChildNodes:
-                                if onode.nodeId == outc.output.nodeId:
-                                    # add output connection
-                                    print('add connection')
-                                    child.addConnection(connectionGene(weight=copy(
-                                        outc.weight), inNode=node, outNode=onode), globalInnovations)
+            print('adding from moreFitParent')
+            addParentConnections(node, moreFitParent,
+                                 child, globalInnovations, 1)
+            print('adding from lessFitParent')
+            addParentConnections(node, lessFitParent,
+                                 child, globalInnovations, 0.5)
+            # get node in moreFitParent topology
 
-                    for inc in parentNode.inConnections:
-                        if inc.input.nodeId in [x.nodeId for x in allChildNodes]:
-                            # add input connection
-                            for inode in allChildNodes:
-                                if inode.nodeId == inc.input.nodeId:
-                                    print('add connection')
-                                    child.addConnection(connectionGene(
-                                        weight=copy(inc.weight), inNode=inode, outNode=node), globalInnovations)
             # now iterate over connections in less fit topology with random chance to add
 
         return child
 
 
+def addParentConnections(targetNode, parent, child, globalInnovations, addConnectionProbability):
+    # TODO: remove globalInnovations.
+    # TODO: possibly dont need addConnectionProbability since nodes have already been selected and
+    #              reduce probability significantly
+    '''
+    randomly add connections to a target node from a given parents possible connections. Checks to ensure that child has nodes available
+    to support connections in parent genome.
+    PARAMETERS: 
+            targetNode: node to inherit connections from parent
+            parent: parent scanned for connectionGenes at given shared node
+            child: child genome which the given node belongs to
+            globalInnovations: globalInnovations for adding connections (SHOULD NOT BE NOVEL)
+            addConnectionProbability: chance to inherit a connectionGene from parent to child topology
+        RETURNS:
+            None. just alters the given node
+    '''
+    allChildNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
+    # TODO: extract to parent method
+    for parentNode in parent.hiddenNodes:
+        if parentNode.nodeId == targetNode.nodeId:
+            for outc in parentNode.outConnections:
+                if outc.output.nodeId in [x.nodeId for x in allChildNodes]:
+                    # TODO: add probability OR keep all connections from moreFitParent
+                    # get corresponding node in child topology
+                    for onode in allChildNodes:
+                        if onode.nodeId == outc.output.nodeId:
+                            # add output connection
+                            child.addConnection(connectionGene(weight=copy(
+                                outc.weight), inNode=targetNode, outNode=onode), globalInnovations)
+
+            for inc in parentNode.inConnections:
+                if inc.input.nodeId in [x.nodeId for x in allChildNodes]:
+                    # TODO: add probability
+                    # add input connection
+                    for inode in allChildNodes:
+                        if inode.nodeId == inc.input.nodeId:
+                            child.addConnection(connectionGene(
+                                weight=copy(inc.weight), inNode=inode, outNode=targetNode), globalInnovations)
+
+
 # @DEPRECATED
-class node:
-    def __init__(self, parent, node):
-        self.parent = parent  # edge
-        self.node = node
-        self.children = []  # edges
+# class node:
+#     def __init__(self, parent, node):
+#         self.parent = parent  # edge
+#         self.node = node
+#         self.children = []  # edges
 
-    def addEdge(self, children):
-        '''
-        assign children to this node
-        '''
-        # force iterable
-        if type(children) is not list:
-            children = [children]
-        for child in children:
-            self.children.append(node(self, child))
+#     def addEdge(self, children):
+#         '''
+#         assign children to this node
+#         '''
+#         # force iterable
+#         if type(children) is not list:
+#             children = [children]
+#         for child in children:
+#             self.children.append(node(self, child))
 
-    def walkTree(self, depth):
-        '''
-        walks the tree formed from this node down to a given depth
-        '''
-        nextNodes = []
-        nodeBuffer = []
-        for _ in range(depth):
-            for child in nextNodes:
-                nodeBuffer.extend(child.children)
-            nextNodes.clear()
-            nextNodes.extend(nodeBuffer)
-            nodeBuffer.clear()
-        return nextNodes
+#     def walkTree(self, depth):
+#         '''
+#         walks the tree formed from this node down to a given depth
+#         '''
+#         nextNodes = []
+#         nodeBuffer = []
+#         for _ in range(depth):
+#             for child in nextNodes:
+#                 nodeBuffer.extend(child.children)
+#             nextNodes.clear()
+#             nextNodes.extend(nodeBuffer)
+#             nodeBuffer.clear()
+#         return nextNodes
 
-    def getNode(self, target):
-        '''
-        walks the tree starting from this node looking for a given target node
-        '''
-        curNodes = [self]
-        nextNodes = []
-        while len([curNode.children for curNode in curNodes]) > 0:
-            for node in curNodes:
-                if node == target:
-                    return node
-                else:
-                    nextNodes.extend(node.children)
-            print('current nodes: ', curNodes)
-            curNodes = copy(nextNodes)
-            print('next nodes: ', curNodes)
-            nextNodes.clear()
-            print('copy check: ', curNodes)
-        return None
+#     def getNode(self, target):
+#         '''
+#         walks the tree starting from this node looking for a given target node
+#         '''
+#         curNodes = [self]
+#         nextNodes = []
+#         while len([curNode.children for curNode in curNodes]) > 0:
+#             for node in curNodes:
+#                 if node == target:
+#                     return node
+#                 else:
+#                     nextNodes.extend(node.children)
+#             print('current nodes: ', curNodes)
+#             curNodes = copy(nextNodes)
+#             print('next nodes: ', curNodes)
+#             nextNodes.clear()
+#             print('copy check: ', curNodes)
+#         return None
