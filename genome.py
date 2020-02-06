@@ -7,12 +7,8 @@ import logging
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-# TODO: allow for reactivating connections in crossover (possibly in mutation as well)
-# TODO: crossover should consider node topology for crossover THEN randomly add connections
-#              based on excess or disjoints. this is more stable mathematically and biologically. K.stanley crossover
-#              is either broken or sloppy. find a Genetics agreeable representation for this operation. distance is still
-#               relevant so RoM will be possible.
 
+# TODO: write unittests for forwardProp and loop detection (re-organize)
 
 class genome:
     # NOTE: graphs are defined by their Node objects not Connections. Node defined networks
@@ -23,6 +19,8 @@ class genome:
     #  but prefered  for ease of crossover, mutability etc. (relatively low frequency operations) and high level
     #  exploration of network topologies. The graph executor would preferably be written in the numpy C API
     #  and embedded or saved in a npy format but this development should be empirically justified.
+    #
+    # even though this is node based, connection innovation numbers can be used for genetic positioning (and therefore distance)
     #
     # Use numpy recarray for compiling and slice
     #  matrix into forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
@@ -46,8 +44,6 @@ class genome:
         '''
         create a child genome without checking globalInnovation
         '''
-        # self.inputNodes = inputNodes
-        # self.outputNodes = outputNodes
         self.inputNodes = []
         self.outputNodes = []
         self.hiddenNodes = []
@@ -66,8 +62,6 @@ class genome:
             for outNode in self.outputNodes:
                 globalInnovations.verifyConnection(connection(
                     rand.uniform(-1, 1), inNode, outNode))
-        # prevents calculating after the fact and 'somewhat' less messy
-        # return self
 
     @classmethod
     def initial(cls, inputSize, outputSize, globalInnovations):
@@ -78,7 +72,6 @@ class genome:
         inputNodes = []
         outputNodes = []
         hiddenNodes = []
-        # fitness = 0
         initNodeId = inputSize*outputSize
 
         globalInnovations.nodeId = initNodeId
@@ -117,14 +110,17 @@ class genome:
         splitDepth = replaceConnection.splits(self.hiddenNodes)
         # check global innovation of the two new connections
         newNode = globalInnovations.verifyNode(
-            splitDepth, replaceConnection, replaceConnection.loop)
+            splitDepth, replaceConnection)
+        # @DEPRECATED
+        # splitDepth, replaceConnection, replaceConnection.loop)
 
         logging.info('newNode {}'.format(newNode.nodeId))
 
         # keep extrema loop indicators pointing to extrema nodes
-        if replaceConnection.loop is True:
-            newNode.outConnections[0].loop = True
-            newNode.inConnections[0].loop = True
+        # @DEPRECATED
+        # if replaceConnection.loop is True:
+        #     newNode.outConnections[0].loop = True
+        #     newNode.inConnections[0].loop = True
 
         # add this genome
         self.hiddenNodes.append(newNode)
@@ -223,17 +219,17 @@ class genome:
         nodeBuffer = []
 
         nodeTimeout = {}
-        orders = processSequences(self)
+        orders = processSequences(self)  # TODO: BUBBLES!!!!
         #NOTE: Overestimate
-        largestCircle = 2*(len(self.inputNodes) +
-                           len(self.hiddenNodes) + len(self.outputNodes))
+        # TODO: this is unacceptably long; was largestCircle = 2*(largesCircle)
+        largestCircle = len(self.inputNodes) + \
+            len(self.hiddenNodes) + len(self.outputNodes)
         currentLoopLength = largestCircle
 
         print('entering network..')
         print('ORDERS')
         for seq in orders:
             print(seq.nodeId, orders[seq])
-        # print('ORDERS: ', orders)
         print([orders[x] for x in orders])
 
         for inode, sig in zip(self.inputNodes, signals):
@@ -268,8 +264,9 @@ class genome:
                 #     unreadyNodes.append(curNode)
                 # prevent same step reverb
 
-                # TODO: stepNodes need to be hiddenNodes as outputNodes ad inputNodes are no longer considered for looping
-                # for step in stepNodes:
+                # TODO: would it be possible to get when unreadyNodes occur and loop detect on timeout and reset loop timers
+                #              loop detection works but leaves something to be improved upon.
+                #             unecessary loops are detected but should be universal approximator with recursion.
                 for step in [x for x in stepNodes if x in self.hiddenNodes]:
                     # TODO: had step check, can step be None in list stepNodes? I think not
                     if step not in nextNodes and step.activated is False:
@@ -282,9 +279,8 @@ class genome:
                             nodeTimeout.update({step: largestCircle})
                             # reset counter on all deeper nodes to ensure
                             # skip connections wait for all other connections
-                            # TODO: Still getting ties. get unreadyConnection with lowest sequence input
                             for stepNode in nodeTimeout:
-                                # TODO: keyerror here, still exists
+                                # TODO: keyerror here, should be fixed
                                 if step in orders:  # hackey solution
                                     if orders[stepNode] < orders[step]:
                                         print('RESETING TIMER ON: ',
@@ -292,7 +288,8 @@ class genome:
                                         print('since {} {} is less than {} {}'.format(
                                             stepNode.nodeId, stepNode, step.nodeId, step))
                                         # TODO: does this need to be larger than newly added step?
-                                        #             since we are overestimating this is fine for now
+                                        #              since we are overestimating this is fine for now
+                                        #              +1 shouldnt be necessary
                                         nodeTimeout.update(
                                             {stepNode: largestCircle+1})
 
@@ -302,7 +299,7 @@ class genome:
                     print('requesting blockage from node: {}'.format(timer.nodeId))
                     unreadyConnections = timer.getUnreadyConnections()
                     # get the connection with the highest inConnection node sequence.
-                    # TODO: still getting key errors
+                    # TODO: setting input to inf is weird but..
                     min([x for x in unreadyConnections],
                         key=lambda x: orders[x.input] if x.input in self.hiddenNodes else float('inf')).loop=True
 
@@ -323,9 +320,6 @@ class genome:
         for onode in self.outputNodes:
             activeSignal = 0
             for inc in [x for x in onode.inConnections if x.disabled is False]:
-                # recursion case? should be forward propagated due to activating of output nodes
-                # assert inc.signal is not None and inc.loop is False
-                # assert inc.signal is not None
                 if inc.loop is True and inc.signal is None:
                     continue
                 else:
