@@ -19,6 +19,7 @@ from graphviz import Digraph
 
 
 def processSequences(targetGenome):
+    # TODO: trace this out. if this worked there would never be unecessary loop detection (minimal number of loop connections to forward prop topo)
     '''
     gets all split depths of all nodes in the given topology then assign node sequence by checking node depths for shorting connections.
     PARAMETERS:
@@ -51,6 +52,7 @@ def processSequences(targetGenome):
                 for inConnection in node.inConnections:
                     connectionBuffer.append(inConnection)
 
+                # TODO: does this cause duplicate entries for a node
                 sequences.update({node: curDepth})
 
         curConnections.clear()
@@ -65,25 +67,23 @@ def processSequences(targetGenome):
                 # update sequences
                 sequences[node] = sequences[inConnection.input] + 1
 
-    graphvizNEAT(targetGenome, sequences)
     # TODO: graph insight: can we say all connections with sequence[inConnection.output] < sequence[inConnection.input] are loops
     return sequences
 
 
-def graphvizNEAT(network, sequences):
-    f = Digraph('finite_state_machine', filename='graphvizSequences.svg')
+def graphvizNEAT(network, filename):  # was sequences
+    f = Digraph('finite_state_machine', filename=str(filename))
     f.attr(rankdir='LR', size='8,5')
 
-    f.attr('node', shape='doublecircle')
+    f.attr('node', shape='circle')
 
-    for node in sequences:
-        f.node(str(node.nodeId))
     for node in network.inputNodes:
+        f.node(str(node.nodeId))
+    for node in network.hiddenNodes:
+        # was for node in sequences
         f.node(str(node.nodeId))
     for node in network.outputNodes:
         f.node(str(node.nodeId))
-
-    f.attr('node', shape='circle')
 
     allConnects = []
     for n in network.hiddenNodes:
