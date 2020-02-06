@@ -8,6 +8,7 @@ from copy import copy
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?
 
 # TODO: Ensure copy is used properly.. ugh.. python.
+# TODO: write unittests for comparing innovation after simple mutations against expected returns
 
 # NOTE: copying objects increases reference count and allows equivalence comparison in reflection
 
@@ -53,7 +54,7 @@ class globalConnections:
         verifyConnection.innovation = copy(self.innovation)
         return verifyConnection
 
-    def verifyNode(self, localParallelNodes, replaceConnection, isLoop):
+    def verifyNode(self, localParallelNodes, replaceConnection):
         '''
         check to see if a newly split connection has already occured
         PARAMETERS:
