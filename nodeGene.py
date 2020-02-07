@@ -53,12 +53,22 @@ class nodeGene:
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
 
+    def comparePrimals(self, otherNodes):
+        '''
+        compares this primal node against all primal nodes in list, used for chromosome alignment operations.
+        '''
+        return all([self.comparePrimal(x) for x in otherNodes])
+
     def comparePrimal(self, otherNode):
         '''
         compares this primal node against another primal node, used for chromosome alignment operations.
         '''
-        assert len(self.outConnections) == 1 and len(self.inConnections) == 1 and len(
-            otherNode.outConnections) == 1 and len(otherNode.inConnections) == 1, "non-primal nodes passed to primal node comparison"
+        # TODO: these assertions dont make sense when using to comparing parallel splits.
+        # @DEPRECATED
+        # assert len([x for x in self.outConnections if x.disabled is False]) == 1 and len([x for x in self.inConnections if x.disabled is False]) == 1, \
+        # "comparing a non-primal node"
+        # assert len([x for x in otherNode.outConnections if x.disabled is False]) == 1 and len([x for x in otherNode.inConnections if x.disabled is False]) == 1, \
+        # "non-primal node passed to primal node comparison"
 
         if self.outConnections[0].output.nodeId == otherNode.outConnections[0].output.nodeId and \
            self.inConnections[0].input.nodeId == otherNode.inConnections[0].input.nodeId:

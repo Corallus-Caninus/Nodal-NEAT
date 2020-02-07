@@ -66,6 +66,7 @@ class chromosome:
                         connectionBuffer.append(inConnection)
 
                     # TODO: how does this create duplicate split depths?
+                    # instead of using node objects, should we store tuples of output.node.Id and input.node.id?
                     primalNode = deepcopy(node)
                     primalNode.outConnections.clear()
                     primalNode.inConnections.clear()
@@ -74,7 +75,8 @@ class chromosome:
                         [node.outConnections[0]])
                     primalNode.inConnections = deepcopy(
                         [node.inConnections[0]])
-                    # TODO: ensure we can still perform proper comparisons in crossover
+                    # TODO: deepcopy always returns a new object so duplicates appear to never have been added
+                    #              needs a trace
                     if primalNode not in self.primalGenes[targetGenome]:
                         self.primalGenes[targetGenome].append(primalNode)
             curConnections.clear()
@@ -93,6 +95,7 @@ class chromosome:
     #   from the length of attachment (read more on this, however it is only abstractly pertinent)
 
     def crossover(self, moreFitParent, lessFitParent, globalInnovations):
+        # TODO: robust to depth but needs a trace!
         # TODO: pass in probabilities
         # NOTE: remember to only compare nodeId and innovation number for nodes and connections respectively.
         #              NOT virtual object addresses. only exception is addConnection and addNode methods should
@@ -115,16 +118,17 @@ class chromosome:
             #               can either write a condition in chromosome alignment (add node) or
             #               make tree based rule here forcing fully connected tree.
             if any([x.comparePrimal(depth) for x in self.primalGenes[lessFitParent]]):
+                # TODO: how do multiple connections occur?
                 if depth.nodeId not in [x.nodeId for x in childSkeleton]:
                     print('in both parents')
                     childSkeleton.append(depth)
-            elif rand.uniform(a=0, b=1) > 0.50:
+            elif rand.uniform(a=0, b=1) < 0.90:
                 if depth.nodeId not in [x.nodeId for x in childSkeleton]:
                     childSkeleton.append(depth)
 
         # add less fit parent nodes
         for depth in self.primalGenes[lessFitParent]:
-            if rand.uniform(a=0, b=1) > 0.25:
+            if rand.uniform(a=0, b=1) < 0.25:
                 if depth.nodeId not in [x.nodeId for x in childSkeleton]:
                     childSkeleton.append(depth)
 
@@ -133,35 +137,38 @@ class chromosome:
 
         # ADDING NODES
         # NOTE: we are expecting node to occur in order of depth.
-        for node in childSkeleton:
-            allNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
-            allConnections = []
-            for cnode in allNodes:
-                for outc in cnode.outConnections:
-                    if outc not in allConnections:
-                        allConnections.append(outc)
-                for inc in cnode.inConnections:
-                    if inc not in allConnections:
-                        allConnections.append(inc)
+        # TODO: Trace out where depths are lost and where connections cant be added.
+        #               innovation should still never occur here
+        # TODO: this causes multiple connections with parallel splits this is normal
+        while(any([x.comparePrimals(child.hiddenNodes) for x in childSkeleton])):
+            for node in childSkeleton:
+                allNodes = child.outputNodes + child.inputNodes + child.hiddenNodes
+                allConnections = []
+                for cnode in allNodes:
+                    for outc in cnode.outConnections:
+                        if outc not in allConnections:
+                            allConnections.append(outc)
+                    for inc in cnode.inConnections:
+                        if inc not in allConnections:
+                            allConnections.append(inc)
 
-            # TODO: still getting novel nodes
-            for connection in allConnections:
-                if node.outConnections[0].output.nodeId == connection.output.nodeId and \
-                        node.inConnections[0].input.nodeId == connection.input.nodeId:
-                    # this is the split
+                for connection in allConnections:
+                    if node.outConnections[0].output.nodeId == connection.output.nodeId and \
+                            node.inConnections[0].input.nodeId == connection.input.nodeId:
+                        # this is the split
 
-                    # TODO: need to force this to not innovate no nodes are novel
-                    #               could globalInnovations be broke?
-                    #               why are some working and others not?
-                    #
-                    # SOLUTION: something from depth 5 added to a
-                    #                      network that only has depth 3.
-                    # #TODO: need to stop split search if node isnt added.
-                    #                could this also be from splitting out of order?
-                    # OR is innovation here okay, combining different orders of nodes from different topologies
-                    # can cause new splits NEEDS A TRACE
-                    child.addNode(connection, globalInnovations)
-                    break
+                        # TODO: need to force this to not innovate no nodes are novel
+                        #               could globalInnovations be broke?
+                        #               why are some working and others not?
+                        #
+                        # SOLUTION: something from depth 5 added to a
+                        #                      network that only has depth 3.
+                        # #TODO: need to stop split search if node isnt added.
+                        #                could this also be from splitting out of order?
+                        # OR is innovation here okay, combining different orders of nodes from different topologies
+                        # can cause new splits NEEDS A TRACE
+                        child.addNode(connection, globalInnovations)
+                        break
 
         # ADDING CONNECTIONS
         # NOTE: this seems to be working appropriately.
@@ -179,7 +186,6 @@ class chromosome:
             # get node in moreFitParent topology
 
             # now iterate over connections in less fit topology with random chance to add
-
         return child
 
 
@@ -221,54 +227,3 @@ def addParentConnections(targetNode, parent, child, globalInnovations, addConnec
                         if inode.nodeId == inc.input.nodeId:
                             child.addConnection(connectionGene(
                                 weight=copy(inc.weight), inNode=inode, outNode=targetNode), globalInnovations)
-
-
-# @DEPRECATED
-# class node:
-#     def __init__(self, parent, node):
-#         self.parent = parent  # edge
-#         self.node = node
-#         self.children = []  # edges
-
-#     def addEdge(self, children):
-#         '''
-#         assign children to this node
-#         '''
-#         # force iterable
-#         if type(children) is not list:
-#             children = [children]
-#         for child in children:
-#             self.children.append(node(self, child))
-
-#     def walkTree(self, depth):
-#         '''
-#         walks the tree formed from this node down to a given depth
-#         '''
-#         nextNodes = []
-#         nodeBuffer = []
-#         for _ in range(depth):
-#             for child in nextNodes:
-#                 nodeBuffer.extend(child.children)
-#             nextNodes.clear()
-#             nextNodes.extend(nodeBuffer)
-#             nodeBuffer.clear()
-#         return nextNodes
-
-#     def getNode(self, target):
-#         '''
-#         walks the tree starting from this node looking for a given target node
-#         '''
-#         curNodes = [self]
-#         nextNodes = []
-#         while len([curNode.children for curNode in curNodes]) > 0:
-#             for node in curNodes:
-#                 if node == target:
-#                     return node
-#                 else:
-#                     nextNodes.extend(node.children)
-#             print('current nodes: ', curNodes)
-#             curNodes = copy(nextNodes)
-#             print('next nodes: ', curNodes)
-#             nextNodes.clear()
-#             print('copy check: ', curNodes)
-#         return None

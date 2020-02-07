@@ -16,18 +16,15 @@ class TestPrimalAlignment(unittest.TestCase):
     def test_primalOperations(self):
         evaluation = evaluator(inputs=2, outputs=2, population=2,
                                connectionMutationRate=0.5, nodeMutationRate=0.2)
-        i = 0
-        for target in evaluation.genepool:
-            # TODO: implement logging
-            # TODO: change order of mutations to test globalInnovations
-            # logging.info('BEGIN {} GENOME'.format(i))
-            i += 1
-            for _ in range(0, 20):
+
+        for _ in range(0, 20):
+            for target in evaluation.genepool:
                 target.addNodeMutation(.0001, evaluation.globalInnovations)
                 target.addConnectionMutation(.0001,
                                              evaluation.globalInnovations)
-            evaluation.genepool[0].fitness = 4
-            evaluation.genepool[1].fitness = 1
+
+        evaluation.genepool[0].fitness = 4
+        evaluation.genepool[1].fitness = 1
         # NOTE: everything above is a test fixture for most things
 
         chromosomes = chromosome()
@@ -54,6 +51,8 @@ class TestPrimalAlignment(unittest.TestCase):
             graphvizNEAT(child, 'child ' + str(uuid.uuid1()))
             print('nodes lost in child from superior parent: {}'.format(
                 len(evaluation.genepool[0].hiddenNodes) - len(child.hiddenNodes)))
+            print('nodes lost in child from inferior parent: {}'.format(
+                len(evaluation.genepool[1].hiddenNodes) - len(child.hiddenNodes)))
         # NOTE: graphically confirmed levels of complexification is functioning.
         #             need to add logistic probability of adding node to prevent too much pruning
         #              otherwise risk losing innovations faster than mutation rate.
