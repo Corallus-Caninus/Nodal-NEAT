@@ -25,7 +25,7 @@ class nodeGene:
         # check if connection exists first
         # TODO: Really ought to clean up the self loop case here..
         # TODO: testing nodeId comparison instead
-        if self.nodeId is connectionGene.output.nodeId and self is connectionGene.input.nodeId:
+        if self.nodeId is connectionGene.output.nodeId and self.nodeId is connectionGene.input.nodeId:
             self.inConnections.append(connectionGene)
             self.outConnections.append(connectionGene)
         elif self.nodeId is connectionGene.input.nodeId:
@@ -42,12 +42,12 @@ class nodeGene:
         '''
         # TODO: decide whether to use object comparison or nodeId/innovation.
         #              nodeId/innovation is de facto
-        if self is connectionGene.input and self is connectionGene.output:
+        if self.nodeId is connectionGene.input.nodeId and self.nodeId is connectionGene.output.nodeId:
             self.outConnections.remove(connectionGene)
             self.inConnections.remove(connectionGene)
-        elif self is connectionGene.input:
+        elif self.nodeId is connectionGene.input.nodeId:
             self.outConnections.remove(connectionGene)
-        elif self is connectionGene.output:
+        elif self.nodeId is connectionGene.output.nodeId:
             self.inConnections.remove(connectionGene)
         else:  # default fallthrough error
             raise Exception('ERROR: cannot delete ',
@@ -118,10 +118,10 @@ class nodeGene:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
-                for inc in incs:
-                    if inc.signal is None and inc.loop is False:
-                        print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
-                            inc.input.nodeId, inc.output.nodeId))
+                # for inc in incs:
+                    # if inc.signal is None and inc.loop is False:
+                        # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                        #     inc.input.nodeId, inc.output.nodeId))
                 return [self]
             else:
                 for inc in [x for x in incs if x.signal is not None]:
@@ -139,10 +139,10 @@ class nodeGene:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
-                for inc in incs:
-                    if inc.signal is None and inc.loop is False:
-                        print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
-                            inc.input.nodeId, inc.output.nodeId))
+                # for inc in incs:
+                    # if inc.signal is None and inc.loop is False:
+                        # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                        #     inc.input.nodeId, inc.output.nodeId))
                 return [self]
             else:
                 for inc in [x for x in incs if x.signal is not None]:
