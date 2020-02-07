@@ -1,5 +1,7 @@
 from genome import genome
 from innovation import globalConnections
+from chromosome import chromosome
+import random as rand
 
 
 def fitnessFunction():
@@ -22,6 +24,7 @@ class evaluator:
     # TODO: Dask
     # TODO: add verbosity levels with logging for tracing at each level of encapsulation
     # TODO: can networkx be used for forward propagation given associative matrix?
+    # TODO: implement this in Cython
 
     def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate):
         self.connectionMutationRate = connectionMutationRate
@@ -29,26 +32,42 @@ class evaluator:
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
         self.globalInnovations = globalConnections()
+        self.chromosomes = chromosome()
 
         genepool = []
         for entry in range(0, population):
             genepool.append(
-                genome(inputs, outputs, self.globalInnovations))
+                genome.initial(inputs, outputs, self.globalInnovations))
         self.genepool = genepool
 
-    def crossover(self, firstGenome, secondGenome):
-        # TODO: implement nodeId and globalConnections
-        #               NOTE: nodeId needs to be updated accordingly unless a better solution can be found
-        if firstGenome.fitness > secondGenome.fitness:
-            child = firstGenome  # TODO: crossover operation
-        else:
-            child = secondGenome  # TODO: crossover opreration with fitness bias of parent
-        # Add mutation modifiers
-        # allConnections = map(lambda x: x.connections, self.genepool)
+    def nextGeneration(self):
+        # TODO: ensure all genomes have been evaluated and assigned fitness
+        # assert all([x.fitness is not None for x in genepool])
+        nextPool = []
 
-        # if rand.uniform(0,1) > nodeMutationRate:
-        #   self.innovation += child.addNodeMutation(
-        #   self.nodeMutationRate, self.innovation)
-        # if rand.uniform(0, 1) > connectionMutationRate:
-        #   self.innovation += child.addConnectionMutation(
-        #   self.innovation)
+        while len(nextPool) < len(self.genepool):
+            # TODO: add proper fitness bias with something real (logit, gamma, poisson etc. reading to be done)
+            biasFitnessSelect = sorted(
+                [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
+            # TODO: does this effect globalInnovations? new list but should be shallow copy
+            self.chromosomes.resetPrimalGenes()
+            for ge in biasFitnessSelect:
+                self.chromosomes.readyPrimalGenes(ge)
+
+            firstParent = biasFitnessSelect[rand.randint(
+                0, len(self.genepool)/2)]
+            secondParent = biasFitnessSelect[rand.randint(
+                0, len(self.genepool)-1)]
+
+            if firstParent.fitness > secondParent.fitness:
+                nextPool.append(self.chromosomes.crossover(
+                    firstParent, secondParent, self.globalInnovations))
+            else:
+                nextPool.append(self.chromosomes.crossover(
+                    secondParent, firstParent, self.globalInnovations))
+        self.genepool.clear()
+        self.genepool = nextPool.copy()
+        print('new genepool with {} members'.format(len(self.genepool)))
+        nextPool.clear()
+
+        return self.genepool
