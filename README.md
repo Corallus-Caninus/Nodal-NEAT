@@ -1,10 +1,9 @@
-# PointsOfMutation
-personal research in mapping complexifying fitness landscapes (loss functions of increasing dimension) for generalization and exploration using the NEAT genetic algorithm by K.Stanley
+![stability-wip](https://img.shields.io/badge/stability-work_in_progress-blue.svg)
 
+# Nodal-NEAT
 
-***Current Status:*** Writting the neat algorithm.
+The NEAT algorithm by K.Stanley written from nodes instead of the traditional connection genes. This allows tracking how nodes are added using a metric called 'split depth' in the chromosome.py module and 'primal nodes' which represent the nodal 'skeleton' structure of a topology. This is useful for performing meaningful crossover that scales with genome dissimalarity. Split depth also creates a 'moving average sliding window' throughout the complexification process. Integrating simplification in crossover allows genomes to drop sequences of node splits and sample simplicity at designated localities in the neural network topology under guidance of the genetic algorithm as well as sample larger steps of complexification.
 
+(see NEAT phased pruning for a similar but connnection oriented and non-crossover approach to simplification)
 
-
-**Goals and thoughts:**
-  I hope to find an interesting method for transfer learning from seemingly unrelated domains and with multiple fitness functions relying heavily on concepts of modularity and abstraction in a reinforcement learning setting. Several other research projects will continue from insights gained here. This project is meant to be educational/exploratory and not necessarily efficient. I believe sample efficiency in ANN learning will come from generalization in the form of abstract prior knowledge and pattern recognition across diverse fitness landscapes.
+Please feel free to contact me with questions.
