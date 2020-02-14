@@ -6,6 +6,7 @@ import logging
 from network import graphvizNEAT
 import uuid
 import sys
+import random as rand
 
 
 class TestPrimalAlignment(unittest.TestCase):
@@ -17,7 +18,7 @@ class TestPrimalAlignment(unittest.TestCase):
     #               feature
 
     def test_primalOperations(self):
-        evaluation = evaluator(inputs=2, outputs=2, population=2,
+        evaluation = evaluator(inputs=2, outputs=2, population=5,
                                connectionMutationRate=0.5, nodeMutationRate=0.2)
 
         for _ in range(0, 10):
@@ -29,47 +30,37 @@ class TestPrimalAlignment(unittest.TestCase):
                                              evaluation.globalInnovations)
                 target.addConnectionMutation(.0001,
                                              evaluation.globalInnovations)
-
-        evaluation.genepool[0].fitness = 4
-        evaluation.genepool[1].fitness = 1
+        for ge in evaluation.genepool:
+            rfit = rand.uniform(0, len(evaluation.genepool))
+            ge.fitness = rfit
 
         # NOTE: everything above is a test fixture for most things
 
         chromosomes = nuclei()
-
-        chromosomes.readyPrimalGenes(evaluation.genepool[0])
-        print('nodes in primal chromosome representation: {} nodes in backing genome: {}'
-              .format(len(chromosomes.primalGenes[evaluation.genepool[0]]), len(evaluation.genepool[0].hiddenNodes)))
-        chromosomes.readyPrimalGenes(evaluation.genepool[1])
-
-        # NOTE: primalGenes are assembled seemingly correctly
-        for x in chromosomes.primalGenes:
-            for i in chromosomes.primalGenes[x]:
-                print(i)
+        for ge in evaluation.genepool:
+            chromosomes.readyPrimalGenes(ge)
 
         nextGeneration = []
         for _ in range(0, 5):
-            child = chromosomes.crossover(
-                evaluation.genepool[0], evaluation.genepool[1], evaluation.globalInnovations)
+            p1 = rand.randint(0, len(evaluation.genepool)-1)
+            p2 = rand.randint(0, len(evaluation.genepool)-1)
+            if evaluation.genepool[p1].fitness >= evaluation.genepool[p2].fitness:
+                child = chromosomes.crossover(
+                    evaluation.genepool[p1], evaluation.genepool[p2], evaluation.globalInnovations)
+            else:
+                child = chromosomes.crossover(
+                    evaluation.genepool[p2], evaluation.genepool[p1], evaluation.globalInnovations)
+
             nextGeneration.append(child)
 
         print(nextGeneration)
         nextGeneration[0].forwardProp([1, 2])
         nextGeneration[0].forwardProp([1, 2])
-        # TODO: child doesnt get added connections or nodes (just initialTopology)
+
         for child in nextGeneration:
             graphvizNEAT(child, 'child ' + str(uuid.uuid1()))
-            print('nodes lost in child from superior parent: {}'.format(
-                len(evaluation.genepool[0].hiddenNodes) - len(child.hiddenNodes)))
-            print('nodes lost in child from inferior parent: {}'.format(
-                len(evaluation.genepool[1].hiddenNodes) - len(child.hiddenNodes)))
-        # NOTE: graphically confirmed levels of complexification is functioning.
-        #             need to add logistic probability of adding node to prevent too much pruning
-        #              otherwise risk losing innovations faster than mutation rate.
-        #              (also forces crossover to follow a path as a genepool so this is interesting)
-        #               ready for unittest of fitness function xor to examine behaviour in pressure.
-        graphvizNEAT(evaluation.genepool[0], 'superior')
-        graphvizNEAT(evaluation.genepool[1], 'inferior')
+        for parent in evaluation.genepool:
+            graphvizNEAT(parent, 'parent' + str(uuid.uuid1()))
 
 
 if __name__ == '__main__':
