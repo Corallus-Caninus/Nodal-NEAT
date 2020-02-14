@@ -1,35 +1,45 @@
-from chromosome import chromosome
+from nuclei import nuclei
 from genome import genome
 from evaluator import evaluator
 import unittest
 import logging
 from network import graphvizNEAT
 import uuid
+import sys
 
 
 class TestPrimalAlignment(unittest.TestCase):
     '''
     unittest for chromosome's crossover method and supporting methods
     '''
-    # TODO: recurring removal in start of evolution. need to debug this either just here or here and basic_trainning
+    # TODO: recurring connectionGene removal BUG in start of evolution. need to debug this either just here or here and basic_trainning
+    #               this is likely to be during split of loop connection trace from globalInnovations. bug has occured long enough it could be a deep
+    #               feature
 
     def test_primalOperations(self):
         evaluation = evaluator(inputs=2, outputs=2, population=2,
                                connectionMutationRate=0.5, nodeMutationRate=0.2)
 
-        for _ in range(0, 20):
+        for _ in range(0, 10):
             for target in evaluation.genepool:
                 target.addNodeMutation(.0001, evaluation.globalInnovations)
+                target.addConnectionMutation(.0001,
+                                             evaluation.globalInnovations)
+                target.addConnectionMutation(.0001,
+                                             evaluation.globalInnovations)
                 target.addConnectionMutation(.0001,
                                              evaluation.globalInnovations)
 
         evaluation.genepool[0].fitness = 4
         evaluation.genepool[1].fitness = 1
+
         # NOTE: everything above is a test fixture for most things
 
-        chromosomes = chromosome()
+        chromosomes = nuclei()
 
         chromosomes.readyPrimalGenes(evaluation.genepool[0])
+        print('nodes in primal chromosome representation: {} nodes in backing genome: {}'
+              .format(len(chromosomes.primalGenes[evaluation.genepool[0]]), len(evaluation.genepool[0].hiddenNodes)))
         chromosomes.readyPrimalGenes(evaluation.genepool[1])
 
         # NOTE: primalGenes are assembled seemingly correctly
