@@ -10,7 +10,11 @@ class nodeGene:
     '''
     # TODO: nodeGene can only be created with
     #              input and output connections should
-    #              be included in constructor
+    #              be included in constructor to enfore
+    #             initialization of primal nodes in encapsulation
+    #             (extract to here)
+    # TODO: should override object comparison __rep__? method to compare nodeId instead of virtual addressing
+    #             since nodeId is only every used and nodeGenes are frequently copied to new nodeGenes
 
     def __init__(self, identifier):
         self.inConnections = []
@@ -53,23 +57,38 @@ class nodeGene:
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
 
+    def alignNodeGene(self, connection):
+        '''
+        determines if the primal node representation of this node can be created by splitting the given connectionGene
+        '''
+        # if any([x.output.nodeId is connection.output.nodeId for x in self.outConnections]) and\
+        #         any([x.input.nodeId is connection.input.nodeId for x in self.inConnections]):
+        #     return True
+        # else:
+        #     return False
+        if self.outConnections[0].output.nodeId == connection.output.nodeId and \
+                self.inConnections[0].input.nodeId == connection.input.nodeId:
+            return True
+        else:
+            return False
+
     def comparePrimals(self, otherNodes):
         '''
         compares this primal node against all primal nodes in list, used for chromosome alignment operations.
         '''
-        return all([self.comparePrimal(x) for x in otherNodes])
+        return any([self.comparePrimal(x) for x in otherNodes])
 
     def comparePrimal(self, otherNode):
         '''
         compares this primal node against another primal node, used for chromosome alignment operations.
         '''
         # TODO: these assertions dont make sense when using to comparing parallel splits.
+        # TODO: need a equivalent to connectionGene.splits for nodes to reverse search
         # @DEPRECATED
         # assert len([x for x in self.outConnections if x.disabled is False]) == 1 and len([x for x in self.inConnections if x.disabled is False]) == 1, \
         # "comparing a non-primal node"
         # assert len([x for x in otherNode.outConnections if x.disabled is False]) == 1 and len([x for x in otherNode.inConnections if x.disabled is False]) == 1, \
         # "non-primal node passed to primal node comparison"
-
         if self.outConnections[0].output.nodeId == otherNode.outConnections[0].output.nodeId and \
            self.inConnections[0].input.nodeId == otherNode.inConnections[0].input.nodeId:
             return True
