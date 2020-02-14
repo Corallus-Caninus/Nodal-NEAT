@@ -3,22 +3,20 @@ import random as rand
 
 class connectionGene:
     '''
-    static class structure that holds connectionGene information. 
-    Static because this concretely defines the graph (see k.stanley)
+    a connectionGene between two nodes in a genome (neural network topology)
     '''
 
     def __init__(self, weight, inNode, outNode):
         # initialize
         self.weight = weight
         self.signal = None
-        # assign references
+        # assign this edge to nodes
         self.input = inNode
         self.output = outNode
         # NEAT's deactivation for addNodeMutation (and potentially random deactivation pruning)
         self.disabled = False
         # declares a connection as recursive for ease of forward propagation
         self.loop = False
-        # NOTE: assigned in globalConnections set to 0 to *hopefully* assign value not int object instance from globalInnovation
         self.innovation = 0
 
         # add connection references in node objects
@@ -30,11 +28,28 @@ class connectionGene:
             outNode.addConnection(self)
 
     def remove(self):
+        '''
+        remove all references to this connection.
+
+        *de-iterate references and call GC since each connection object exists only once in only one genome (no parallel edges)*
+        '''
         if self.input.nodeId == self.output.nodeId:
             self.input.removeConnection(self)
         else:
             self.input.removeConnection(self)
             self.output.removeConnection(self)
+
+    def splits(self, localNodes):
+        '''
+        get all nodes (parallel nodes) created from splitting this connection with an addNode operation 
+        '''
+        splits = []
+        for node in localNodes:
+            primalInput = node.inConnections[0].input.nodeId
+            primalOutput = node.outConnections[0].output.nodeId
+            if self.input.nodeId == primalInput and self.output.nodeId == primalOutput:
+                splits.append(node)
+        return splits
 
     def exists(self, localConnections):
         '''
@@ -44,19 +59,6 @@ class connectionGene:
             if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
                 return True
         return False
-
-    # TODO: BELOW IS UNUSED
-    def splits(self, localNodes):
-        '''
-        static method for getting all nodes created from splitting this connection and creating parallel nodes
-        '''
-        splits = []
-        for node in localNodes:
-            primalInput = node.inConnections[0].input.nodeId
-            primalOutput = node.outConnections[0].output.nodeId
-            if self.input.nodeId == primalInput and self.output.nodeId == primalOutput:
-                splits.append(node)
-        return splits
 
     def matches(self, potentialConnection):
         '''
