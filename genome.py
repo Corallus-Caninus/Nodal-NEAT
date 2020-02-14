@@ -9,8 +9,12 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
+# TODO: remove the many deprecated/unused methods and cleanup/refactor
+
 
 class genome:
+    # TODO: rename to nodal-neat to emphasis chromosome alignment operation.
+    #              (pruning of dissimalar topologies to refine genepool error vector)
     # NOTE: graphs are defined by their Node objects not Connections. Node defined networks
     # allow for more interesting encapsulation and swappable implementations as well as make
     #  recurrent, energy based etc. networks easier to implement. Connection defined topologies are skipped
@@ -21,8 +25,11 @@ class genome:
     #  and embedded or saved in a npy format but this development should be empirically justified.
     #
     # even though this is node based, connection innovation numbers can be used for genetic positioning (and therefore distance)
+    # considering nodeGenes allows for complete complexification considerations in crossover, allowing each generation to sample
+    # a spread of much more complex to much simpler topologies instead of just more complex. a configurable sliding window of complexity
+    # helps to create definite and more robust fitness manifold vectors.
     #
-    # Use numpy recarray for compiling and slice
+    # Use numpy recarray for compiling and slice. TODO: Tensorflow is a better solution given TVM, XLA and its ubiquity
     #  matrix into forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
     #  and two float matrices for signal and weights (perform matrix-wise activation of the mat-mul result matrix)
     #   trace FSM manually before scripting attempt.
@@ -72,11 +79,35 @@ class genome:
         inputNodes = []
         outputNodes = []
         hiddenNodes = []
-        initNodeId = inputSize*outputSize
+        initNodeId = inputSize+outputSize
 
         globalInnovations.nodeId = initNodeId
 
         return cls(inputSize, outputSize, globalInnovations)
+
+    def getNode(self, nodeId):
+        '''
+        return the node object that has the given nodeId
+        '''
+        allNodes = self.inputNodes + self.hiddenNodes + self.outputNodes
+        for n in allNodes:
+            if n.nodeId == nodeId:
+                return n
+
+    def getAllConnections(self):
+        '''
+        get all connections in this topology without repeats
+        '''
+        allConnections = []
+        for snode in self.inputNodes + self.hiddenNodes + self.outputNodes:
+            for outc in snode.outConnections:
+                if outc not in allConnections:
+                    allConnections.append(outc)
+            for inc in snode.outConnections:
+                if inc not in allConnections:
+                    allConnections.append(inc)
+
+        return allConnections
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
@@ -128,6 +159,7 @@ class genome:
         # newly mutated genome is ready
         self.resetLoops()
         self.resetSignals()
+        return newNode
 
     def addConnectionMutation(self, connectionMutationRate, globalInnovations):
         '''
@@ -163,6 +195,7 @@ class genome:
                 logging.info('mutation Failed: already in this genome')
                 logging.info('{} {}'.format(newConnection.input.nodeId,
                                             newConnection.output.nodeId))
+                # TODO: BUG here
                 newConnection.remove()
                 return
 
@@ -220,20 +253,15 @@ class genome:
 
         nodeTimeout = {}
         orders = processSequences(self)  # TODO: BUBBLES!!!!
+        # TODO: reimpliment unreadyNodes. if connectionBuffer == step(connectionBuffer)
+        #             nothing is happening and bubbles are in the pipe
         #NOTE: Overestimate
-        # TODO: this is unacceptably long; was largestCircle = 2*(largesCircle)
         largestCircle = len(self.inputNodes) + \
             len(self.hiddenNodes) + len(self.outputNodes)
         currentLoopLength = largestCircle
 
-        print('entering network..')
-        print('ORDERS')
-        for seq in orders:
-            print(seq.nodeId, orders[seq])
-        print([orders[x] for x in orders])
-
         for inode, sig in zip(self.inputNodes, signals):
-            print('input node is: {}'.format(inode.nodeId))
+            # print('input node is: {}'.format(inode.nodeId))
             stepNodes = inode.activate(sig)
             # prevent reverb in forward prop
             for step in stepNodes:
@@ -241,25 +269,25 @@ class genome:
                     # let recurrent nodes get reappended and catch loop in activation condition
                     nodeBuffer.append(step)
 
-        print('entering hidden layer..')
+        # print('entering hidden layer..')
         while len(nodeBuffer) > 0:
             # unreadyNodes = [] #@DEPRECATED
-            print('STEP FORWARD', [x.nodeId for x in nodeBuffer])
+            # print('STEP FORWARD', [x.nodeId for x in nodeBuffer])
             for curNode in nodeBuffer:
                 if curNode in self.outputNodes:
-                    print('OUTPUT  node is: {}'.format(curNode.nodeId))
+                    # print('OUTPUT  node is: {}'.format(curNode.nodeId))
                     stepNodes = curNode.activate(False)
                     if curNode not in stepNodes and curNode in nextNodes:
                         nextNodes.remove(curNode)
                 else:
-                    print('HIDDEN node is: {}'.format(curNode.nodeId))
+                    # print('HIDDEN node is: {}'.format(curNode.nodeId))
                     stepNodes = curNode.activate(None)
                     if curNode not in stepNodes and curNode in nextNodes:
                         nextNodes.remove(curNode)
-                print('hidden node pushing to: {}'.format(
-                    [x.nodeId for x in stepNodes]))
+                # print('hidden node pushing to: {}'.format(
+                    # [x.nodeId for x in stepNodes]))
 
-                # TODO: should probably use unreadyNodes to ensure timers tick at skip detection and not always
+                # TODO: IMPLEMENT THIS. waiting for timeout is rediculously slow
                 # if stepNodes == [curNode]:
                 #     unreadyNodes.append(curNode)
                 # prevent same step reverb
@@ -273,7 +301,7 @@ class genome:
                         nextNodes.append(step)
                         # start counting loop timer
                         if step in nodeTimeout and nodeTimeout[step] > 0:
-                            print('tick @ node: {}'.format(step.nodeId))
+                            # print('tick @ node: {}'.format(step.nodeId))
                             nodeTimeout[step] -= 1
                         else:
                             nodeTimeout.update({step: largestCircle})
@@ -283,20 +311,19 @@ class genome:
                                 # TODO: keyerror here, should be fixed
                                 if step in orders:  # hackey solution
                                     if orders[stepNode] < orders[step]:
-                                        print('RESETING TIMER ON: ',
-                                              stepNode.nodeId)
-                                        print('since {} {} is less than {} {}'.format(
-                                            stepNode.nodeId, stepNode, step.nodeId, step))
-                                        # TODO: does this need to be larger than newly added step?
-                                        #              since we are overestimating this is fine for now
-                                        #              +1 shouldnt be necessary
+                                        # print('RESETING TIMER ON: ',
+                                        #       stepNode.nodeId)
+                                        # print('since {} {} is less than {} {}'.format(
+                                        #     stepNode.nodeId, stepNode, step.nodeId, step))
+
+                                        # TODO:+1 shouldnt be necessary
                                         nodeTimeout.update(
                                             {stepNode: largestCircle+1})
 
             # trigger timeout or update timer tick
             for timer in nodeTimeout:
                 if nodeTimeout[timer] == 0:
-                    print('requesting blockage from node: {}'.format(timer.nodeId))
+                    # print('requesting blockage from node: {}'.format(timer.nodeId))
                     unreadyConnections = timer.getUnreadyConnections()
                     # get the connection with the highest inConnection node sequence.
                     # TODO: setting input to inf is weird but..
@@ -316,7 +343,7 @@ class genome:
 
         # harvest output signals
         outputs = []
-        print('harvesting output signals..')
+        # print('harvesting output signals..')
         for onode in self.outputNodes:
             activeSignal = 0
             for inc in [x for x in onode.inConnections if x.disabled is False]:
