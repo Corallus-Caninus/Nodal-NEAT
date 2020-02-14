@@ -46,15 +46,19 @@ class globalConnections:
         for connection in self.connections:
             # TODO: should be using connection.exists method
             if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
+                logging.info('INNOVATION: connection match! {}'.format([
+                    x.innovation for x in self.connections]))
                 verifyConnection.innovation = copy(connection.innovation)
                 return verifyConnection
 
-        self.connections.append(verifyConnection)
+        logging.info('INNOVATION: novel connection')
         self.innovation += 1
         verifyConnection.innovation = copy(self.innovation)
+        self.connections.append(copy(verifyConnection))
         return verifyConnection
 
     def verifyNode(self, localParallelNodes, replaceConnection):
+        # TODO: seemingly patched run more tests
         '''
         check to see if a newly split connection has already occured
         PARAMETERS:
@@ -68,10 +72,9 @@ class globalConnections:
         outputNode = replaceConnection.output
         globalMatches = []
         localSplits = len(localParallelNodes)
-        # check first inConnection and outConnection in node since other connections are always appended.
-        # NOTE: this only works if connections are never deleted from node once added.
-        #             Crossover can break this if done via k.stanley method.
-        #             Crossover needs to consider exactly whole nodes and accessory connections as genes
+        # TODO: constructed nodeGene object should be passed in here for verification just as connectionGene or
+        #             these two methods need to be extracted to nodeGene and connectionGene constructors, leaving innovation.py
+        #             as a class based data structure (not terrible since segues into RoM PoM paradigm but bloats gene classes)
 
         for split in self.splitConnections:
             if split == replaceConnection.innovation:
@@ -88,6 +91,7 @@ class globalConnections:
             newNode = nodeGene(copy(self.nodeId))
             # dont create split from global pool as will connect across genepool
 
+            # TODO: could be error when splitting loop connection
             self.innovation += 1
             inConnection = connectionGene(
                 rand.uniform(-1, 1), inputNode, newNode)
@@ -103,6 +107,7 @@ class globalConnections:
 
             if replaceConnection.innovation in self.splitConnections:
                 self.splitConnections[replaceConnection.innovation].append(
+                    # TODO: dont need inConnection and outConnection here, split connection innovation is sufficient
                     (inConnection, outConnection))
             else:
                 self.splitConnections[replaceConnection.innovation] = [
@@ -114,14 +119,14 @@ class globalConnections:
             # NOT NOVEL
             # TODO: would rather move the node creation stuff to genome.addNode method
 
-            # TODO: Consider overriding object reflection builtins for nodeId and innovation in
-            #               NodeGene and ConnectionGene this code needs a bit of housekeeping
-            thisSplit = [
-                x for x in globalMatches if x[0].output.nodeId not in [x.nodeId for x in localParallelNodes]][0]
-
-            match = thisSplit
+            for m in globalMatches:
+                if m[0].output.nodeId not in [x.nodeId for x in localParallelNodes]:
+                    match = m
+                    # TODO: should be first match to keep iteration of parallel splits across genomes
 
             newNode = nodeGene(copy(match[0].output.nodeId))
+            logging.info('INNOVATION: node match {}'.format(
+                match[0].output.nodeId))
 
             inConnection = connectionGene(
                 rand.uniform(-1, 1), inputNode, newNode)
