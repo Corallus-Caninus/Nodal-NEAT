@@ -18,18 +18,30 @@ class TestPrimalAlignment(unittest.TestCase):
     #               feature
 
     def test_primalOperations(self):
-        evaluation = evaluator(inputs=2, outputs=2, population=5,
+        evaluation = evaluator(inputs=2, outputs=2, population=3,
                                connectionMutationRate=0.5, nodeMutationRate=0.2)
 
-        for _ in range(0, 10):
+        for _ in range(0, 100):
             for target in evaluation.genepool:
-                target.addNodeMutation(.0001, evaluation.globalInnovations)
-                target.addConnectionMutation(.0001,
+                target.addNodeMutation(0.8, evaluation.globalInnovations)
+                # target.addConnectionMutation(.0001,
+                #                              evaluation.globalInnovations)
+                target.addConnectionMutation(0.9,
                                              evaluation.globalInnovations)
-                target.addConnectionMutation(.0001,
-                                             evaluation.globalInnovations)
-                target.addConnectionMutation(.0001,
-                                             evaluation.globalInnovations)
+                # target.addConnectionMutation(0.7,
+                #                              evaluation.globalInnovations)
+
+        for _ in range(0, 100):
+            evaluation.genepool[0].addNodeMutation(
+                0.9, evaluation.globalInnovations)
+            evaluation.genepool[0].addConnectionMutation(
+                0.01, evaluation.globalInnovations)
+
+            evaluation.genepool[1].addNodeMutation(
+                0.9, evaluation.globalInnovations)
+            evaluation.genepool[1].addConnectionMutation(
+                0.01, evaluation.globalInnovations)
+
         for ge in evaluation.genepool:
             rfit = rand.uniform(0, len(evaluation.genepool))
             ge.fitness = rfit

@@ -84,7 +84,13 @@ class nuclei:
     #   should use exponential/logistic decay to reduce chance of adding based on depth
     #   this is analogous to chromosome alignment given the spatial factor of combination
     #   from the length of attachment (read more on this, however it is only abstractly pertinent)
-    # this is more based in reduction division
+    #  this is more based in reduction division
+    #
+    #  should use logistic decay set by a hyperparameter for addConnections. since splitNodes are lost
+    # when connections to split arent present, not adding connections should be sufficient for pruning behaviour
+    # crossover should also be performed with some amount of similarity metric otherwise 'unstable' destructive
+    # crossover will produce child genomes with VERY few nodes and connections and pull the genepool
+    #  back too far and too often
 
     def crossover(self, moreFitParent, lessFitParent, globalInnovations):
         '''
@@ -116,7 +122,11 @@ class nuclei:
 
         # handle disjoint node genes first then excess
         while len(curConnections) > 0:
-            if len(lessFitGenes) == 0 and alignmentOffset > 0:
+            if len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
+                # Done with alignment TODO: last pass of connections?
+                curConnections.clear()
+                break
+            elif len(lessFitGenes) == 0 and alignmentOffset > 0:
                 # handle moreFit excess nodeGenes
                 curGenes = moreFitGenes.pop(0)
                 for primal in curGenes:
@@ -151,10 +161,6 @@ class nuclei:
                                 if inc not in connectionBuffer:
                                     connectionBuffer.append(inc)
                             break
-            elif len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
-                # Done with alignment TODO: last pass of connections?
-                curConnections.clear()
-                break
             else:
                 # handle matching/disjoint nodeGenes
                 curGenes = []
@@ -162,27 +168,29 @@ class nuclei:
                 for gene in moreFitGenes.pop(0) + lessFitGenes.pop(0):
                     if gene.nodeId not in [x.nodeId for x in curGenes]:
                         curGenes.append(gene)
-            for primal in curGenes:
-                for connect in curConnections:
-                    # TODO: is splitting node when already exists and found at a deeper depth desired? ensure this doesnt happen
-                    #               ensured with if gene.nodeId not in [x.nodeId for x in curGenes]
-                    #              (local alignment (last part of metaphase with alignNodeGene))
-                    #              this doesnt distinguish local excess genes (if len(moreFitGenes.pop() > len(lessFitGenes.pop())))
-                    #               not really important, most import excess/disjoint metric is depth of split (which promotes deeper networks)
 
-                    if primal.alignNodeGene(connect):
-                        newNode = child.addNode(connect, globalInnovations)
+                for primal in curGenes:
+                    for connect in curConnections:
+                        # TODO: is splitting node when already exists and found at a deeper depth desired? ensure this doesnt happen
+                        #               ensured with if gene.nodeId not in [x.nodeId for x in curGenes]
+                        #              (local alignment (last part of metaphase with alignNodeGene))
+                        #              this doesnt distinguish local excess genes (if len(moreFitGenes.pop() > len(lessFitGenes.pop())))
+                        #               not really important, most import excess/disjoint metric is depth of split (which promotes deeper networks)
+                        #           this is likely where novel nodes are discovered in crossover
 
-                        self.inheritDisjointConnections(
-                            newNode, child, moreFitParent, lessFitParent, globalInnovations)
+                        if primal.alignNodeGene(connect):
+                            newNode = child.addNode(connect, globalInnovations)
 
-                        for outc in newNode.outConnections:
-                            if outc not in connectionBuffer:
-                                connectionBuffer.append(outc)
-                        for inc in newNode.inConnections:
-                            if inc not in connectionBuffer:
-                                connectionBuffer.append(inc)
-                        break
+                            self.inheritDisjointConnections(
+                                newNode, child, moreFitParent, lessFitParent, globalInnovations)
+
+                            for outc in newNode.outConnections:
+                                if outc not in connectionBuffer:
+                                    connectionBuffer.append(outc)
+                            for inc in newNode.inConnections:
+                                if inc not in connectionBuffer:
+                                    connectionBuffer.append(inc)
+                            break
 
             curConnections.clear()
             curConnections = connectionBuffer.copy()
@@ -230,7 +238,7 @@ class nuclei:
         if moreFitNode is None and lessFitNode is None:
             # TODO: this should be assertion
             return
-        # assert moreFitNode is not None and lessFitNode is not None, "missing node in child from parents"
+        # assert moreFitNode is not None and lessFitNode is not None, "missing child node in both parents"
 
         print(moreFitNode, lessFitNode)
         # orient parent's disjoint nodeGene
