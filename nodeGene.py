@@ -61,55 +61,35 @@ class nodeGene:
         '''
         determines if the primal node representation of this node can be created by splitting the given connectionGene
         '''
-        # if any([x.output.nodeId is connection.output.nodeId for x in self.outConnections]) and\
-        #         any([x.input.nodeId is connection.input.nodeId for x in self.inConnections]):
-        #     return True
-        # else:
-        #     return False
         if self.outConnections[0].output.nodeId == connection.output.nodeId and \
                 self.inConnections[0].input.nodeId == connection.input.nodeId:
             return True
         else:
             return False
 
-    def comparePrimals(self, otherNodes):
-        '''
-        compares this primal node against all primal nodes in list, used for chromosome alignment operations.
-        '''
-        return any([self.comparePrimal(x) for x in otherNodes])
+    # @DEPRECATED
+    # def comparePrimals(self, otherNodes):
+    #     '''
+    #     compares this primal node against all primal nodes in list, used for chromosome alignment operations.
+    #     '''
+    #     return any([self.comparePrimal(x) for x in otherNodes])
 
-    def comparePrimal(self, otherNode):
-        '''
-        compares this primal node against another primal node, used for chromosome alignment operations.
-        '''
-        # TODO: these assertions dont make sense when using to comparing parallel splits.
-        # TODO: need a equivalent to connectionGene.splits for nodes to reverse search
-        # @DEPRECATED
-        # assert len([x for x in self.outConnections if x.disabled is False]) == 1 and len([x for x in self.inConnections if x.disabled is False]) == 1, \
-        # "comparing a non-primal node"
-        # assert len([x for x in otherNode.outConnections if x.disabled is False]) == 1 and len([x for x in otherNode.inConnections if x.disabled is False]) == 1, \
-        # "non-primal node passed to primal node comparison"
-        if self.outConnections[0].output.nodeId == otherNode.outConnections[0].output.nodeId and \
-           self.inConnections[0].input.nodeId == otherNode.inConnections[0].input.nodeId:
-            return True
-        else:
-            return False
+    # def comparePrimal(self, otherNode):
+    #     '''
+    #     compares primal representation of this node against another primal node representation, used for chromosome alignment operations.
+    #     '''
+    #     if self.outConnections[0].output.nodeId == otherNode.outConnections[0].output.nodeId and \
+    #        self.inConnections[0].input.nodeId == otherNode.inConnections[0].input.nodeId:
+    #         return True
+    #     else:
+    #         return False
 
     def getUnreadyConnections(self):
-        unreadys = []
         incs = [x for x in self.inConnections if x.disabled is False]
+
         if any([x.signal is None and x.loop is False for x in incs]):
-            # persist this node to next step due to skip connection
             blockages = [
                 x for x in self.inConnections if x.signal is None and x.loop is False]
-            # for inc in incs:
-            #     if inc.signal is None and inc.loop is False:
-            #         blockages = [
-            #             x for x in incs if x.loop is False and x.signal is None]
-            #         print('retrieving recurrent connection.. {} -> {}'.format(
-            #             inc.input.nodeId, inc.output.nodeId))
-            #         # return firstBlockage
-            #         unreadys.append(inc)
             return blockages
         else:
             assert "UNREADY NODE WITHOUT UNREADY CONNECTIONS!"
@@ -119,7 +99,8 @@ class nodeGene:
         nextNodes = []
         assert self.activated is False, "@ node {}".format(self.nodeId)
 
-        if signal is not None and signal is not False:  # INPUT NODE CASE
+        # INPUT NODE CASE
+        if signal is not None and signal is not False:
             # passively accept loop signals to input
             for inc in self.inConnections:
                 if inc.signal is not None and inc.disabled is False:
@@ -133,7 +114,8 @@ class nodeGene:
                     nextNodes.append(outc.output)
             self.activated = True
 
-        elif signal is False:  # OUTPUT NODE CASE
+        # OUTPUT NODE CASE
+        elif signal is False:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
@@ -154,7 +136,9 @@ class nodeGene:
                 self.activated = True
                 # TODO: leaves hanging node connections that never get activated
                 #              need to handle propagating but graph is functional
-        else:  # HIDDEN NODE CASE
+
+        # HIDDEN NODE CASE
+        else:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
