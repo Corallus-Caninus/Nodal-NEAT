@@ -50,12 +50,7 @@ class nuclei:
 
                 # TODO: this code requires connections to be added while rebuilding from primalGenes
                 for split in splitNodes:
-                    for outc in split.outConnections:
-                        if outc not in connectionBuffer:
-                            connectionBuffer.append(outc)
-                    for inc in split.inConnections:
-                        if inc not in connectionBuffer:
-                            connectionBuffer.append(inc)
+                    self.nextConnections(split, connectionBuffer)
 
             self.primalGenes[targetGenome].append(curDepth.copy())
             curDepth.clear()
@@ -133,17 +128,12 @@ class nuclei:
                     for connect in curConnections:
                         if primal.alignNodeGene(connect):
                             newNode = child.addNode(connect, globalInnovations)
+
                             self.inheritExcessConnections(
                                 newNode, child, moreFitParent, globalInnovations)
 
-                            for outc in newNode.outConnections:
-                                if outc not in connectionBuffer:
-                                    connectionBuffer.append(outc)
-                            for inc in newNode.inConnections:
-                                if inc not in connectionBuffer:
-                                    connectionBuffer.append(inc)
+                            self.nextConnections(newNode, connectionBuffer)
                             break
-
             elif len(moreFitGenes) == 0 and alignmentOffset < 0:
                 # handle lessFit excess nodeGenes
                 curGenes = lessFitGenes.pop(0)
@@ -151,15 +141,11 @@ class nuclei:
                     for connect in curConnections:
                         if primal.alignNodeGene(connect):
                             newNode = child.addNode(connect, globalInnovations)
+
                             self.inheritExcessConnections(
                                 newNode, child, lessFitParent, globalInnovations)
 
-                            for outc in newNode.outConnections:
-                                if outc not in connectionBuffer:
-                                    connectionBuffer.append(outc)
-                            for inc in newNode.inConnections:
-                                if inc not in connectionBuffer:
-                                    connectionBuffer.append(inc)
+                            self.nextConnections(newNode, connectionBuffer)
                             break
             else:
                 # handle matching/disjoint nodeGenes
@@ -184,12 +170,7 @@ class nuclei:
                             self.inheritDisjointConnections(
                                 newNode, child, moreFitParent, lessFitParent, globalInnovations)
 
-                            for outc in newNode.outConnections:
-                                if outc not in connectionBuffer:
-                                    connectionBuffer.append(outc)
-                            for inc in newNode.inConnections:
-                                if inc not in connectionBuffer:
-                                    connectionBuffer.append(inc)
+                            self.nextConnections(newNode, connectionBuffer)
                             break
 
             curConnections.clear()
@@ -198,7 +179,21 @@ class nuclei:
 
         return child
 
+    def nextConnections(self, newNode, connectionBuffer):
+        '''
+        feed the connectionBuffer all incoming and outgoing connections from newNode
+        '''
+        for outc in newNode.outConnections:
+            if outc not in connectionBuffer:
+                connectionBuffer.append(outc)
+        for inc in newNode.inConnections:
+            if inc not in connectionBuffer:
+                connectionBuffer.append(inc)
+
     def inheritConnection(self, child, connect, outConnection, targetNode, globalInnovations):
+        '''
+        add a connection to targetNode
+        '''
         if outConnection is True:
             nodeMatch = child.getNode(connect.output.nodeId)
         else:
@@ -213,13 +208,21 @@ class nuclei:
             if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
                 newConnection.remove()
             else:
-                print('connecting node {} to node {}'.format(
-                    targetNode.nodeId, nodeMatch.nodeId))
+                # TODO: getting parallel edges here.
+                if outConnection is True:
+                    print('connecting nodes {} -> {}'.format(
+                        targetNode.nodeId, nodeMatch.nodeId))
+                else:
+                    print('connecting nodes {} -> {}'.format(
+                        nodeMatch.nodeId, targetNode.nodeId))
                 child.addConnection(
                     newConnection, globalInnovations)
 
     def inheritDisjointConnections(self, targetNode, child, moreFitParent, lessFitParent, globalInnovations):
         # TODO: inherit from lesserFitParent when not in moreFitParent (true disjoint not matching and moreFit)
+
+        # TODO: getting false recurrence verified in innovation
+        #               recurrent connections are also novel innovations
         '''
         inherit connections from disjoint nodeGenes (occuring in a primalGene depth represented in both parents).
         '''
@@ -254,7 +257,7 @@ class nuclei:
             for outc in moreFitNode.outConnections + lessFitNode.outConnections:
                 if outc not in inheritOuts:
                     inheritOuts.append(outc)
-            for inc in moreFitNode.outConnections + lessFitNode.outConnections:
+            for inc in moreFitNode.inConnections + lessFitNode.inConnections:
                 if inc not in inheritIns:
                     inheritIns.append(inc)
 
@@ -291,7 +294,7 @@ class nuclei:
         inherit connections from excess nodeGenes (occuring in a depth only represented by one parent).
         '''
         assert targetNode in child.hiddenNodes
-        print('\n\n\n\nEXCESS: inheriting into targetNode.nodeId {} \n\n\n'.format(
+        print('\n\nEXCESS: inheriting into targetNode.nodeId {}'.format(
             targetNode.nodeId))
         excessParentNode = excessParent.getNode(targetNode.nodeId)
 
@@ -343,12 +346,7 @@ class nuclei:
                         self.inheritDisjointConnections(
                             newNode, child, targetGenome, targetGenome, globalInnovations)
 
-                        for outc in newNode.outConnections:
-                            if outc not in connectionBuffer:
-                                connectionBuffer.append(outc)
-                        for inc in newNode.inConnections:
-                            if inc not in connectionBuffer:
-                                connectionBuffer.append(inc)
+                        self.nextConnections(newNode, connectionBuffer)
                         break
 
             curConnections.clear()
