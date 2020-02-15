@@ -4,8 +4,6 @@ from genome import genome
 from connectionGene import connectionGene
 from nodeGene import nodeGene
 import random as rand
-from copy import deepcopy
-from itertools import zip_longest
 
 
 class nuclei:
@@ -28,7 +26,7 @@ class nuclei:
     def readyPrimalGenes(self, targetGenome):
         '''
         takes a genome and breaks it down to its 'split depth' representation, describing in what order nodes have
-        been added to the topology.
+        been added from the initial fully connected topology.
         '''
         # NOTE: now using list of lists to denote each depth in splits
         # these nodes contain all connections but may not have the supporting nodes.
@@ -65,15 +63,16 @@ class nuclei:
             curConnections = connectionBuffer.copy()
             connectionBuffer.clear()
 
-        acquiredGenes = []
-        # TODO: may be unecessary
-        for prime in reversed(self.primalGenes[targetGenome]):
-            for gene in prime:
-                if gene.nodeId in [x.nodeId for x in acquiredGenes]:
-                    # flag for removal
-                    prime.remove(gene)
-                else:
-                    acquiredGenes.append(gene)
+        # acquiredGenes = []
+        # # TODO: may be unecessary since playing back the operations into the child genome
+        # # @DEPRECATED
+        # for prime in reversed(self.primalGenes[targetGenome]):
+        #     for gene in prime:
+        #         if gene.nodeId in [x.nodeId for x in acquiredGenes]:
+        #             # flag for removal
+        #             prime.remove(gene)
+        #         else:
+        #             acquiredGenes.append(gene)
 
     def resetPrimalGenes(self):
         '''
@@ -85,6 +84,7 @@ class nuclei:
     #   should use exponential/logistic decay to reduce chance of adding based on depth
     #   this is analogous to chromosome alignment given the spatial factor of combination
     #   from the length of attachment (read more on this, however it is only abstractly pertinent)
+    # this is more based in reduction division
 
     def crossover(self, moreFitParent, lessFitParent, globalInnovations):
         '''
@@ -107,15 +107,17 @@ class nuclei:
         child = genome(len(moreFitParent.inputNodes), len(
             moreFitParent.outputNodes), globalInnovations)
 
+        # TODO: add node and connection probability hyperparameters
+
         for inode in child.inputNodes:
             for outc in inode.outConnections[:len(child.outputNodes)]:
                 if outc not in curConnections:
                     curConnections.append(outc)
 
+        # handle disjoint node genes first then excess
         while len(curConnections) > 0:
-            # handle disjoint genes first then excess
             if len(lessFitGenes) == 0 and alignmentOffset > 0:
-                # handle moreFit excess genes
+                # handle moreFit excess nodeGenes
                 curGenes = moreFitGenes.pop(0)
                 for primal in curGenes:
                     for connect in curConnections:
@@ -131,8 +133,9 @@ class nuclei:
                                 if inc not in connectionBuffer:
                                     connectionBuffer.append(inc)
                             break
+
             elif len(moreFitGenes) == 0 and alignmentOffset < 0:
-                # handle lessFit excess genes
+                # handle lessFit excess nodeGenes
                 curGenes = lessFitGenes.pop(0)
                 for primal in curGenes:
                     for connect in curConnections:
@@ -148,27 +151,25 @@ class nuclei:
                                 if inc not in connectionBuffer:
                                     connectionBuffer.append(inc)
                             break
-            # elif len(moreFitGenes) == 0 and alignmentOffset == 0:
-            # Done with alignment
             elif len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
+                # Done with alignment TODO: last pass of connections?
                 curConnections.clear()
                 break
             else:
-                # handle disjoint genes
+                # handle matching/disjoint nodeGenes
                 curGenes = []
                 # get all nodes between parents (if not already in to prevent duplicate additions across parents)
                 for gene in moreFitGenes.pop(0) + lessFitGenes.pop(0):
                     if gene.nodeId not in [x.nodeId for x in curGenes]:
                         curGenes.append(gene)
-
-                # curGenes = moreFitGenes.pop(0) + lessFitGenes.pop(0)
             for primal in curGenes:
                 for connect in curConnections:
-                    # TODO: is splitting node when already exists and found at a deeper depth desired?
-                    #               it can be argued that a deeper node has different meaning even if its the result of
-                    #               a split in the other genome
-                    #              this diverges innovation counting used in connectionGene
-                    #              can also prune duplicates in both parent genes
+                    # TODO: is splitting node when already exists and found at a deeper depth desired? ensure this doesnt happen
+                    #               ensured with if gene.nodeId not in [x.nodeId for x in curGenes]
+                    #              (local alignment (last part of metaphase with alignNodeGene))
+                    #              this doesnt distinguish local excess genes (if len(moreFitGenes.pop() > len(lessFitGenes.pop())))
+                    #               not really important, most import excess/disjoint metric is depth of split (which promotes deeper networks)
+
                     if primal.alignNodeGene(connect):
                         newNode = child.addNode(connect, globalInnovations)
 
@@ -189,160 +190,115 @@ class nuclei:
 
         return child
 
+    def inheritConnection(self, child, connect, outConnection, targetNode, globalInnovations):
+        if outConnection is True:
+            nodeMatch = child.getNode(connect.output.nodeId)
+        else:
+            nodeMatch = child.getNode(connect.input.nodeId)
+        if nodeMatch is not None:
+            if outConnection is True:
+                newConnection = connectionGene(
+                    copy(connect.weight), targetNode, nodeMatch)
+            else:
+                newConnection = connectionGene(
+                    copy(connect.weight), nodeMatch, targetNode)
+            if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
+                newConnection.remove()
+            else:
+                print('connecting node {} to node {}'.format(
+                    targetNode.nodeId, nodeMatch.nodeId))
+                child.addConnection(
+                    newConnection, globalInnovations)
+
     def inheritDisjointConnections(self, targetNode, child, moreFitParent, lessFitParent, globalInnovations):
-        # TODO: inherit from lesserFitParent when not in moreFitParent
+        # TODO: inherit from lesserFitParent when not in moreFitParent (true disjoint not matching and moreFit)
         '''
         inherit connections from disjoint nodeGenes (occuring in a primalGene depth represented in both parents).
         '''
         print('\n\nDISJOINT: inheriting into targetNode.nodeId {}'.format(
             targetNode.nodeId))
+
         moreFitNode = moreFitParent.getNode(targetNode.nodeId)
         lessFitNode = lessFitParent.getNode(targetNode.nodeId)
 
-        if moreFitNode is None or lessFitNode is None:
-            # TODO: raise assertion
-            return
-        # TODO: nodes might be missing in more or less fit parent with next feature addition
-        # assert moreFitNode is not None and lessFitNode is not None
-        # assert moreFitNode.nodeId == lessFitNode.nodeId == targetNode.nodeId
+        inheritOuts = []
+        inheritIns = []
+        # determines if this node is in both parents or lesser/more fit parent
+        fitDisjoint = None
+
         assert targetNode in child.hiddenNodes
+        if moreFitNode is None and lessFitNode is None:
+            # TODO: this should be assertion
+            return
+        # assert moreFitNode is not None and lessFitNode is not None, "missing node in child from parents"
 
-        # TODO: break to prevent repeat connections
-        print('DISJOINT: targeting outConnection excess inheritence')
-        for outc in moreFitNode.outConnections:
-            # compare innovation numbers since looking across genomes
-            if outc.output.nodeId in [x.output.nodeId for x in lessFitNode.outConnections]:
-                # add newConnection if output node exists already in child topology
-                # (will add later if splits havent occured to reveal this node)
-                nodeMatch = child.getNode(outc.output.nodeId)
-                if nodeMatch is not None:
-                    print('DISJOINT: in both parents: connecting node {} to node {}'.format(
-                        targetNode.nodeId, nodeMatch.nodeId))
-                    newConnection = connectionGene(
-                        copy(outc.weight), targetNode, nodeMatch)
-                    # if newConnection.exists(child.getAllConnections()):
-                    if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                        # have to ALWAYS do this since constructing connectionGene associates tree nodes
-                        newConnection.remove()
-                    else:
-                        child.addConnection(
-                            newConnection, globalInnovations)
-            # else:
-            # TODO: add probability of adding connection if only in more or less fit genome
-            #               now need to encapsulate common addConnections
-            elif rand.uniform(0, 1) > 0.5:
-                nodeMatch = child.getNode(outc.output.nodeId)
-                if nodeMatch is not None:
-                    print('DISJOINT: in fit parent: connecting node {} to node {}'.format(
-                        targetNode.nodeId, nodeMatch.nodeId))
-                    newConnection = connectionGene(
-                        copy(outc.weight), targetNode, nodeMatch)
-                    # if newConnection.exists(child.getAllConnections()):
-                    if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                        # have to ALWAYS do this since constructing connectionGene associates tree nodes
-                        newConnection.remove()
-                    else:
-                        child.addConnection(
-                            newConnection, globalInnovations)
+        print(moreFitNode, lessFitNode)
+        # orient parent's disjoint nodeGene
+        if moreFitNode is None:
+            inheritIns = lessFitNode.inConnections
+            inheritOuts = lessFitNode.outConnections
+            fitDisjoint = True
+        elif lessFitNode is None:
+            inheritIns = moreFitNode.inConnections
+            inheritOuts = moreFitNode.outConnections
+            fitDisjoint = False
+        else:
+            for outc in moreFitNode.outConnections + lessFitNode.outConnections:
+                if outc not in inheritOuts:
+                    inheritOuts.append(outc)
+            for inc in moreFitNode.outConnections + lessFitNode.outConnections:
+                if inc not in inheritIns:
+                    inheritIns.append(inc)
 
-        print('DISJOINT: targeting inConnection excess inheritence')
-        for inc in moreFitNode.inConnections:
-            # compare innovation numbers since looking across genomes
-            if inc.input.nodeId in [x.input.nodeId for x in lessFitNode.inConnections]:
-                # add newConnection if output node exists already in child topology
-                # (will add later if splits havent occured to reveal this node)
-                nodeMatch = child.getNode(inc.input.nodeId)
-                if nodeMatch is not None:
-                    print('DISJOINT: in both parents: connecting node {} to node {}'.format(
-                        nodeMatch.nodeId, targetNode.nodeId))
-                    newConnection = connectionGene(
-                        copy(inc.weight), nodeMatch, targetNode)
-                    # if newConnection.exists(child.getAllConnections()):
-                    if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                        newConnection.remove()
-                    else:
-                        child.addConnection(
-                            newConnection, globalInnovations)
+        # inherit outConnetions
+        for outc in inheritOuts:
+            if fitDisjoint is True:
+                if rand.uniform(0, 1) > 0.01:
+                    self.inheritConnection(
+                        child, outc, True, targetNode, globalInnovations)
+            elif fitDisjoint is False:
+                if rand.uniform(0, 1) > 0.01:
+                    self.inheritConnection(
+                        child, outc, True, targetNode, globalInnovations)
+            else:
+                self.inheritConnection(
+                    child, outc, True, targetNode, globalInnovations)
 
-            # else:
-            elif rand.uniform(0, 1) > 0.5:
-                nodeMatch = child.getNode(inc.output.nodeId)
-                if nodeMatch is not None:
-                    print('DISJOINT: in fit parent: connecting node {} to node {}'.format(
-                        targetNode.nodeId, nodeMatch.nodeId))
-                    newConnection = connectionGene(
-                        copy(inc.weight), nodeMatch, targetNode)
-                    # if newConnection.exists(child.getAllConnections()):
-                    if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                        # have to ALWAYS do this since constructing connectionGene associates tree nodes
-                        newConnection.remove()
-                    else:
-                        child.addConnection(
-                            newConnection, globalInnovations)
-            #     # TODO: add probability of adding connection if only in more or less fit genome
-            #     pass
+        # inherit inConnections
+        for inc in inheritIns:
+            if fitDisjoint is True:
+                if rand.uniform(0, 1) > 0.01:
+                    self.inheritConnection(
+                        child, inc, False, targetNode, globalInnovations)
+            elif fitDisjoint is False:
+                if rand.uniform(0, 1) > 0.01:
+                    self.inheritConnection(
+                        child, inc, False, targetNode, globalInnovations)
+            else:
+                self.inheritConnection(
+                    child, inc, False, targetNode, globalInnovations)
 
     def inheritExcessConnections(self, targetNode, child, excessParent, globalInnovations):
         '''
         inherit connections from excess nodeGenes (occuring in a depth only represented by one parent).
         '''
-        print('\n\nEXCESS: inheriting into targetNode.nodeId {}'.format(
+        assert targetNode in child.hiddenNodes
+        print('\n\n\n\nEXCESS: inheriting into targetNode.nodeId {} \n\n\n'.format(
             targetNode.nodeId))
         excessParentNode = excessParent.getNode(targetNode.nodeId)
 
         if excessParentNode is None:
             return
 
-        # assert moreFitNode is not None and lessFitNode is not None
-        # assert moreFitNode.nodeId == lessFitNode.nodeId == targetNode.nodeId
-        assert targetNode in child.hiddenNodes
-
-        # TODO: break to prevent repeat connections
         print('targeting outConnection excess inheritence')
         for outc in excessParentNode.outConnections:
-            # compare innovation numbers since looking across genomes
-            # if outc.output.nodeId in [x.output.nodeId for x in lessFitNode.outConnections]:
-
-                # add newConnection if output node exists already in child topology
-                # (will add later if splits havent occured to reveal this node)
-            nodeMatch = child.getNode(outc.output.nodeId)
-            if nodeMatch is not None:
-                print('EXCESS: connecting node {} to node {}'.format(
-                    targetNode.nodeId, nodeMatch.nodeId))
-                newConnection = connectionGene(
-                    copy(outc.weight), targetNode, nodeMatch)
-                # if newConnection.exists(child.getAllConnections()):
-                if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                        # have to ALWAYS do this since constructing connectionGene associates tree nodes
-                    newConnection.remove()
-                else:
-                    child.addConnection(
-                        newConnection, globalInnovations)
-            # else:
-            #     # TODO: add probability of adding connection if only in more or less fit genome
-            #     pass
+            self.inheritConnection(
+                child, outc, True, targetNode, globalInnovations)
 
         print('targeting inConnection excess inheritence')
         for inc in excessParentNode.inConnections:
-            # compare innovation numbers since looking across genomes
-            # if inc.input.nodeId in [x.input.nodeId for x in lessFitNode.inConnections]:
-            # add newConnection if output node exists already in child topology
-            # (will add later if splits havent occured to reveal this node)
-            nodeMatch = child.getNode(inc.input.nodeId)
-            if nodeMatch is not None:
-                print('EXCESS: connecting node {} to node {}'.format(
-                    nodeMatch.nodeId, targetNode.nodeId))
-                newConnection = connectionGene(
-                    copy(inc.weight), nodeMatch, targetNode)
-                # if newConnection.exists(child.getAllConnections()):
-                if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                    newConnection.remove()
-                else:
-                    child.addConnection(
-                        newConnection, globalInnovations)
-            # else:
-            #     # TODO: add probability of adding connection if only in more or less fit genome
-            #     pass
+            self.inheritConnection(
+                child, inc, False, targetNode, globalInnovations)
 
     def test_rebuildPrimalGenes(self, targetGenome, globalInnovations):
         # TODO: extract to test code
@@ -372,6 +328,7 @@ class nuclei:
             for primal in curGenes:
                 for connect in curConnections:
                     # TODO: finding novel nodes. BUG in innovation return to here after
+                    #               DE-BUG innovation but still getting novel nodes
                     if primal.alignNodeGene(connect):
                         newNode = child.addNode(connect, globalInnovations)
 
