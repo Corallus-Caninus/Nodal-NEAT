@@ -42,6 +42,10 @@ class connectionGene:
     def splits(self, localNodes):
         '''
         get all nodes (parallel nodes) created from splitting this connection with an addNode operation 
+        PARAMETER:
+            localNodes: a list of nodes, used to check which nodes have been created from splitting this connection (addNode operations)
+        RETURNS:
+            splits: nodes that have resulted from splitting this connection
         '''
         splits = []
         for node in localNodes:
@@ -55,11 +59,13 @@ class connectionGene:
         '''
         comparator for checking if a connection already exists. used for innovation assignment in evaluation crossover
         '''
+        # TODO: should remove connectionGene from reference nodes since only used to deny parallel edges in topology
         for potentialConnection in [x for x in localConnections if x is not self]:
             if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
                 return True
         return False
 
+    #NOTE: unimplemented
     def matches(self, potentialConnection):
         '''
         comparator for checking if a connection matches another connection. This is the singular case of exists.
