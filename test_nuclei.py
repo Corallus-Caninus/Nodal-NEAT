@@ -11,7 +11,7 @@ import random as rand
 
 class TestPrimalAlignment(unittest.TestCase):
     '''
-    unittest for chromosome's crossover method and supporting methods
+    unittest for chromosome's crossover and supporting methods. Essentially a manual generation step.
     '''
     # TODO: recurring connectionGene removal BUG in start of evolution. need to debug this either just here or here and basic_trainning
     #               this is likely to be during split of loop connection trace from globalInnovations. bug has occured long enough it could be a deep
@@ -24,12 +24,8 @@ class TestPrimalAlignment(unittest.TestCase):
         for _ in range(0, 100):
             for target in evaluation.genepool:
                 target.addNodeMutation(0.8, evaluation.globalInnovations)
-                # target.addConnectionMutation(.0001,
-                #                              evaluation.globalInnovations)
                 target.addConnectionMutation(0.9,
                                              evaluation.globalInnovations)
-                # target.addConnectionMutation(0.7,
-                #                              evaluation.globalInnovations)
 
         for _ in range(0, 100):
             evaluation.genepool[0].addNodeMutation(
