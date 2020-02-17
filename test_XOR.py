@@ -34,6 +34,15 @@ def configLogfile():
         filename=logFile, level=logging.INFO)
 
 
+def myFunc(genome):
+    '''
+    example function for evaluation. always takes a genome and returns a float.
+    '''
+    # TODO: use python type enforcement since functional
+    # (not necessarily ctypes but cython is a goal unless jax/numpy is sufficient)
+    return rand.uniform(0, 1)
+
+
 class TestGenepool(unittest.TestCase):
     '''
     test crossover of an entire generation in a genepool.
@@ -50,13 +59,12 @@ class TestGenepool(unittest.TestCase):
         evaluation = evaluator(inputs=2, outputs=2, population=5,
                                connectionMutationRate=0.5, nodeMutationRate=0.2)
 
-        for _ in range(0, 100):
-            for ge in evaluation.genepool:
-                ge.fitness = rand.uniform(0, 1)
-
+        # evaluate 50 generations
+        for _ in range(0, 50):
+            evaluation.evaluate(myFunc)
             evaluation.nextGeneration()
-
-        graphvizNEAT(evaluation.genepool[0], 'sample genome')
+        for c in evaluation.genepool:
+            graphvizNEAT(c, 'sample-genome' + uuid.uuid1)
 
 
 if __name__ == '__main__':
