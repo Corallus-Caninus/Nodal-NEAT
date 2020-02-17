@@ -4,26 +4,17 @@ from nuclei import nuclei
 import random as rand
 import logging
 
+# DEFAULT FITNESS FUNCTION:
+# evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
 
-def fitnessFunction():
-    # TODO: make this functional
-    '''
-    define fitness function. This must be done first for every application implementing
-    this algorithm.
-    '''
-
-    # DEFAULT FITNESS FUNCTION:
-    # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
-    return 0
-
-    # TODO: make a seperate NEAT package that is called in PoM/RoM. this allows seperate versioning :)
-    # TODO: branch this off into a NEAT algorithm and PoM/RoM so PoM/RoM can be selectively merged with NEAT updates
-    # TODO: how to make this safe for parallelism (e.g.: a connection is discovered in two seperate genomes concurrently.)
-    #               how can this be interrupt handled post-generation?
-    # TODO: Dask
-    # TODO: add verbosity levels with logging for tracing at each level of encapsulation
-    # TODO: can networkx be used for forward propagation given associative matrix?
-    # TODO: implement this in Cython
+# TODO: make a seperate NEAT package that is called in PoM/RoM. this allows seperate versioning :)
+# TODO: branch this off into a NEAT algorithm and PoM/RoM so PoM/RoM can be selectively merged with NEAT updates
+# TODO: how to make this safe for parallelism (e.g.: a connection is discovered in two seperate genomes concurrently.)
+#               how can this be interrupt handled post-generation?
+# TODO: Dask
+# TODO: add verbosity levels with logging for tracing at each level of encapsulation
+# TODO: can networkx be used for forward propagation given associative matrix?
+# TODO: implement this in Cython
 
 
 class evaluator:
@@ -44,9 +35,25 @@ class evaluator:
         self.genepool = genepool
         logging.info('EVALUATOR: done constructing evaluator')
 
+    def evaluate(self, fitnessFunction):
+        '''
+        call fitness function on each member of genepool assigning a fitness value.
+
+        PARAMETERS:
+            fitnessFunction: a pure function to be called for evaluation 
+            that takes a genome object and returns a float
+        RETURNS:
+            assigns fitness to all members of this evaluators genepool
+        '''
+        for ge in self.genepool:
+            ge.fitness = fitnessFunction(ge)
+
+        assert all([x.fitness is not None for x in self.genepool]), \
+            "missed fitness assignment in evaluator"
+
     def nextGeneration(self):
         '''
-        Step forward one generation. Crosses over members of current genome, selecting parents
+        step forward one generation. Crosses over members of current genome, selecting parents
         biased to fitness.
         '''
         # TODO: ensure all genomes have been evaluated and assigned fitness
@@ -69,11 +76,33 @@ class evaluator:
                 0, len(self.genepool)-1)]
 
             if firstParent.fitness > secondParent.fitness:
-                nextPool.append(self.nuclei.crossover(
-                    firstParent, secondParent, self.globalInnovations))
+                child = self.nuclei.crossover(
+                    firstParent, secondParent, self.globalInnovations)
+
+                nextPool.append(child)
+
+                # add connection and nodes, kept here and not in crossover
+                # to retain all hyperparameters in evaluator and allow
+                # multiple calls in the future
+                #
+                # also allows crossover to happen seperate of mutations
+                # (which is supposed to create innovations)
+                child.addNodeMutation(
+                    self.nodeMutationRate, self.globalInnovations)
+                child.addConnectionMutation(
+                    self.connectionMutationRate, self.globalInnovations)
+
             else:
-                nextPool.append(self.nuclei.crossover(
-                    secondParent, firstParent, self.globalInnovations))
+                child = self.nuclei.crossover(
+                    secondParent, firstParent, self.globalInnovations)
+
+                nextPool.append(child)
+
+                child.addNodeMutation(
+                    self.nodeMutationRate, self.globalInnovations)
+                child.addConnectionMutation(
+                    self.connectionMutationRate, self.globalInnovations)
+
         self.genepool.clear()
         self.genepool = nextPool.copy()
         print('new genepool with {} members'.format(len(self.genepool)))
