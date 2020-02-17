@@ -29,7 +29,11 @@ class genome:
     # a spread of much more complex to much simpler topologies instead of just more complex. a configurable sliding window of complexity
     # helps to create definite and more robust fitness manifold vectors.
     #
-    # Use numpy recarray for compiling and slice. TODO: Tensorflow is a better solution given TVM, XLA and its ubiquity
+    # TODO: Tensorflow is a better solution given TVM, XLA and its ubiquity. NO Jax is changing this. Numpy is a base that will be supported
+    #               in future frameworks so write in numpy
+    #
+    # Use numpy recarray for compiling and slice.
+    #
     #  matrix into forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
     #  and two float matrices for signal and weights (perform matrix-wise activation of the mat-mul result matrix)
     #   trace FSM manually before scripting attempt.
@@ -71,14 +75,13 @@ class genome:
                     rand.uniform(-1, 1), inNode, outNode))
 
     @classmethod
+    # TODO: get rid of this
     def initial(cls, inputSize, outputSize, globalInnovations):
         '''
         spawn initial genomes for genepool
         '''
         # TODO: this isnt the most flexible solution wrt globalConnections. remove globalConnections from here
-        inputNodes = []
-        outputNodes = []
-        hiddenNodes = []
+
         initNodeId = inputSize+outputSize
 
         globalInnovations.nodeId = initNodeId
@@ -109,6 +112,16 @@ class genome:
 
         return allConnections
 
+    def geneticLocation(self):
+        '''
+        returns the position of this genome 
+        *(used for hamming distance in speciation and location in PointsOfMutation)*
+        '''
+        connections = self.getAllConnections()
+        innovations = [x.innovation for x in connections]
+
+        return innovations
+
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
         randomly adds a node, if successful returns the innovation adjustment for global innovation counter
@@ -134,24 +147,17 @@ class genome:
         '''
         # TODO: this is a little lopsided, addConnection contains loop logic and object creation
         #              whereas addNode sends these operations to globalInnovations
-        # TODO: first order of refactor: move loop logic back into here
+
         replaceConnection.disabled = True
+
         # check splitDepth, the equivalent to checking localConnections
         # but parallel nodes are allowed as apposed to parallel connections
         splitDepth = replaceConnection.splits(self.hiddenNodes)
         # check global innovation of the two new connections
         newNode = globalInnovations.verifyNode(
             splitDepth, replaceConnection)
-        # @DEPRECATED
-        # splitDepth, replaceConnection, replaceConnection.loop)
 
         logging.info('newNode {}'.format(newNode.nodeId))
-
-        # keep extrema loop indicators pointing to extrema nodes
-        # @DEPRECATED
-        # if replaceConnection.loop is True:
-        #     newNode.outConnections[0].loop = True
-        #     newNode.inConnections[0].loop = True
 
         # add this genome
         self.hiddenNodes.append(newNode)
@@ -172,6 +178,7 @@ class genome:
             # only allow certain node connection directions
             allInNodes = self.inputNodes + self.hiddenNodes
             allOutNodes = self.outputNodes + self.hiddenNodes
+            # TODO: should check before creating the object to prevent sudden initialization and removal
             newConnection = connection(
                 rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
             self.addConnection(newConnection, globalInnovations)
@@ -195,7 +202,6 @@ class genome:
                 logging.info('mutation Failed: already in this genome')
                 logging.info('{} {}'.format(newConnection.input.nodeId,
                                             newConnection.output.nodeId))
-                # TODO: BUG here
                 newConnection.remove()
                 return
 
@@ -342,6 +348,7 @@ class genome:
             nextNodes.clear()
 
         # harvest output signals
+        # TODO: this repeats output activation?
         outputs = []
         # print('harvesting output signals..')
         for onode in self.outputNodes:
