@@ -1,20 +1,17 @@
-# define input, output and hidden nodes. define activation function.
-# not many features will go here at first, but may be implemented further in future research so encapsulate
 from activationFunctions import softmax
 import logging
 
 
 class nodeGene:
     '''
-    handles activation gatekeeping and encapsulates activation propogation of signals
+    a neuron in the neural network. handles activation encapsulation and connection references. This is the
+    fundamental unit of encapsulation the describes the nerual network topology.
     '''
     # TODO: nodeGene can only be created with
     #              input and output connections should
     #              be included in constructor to enfore
     #             initialization of primal nodes in encapsulation
     #             (extract to here)
-    # TODO: should override object comparison __rep__? method to compare nodeId instead of virtual addressing
-    #             since nodeId is only every used and nodeGenes are frequently copied to new nodeGenes
 
     def __init__(self, identifier):
         self.inConnections = []
@@ -24,11 +21,10 @@ class nodeGene:
 
     def addConnection(self, connectionGene):
         '''
-        add a connection reference to this node and orients the edge based on input or output direction.
+        add a connection reference to this node and orient based on input or output direction.
         '''
         # check if connection exists first
         # TODO: Really ought to clean up the self loop case here..
-        # TODO: testing nodeId comparison instead
         if self.nodeId is connectionGene.output.nodeId and self.nodeId is connectionGene.input.nodeId:
             self.inConnections.append(connectionGene)
             self.outConnections.append(connectionGene)
@@ -44,8 +40,6 @@ class nodeGene:
         '''
         removes an existing connection from this node
         '''
-        # TODO: decide whether to use object comparison or nodeId/innovation.
-        #              nodeId/innovation is de facto
         if self.nodeId is connectionGene.input.nodeId and self.nodeId is connectionGene.output.nodeId:
             self.outConnections.remove(connectionGene)
             self.inConnections.remove(connectionGene)
@@ -59,7 +53,7 @@ class nodeGene:
 
     def alignNodeGene(self, connection):
         '''
-        determines if the primal node representation of this node can be created by splitting the given connectionGene
+        determines if the primal node representation of this node can be created by splitting the given connection
         '''
         if self.outConnections[0].output.nodeId == connection.output.nodeId and \
                 self.inConnections[0].input.nodeId == connection.input.nodeId:
@@ -85,6 +79,9 @@ class nodeGene:
     #         return False
 
     def getUnreadyConnections(self):
+        '''
+        returns all incoming connections at this node that dont have a signal (not considering loop connections)
+        '''
         incs = [x for x in self.inConnections if x.disabled is False]
 
         if any([x.signal is None and x.loop is False for x in incs]):
@@ -92,17 +89,32 @@ class nodeGene:
                 x for x in self.inConnections if x.signal is None and x.loop is False]
             return blockages
         else:
-            assert "UNREADY NODE WITHOUT UNREADY CONNECTIONS!"
+            raise Exception(
+                "unready node with no unready incoming connections")
 
     def activate(self, signal):
+        '''
+        activate this neuron: 
+        1. matrix multiply incoming connection weights and signals 
+        2. reimman sum the results of 1
+        3. call activation function for the result of 2
+        4. copy result of 3 to all output connection's signal
+
+        PARAMETERS:
+            signal: a signal directly to the neuron indicates it is an input neuron with no incoming connections
+
+        RETURNS:
+            a list of nodes that have been sent signals to their incoming connections due to activating this neuron 
+            (used for chaining forward propagation activation without knowing layer depth of neurons)
+        '''
         activeSignal = 0
         nextNodes = []
         assert self.activated is False, "@ node {}".format(self.nodeId)
 
         # INPUT NODE CASE
         if signal is not None and signal is not False:
-            # passively accept loop signals to input
             for inc in self.inConnections:
+                # passively accept loop signals to input
                 if inc.signal is not None and inc.disabled is False:
                     activeSignal += inc.signal
             activeSignal = softmax(activeSignal + signal)
@@ -115,6 +127,9 @@ class nodeGene:
             self.activated = True
 
         # OUTPUT NODE CASE
+        # TODO: use special output return type to
+        #             indicate output vector just like input parameter type
+
         elif signal is False:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):
@@ -127,7 +142,7 @@ class nodeGene:
             else:
                 for inc in [x for x in incs if x.signal is not None]:
                     activeSignal += inc.signal*inc.weight
-                    # inc.signal = None
+                    inc.signal = None
 
                 activeSignal = softmax(activeSignal)
 
