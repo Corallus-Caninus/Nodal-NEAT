@@ -202,21 +202,11 @@ class nuclei:
             if outConnection is True:
                 newConnection = connectionGene(
                     copy(connect.weight), targetNode, nodeMatch)
+                child.addConnection(newConnection, globalInnovations)
             else:
                 newConnection = connectionGene(
                     copy(connect.weight), nodeMatch, targetNode)
-            if newConnection.exists(targetNode.outConnections + targetNode.inConnections):
-                newConnection.remove()
-            else:
-                # TODO: getting parallel edges here.
-                if outConnection is True:
-                    print('connecting nodes {} -> {}'.format(
-                        targetNode.nodeId, nodeMatch.nodeId))
-                else:
-                    print('connecting nodes {} -> {}'.format(
-                        nodeMatch.nodeId, targetNode.nodeId))
-                child.addConnection(
-                    newConnection, globalInnovations)
+                child.addConnection(newConnection, globalInnovations)
 
     def inheritDisjointConnections(self, targetNode, child, moreFitParent, lessFitParent, globalInnovations):
         # TODO: inherit from lesserFitParent when not in moreFitParent (true disjoint not matching and moreFit)
