@@ -36,23 +36,17 @@ class evaluator:
         self.genepool = genepool
         logging.info('EVALUATOR: done constructing evaluator')
 
-    # def evaluate(self, fitnessFunction):
-    #     '''
-    #     call fitness function on each member of genepool assigning a fitness value.
-
-    #     PARAMETERS:
-    #         fitnessFunction: a pure function to be called for evaluation
-    #         that takes a genome object and returns a float
-    #     RETURNS:
-    #         assigns fitness to all members of this evaluators genepool
-    #     '''
-    #     # TODO: this should be called in nextGeneration
-
     def nextGeneration(self, fitnessFunction):
         '''
         step forward one generation. Processes each genome with the given 
         fitnessFunction and Crosses over members of current genome, selecting parents
         biased to fitness.
+
+        PARAMETERS:
+            fitnessFunction: a pure function to be evaluated against each genome. 
+                                      MUST take a genome and return a float (fitness score)
+        RETURNS:
+            None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
