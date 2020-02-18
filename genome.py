@@ -122,6 +122,14 @@ class genome:
 
         return innovations
 
+    def mutateConnectionWeights(self, weightMutationRate):
+        '''
+        randomly changes weights of connections
+        '''
+        for connection in self.getAllConnections():
+            if rand.uniform(0, 1) > weightMutationRate:
+                connection.weight = rand.uniform(-1, 1)
+
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
         randomly adds a node, if successful returns the innovation adjustment for global innovation counter
@@ -246,6 +254,8 @@ class genome:
             activeNode.activated = False
 
     def forwardProp(self, signals):
+        # TODO: this needs a rewrite
+
         # Can loops be detected an labelled within forwardProp?
         # 1. reset loops and signals on each graph change (addConnection addNode) and add back
         #     special case loops (intra-extrema connections and self loops)
@@ -253,6 +263,7 @@ class genome:
         #     (first pass detection) NOTE: how can recurrence be attributed? need to set loop
         #      connections one at a time and only for first connection in unreadyConnections
         assert len(signals) == len(self.inputNodes)
+        # TODO: got unsupported type error NoneType and float at  activeSignal+=inc.signal*inc.weight line 360
 
         nextNodes = []
         nodeBuffer = []
@@ -358,10 +369,14 @@ class genome:
                     continue
                 else:
                     activeSignal += inc.signal*inc.weight
-                    inc.signal = None
+                    # inc.signal = None
             activeSignal = softmax(activeSignal)
             outputs.append(activeSignal)
 
         self.resetNodes()
-        print(outputs)
+        # hacky resetSignals that keep recurrence
+        for x in self.getAllConnections():
+            if x.loop is False:
+                x.signal = None
+
         return outputs
