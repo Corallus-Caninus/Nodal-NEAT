@@ -61,10 +61,9 @@ class TestGenepool(unittest.TestCase):
 
         # evaluate 50 generations
         for _ in range(0, 50):
-            evaluation.evaluate(myFunc)
-            evaluation.nextGeneration()
+            evaluation.nextGeneration(myFunc)
         for c in evaluation.genepool:
-            graphvizNEAT(c, 'sample-genome' + uuid.uuid1)
+            graphvizNEAT(c, 'sample-genome' + str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

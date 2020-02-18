@@ -19,6 +19,7 @@ import logging
 
 class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
+    # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate):
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
@@ -35,15 +36,23 @@ class evaluator:
         self.genepool = genepool
         logging.info('EVALUATOR: done constructing evaluator')
 
-    def evaluate(self, fitnessFunction):
-        '''
-        call fitness function on each member of genepool assigning a fitness value.
+    # def evaluate(self, fitnessFunction):
+    #     '''
+    #     call fitness function on each member of genepool assigning a fitness value.
 
-        PARAMETERS:
-            fitnessFunction: a pure function to be called for evaluation 
-            that takes a genome object and returns a float
-        RETURNS:
-            assigns fitness to all members of this evaluators genepool
+    #     PARAMETERS:
+    #         fitnessFunction: a pure function to be called for evaluation
+    #         that takes a genome object and returns a float
+    #     RETURNS:
+    #         assigns fitness to all members of this evaluators genepool
+    #     '''
+    #     # TODO: this should be called in nextGeneration
+
+    def nextGeneration(self, fitnessFunction):
+        '''
+        step forward one generation. Processes each genome with the given 
+        fitnessFunction and Crosses over members of current genome, selecting parents
+        biased to fitness.
         '''
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
@@ -51,11 +60,6 @@ class evaluator:
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
 
-    def nextGeneration(self):
-        '''
-        step forward one generation. Crosses over members of current genome, selecting parents
-        biased to fitness.
-        '''
         # TODO: ensure all genomes have been evaluated and assigned fitness
         # assert all([x.fitness is not None for x in genepool])
         nextPool = []
