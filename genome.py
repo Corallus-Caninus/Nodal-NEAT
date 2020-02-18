@@ -122,19 +122,20 @@ class genome:
 
         return innovations
 
-    def mutateConnectionWeights(self, weightMutationRate):
+    def mutateConnectionWeights(self, weightMutationRate, weightPerturbRate):
         '''
         randomly changes weights of connections
         '''
-        for connection in self.getAllConnections():
-            if rand.uniform(0, 1) > weightMutationRate:
-                connection.weight = rand.uniform(-1, 1)
+        if rand.uniform(0, 1) < weightPerturbRate:
+            for connection in self.getAllConnections():
+                if rand.uniform(0, 1) > weightMutationRate:
+                    connection.weight = rand.uniform(-1, 1)
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
         randomly adds a node, if successful returns the innovation adjustment for global innovation counter
         '''
-        if rand.uniform(0, 1) > nodeMutationRate:
+        if rand.uniform(0, 1) < nodeMutationRate:
             randNode = rand.choice(
                 self.hiddenNodes + self.outputNodes+self.inputNodes)
             if randNode in self.hiddenNodes:
@@ -148,6 +149,22 @@ class genome:
                 randConnection = rand.choice(randNode.outConnections)
 
             self.addNode(randConnection, globalInnovations)
+
+    def addConnectionMutation(self, connectionMutationRate, globalInnovations):
+        '''
+        randomly adds a connection connections to input and from output nodes are allowed (circularity at all nodes)
+        '''
+        # NOTE: num nodes^2 is number of possible connections before depleted conventions.
+        #             so long as self connections and recurrent connections (but no parallel connections)
+        #             are allowed
+        if rand.uniform(0, 1) < connectionMutationRate:
+            # only allow certain node connection directions
+            allInNodes = self.inputNodes + self.hiddenNodes
+            allOutNodes = self.outputNodes + self.hiddenNodes
+            # TODO: should check before creating the object to prevent sudden initialization and removal
+            newConnection = connection(
+                rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
+            self.addConnection(newConnection, globalInnovations)
 
     def addNode(self, replaceConnection, globalInnovations):
         '''
@@ -174,22 +191,6 @@ class genome:
         self.resetLoops()
         self.resetSignals()
         return newNode
-
-    def addConnectionMutation(self, connectionMutationRate, globalInnovations):
-        '''
-        randomly adds a connection connections to input and from output nodes are allowed (circularity at all nodes)
-        '''
-        # NOTE: num nodes^2 is number of possible connections before depleted conventions.
-        #             so long as self connections and recurrent connections (but no parallel connections)
-        #             are allowed
-        if rand.uniform(0, 1) > connectionMutationRate:
-            # only allow certain node connection directions
-            allInNodes = self.inputNodes + self.hiddenNodes
-            allOutNodes = self.outputNodes + self.hiddenNodes
-            # TODO: should check before creating the object to prevent sudden initialization and removal
-            newConnection = connection(
-                rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
-            self.addConnection(newConnection, globalInnovations)
 
     def addConnection(self, newConnection, globalInnovations):
         '''

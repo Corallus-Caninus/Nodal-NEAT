@@ -20,10 +20,11 @@ import logging
 class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate):
+    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate):
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
+        self.weightPerturbRate = weightPerturbRate
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
         self.globalInnovations = globalConnections()
@@ -53,17 +54,14 @@ class evaluator:
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
 
-        print(max([x.fitness for x in self.genepool]))
+        print([x.fitness for x in self.genepool])
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
 
-        # TODO: ensure all genomes have been evaluated and assigned fitness
-        # assert all([x.fitness is not None for x in genepool])
         nextPool = []
 
         while len(nextPool) < len(self.genepool):
-            # TODO: add proper fitness bias with something real (logit, gamma, poisson etc. reading to be done)
             biasFitnessSelect = sorted(
                 [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
 
@@ -71,15 +69,14 @@ class evaluator:
             for ge in biasFitnessSelect:
                 self.nuclei.readyPrimalGenes(ge)
 
-            # firstParent = biasFitnessSelect[rand.randint(
-            #     0, int(len(self.genepool)/2))]
             selection = self.selectBiasFitness(7)
 
             firstParent = biasFitnessSelect[selection]
 
             selection = self.selectBiasFitness(6)
 
-            secondParent = biasFitnessSelect[selection]
+            secondParent = [
+                x for x in biasFitnessSelect if x is not firstParent][selection]
 
             if firstParent.fitness > secondParent.fitness:
                 child = self.nuclei.crossover(
@@ -97,7 +94,8 @@ class evaluator:
                     self.nodeMutationRate, self.globalInnovations)
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
-                child.mutateConnectionWeights(self.weightMutationRate)
+                child.mutateConnectionWeights(
+                    self.weightMutationRate, self.weightPerturbRate)
 
             else:
                 child = self.nuclei.crossover(
@@ -109,7 +107,8 @@ class evaluator:
                     self.nodeMutationRate, self.globalInnovations)
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
-                child.mutateConnectionWeights(self.weightMutationRate)
+                child.mutateConnectionWeights(
+                    self.weightMutationRate, self.weightPerturbRate)
 
         self.genepool.clear()
         self.genepool = nextPool.copy()
