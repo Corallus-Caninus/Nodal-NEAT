@@ -20,9 +20,10 @@ import logging
 class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate):
+    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate):
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
+        self.weightMutationRate = weightMutationRate
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
         self.globalInnovations = globalConnections()
@@ -48,8 +49,11 @@ class evaluator:
         RETURNS:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
+        # TODO: continuously evaluate fitness
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
+
+        print(max([x.fitness for x in self.genepool]))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
@@ -62,16 +66,20 @@ class evaluator:
             # TODO: add proper fitness bias with something real (logit, gamma, poisson etc. reading to be done)
             biasFitnessSelect = sorted(
                 [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
-            # TODO: does this effect globalInnovations? new list but should be shallow copy
-            # TODO: do we need to reset primalGenes in the loop? extract this to a setup operation
+
             self.nuclei.resetPrimalGenes()
             for ge in biasFitnessSelect:
                 self.nuclei.readyPrimalGenes(ge)
 
-            firstParent = biasFitnessSelect[rand.randint(
-                0, int(len(self.genepool)/2))]
-            secondParent = biasFitnessSelect[rand.randint(
-                0, len(self.genepool)-1)]
+            # firstParent = biasFitnessSelect[rand.randint(
+            #     0, int(len(self.genepool)/2))]
+            selection = self.selectBiasFitness(7)
+
+            firstParent = biasFitnessSelect[selection]
+
+            selection = self.selectBiasFitness(6)
+
+            secondParent = biasFitnessSelect[selection]
 
             if firstParent.fitness > secondParent.fitness:
                 child = self.nuclei.crossover(
@@ -89,6 +97,7 @@ class evaluator:
                     self.nodeMutationRate, self.globalInnovations)
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
+                child.mutateConnectionWeights(self.weightMutationRate)
 
             else:
                 child = self.nuclei.crossover(
@@ -100,6 +109,7 @@ class evaluator:
                     self.nodeMutationRate, self.globalInnovations)
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
+                child.mutateConnectionWeights(self.weightMutationRate)
 
         self.genepool.clear()
         self.genepool = nextPool.copy()
@@ -107,3 +117,18 @@ class evaluator:
         nextPool.clear()
 
         return self.genepool
+
+    def selectBiasFitness(self, bias):
+        '''
+        get a genome selection index.
+
+        PARAMETERS:
+            bias: an integer for the level of bias for selecting for fitness
+        RETURNS:
+            selection: an index in genepool list
+        '''
+        selection = rand.randint(0, len(self.genepool))
+
+        for _ in range(0, bias):
+            selection = selection - rand.randint(0, selection)
+        return selection
