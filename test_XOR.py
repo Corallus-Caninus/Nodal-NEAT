@@ -95,10 +95,9 @@ class TestGenepool(unittest.TestCase):
         # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
 
         configLogfile()
-        evaluation = evaluator(inputs=2, outputs=1, population=1000,
+        evaluation = evaluator(inputs=2, outputs=1, population=500,
                                connectionMutationRate=0.02, nodeMutationRate=0.02,
-                               weightMutationRate=0.9, weightPerturbRate=0.06,
-                               selectionPressure=4)
+                               weightMutationRate=0.25, selectionPressure=4)
 
         # evaluate 50 generations
         for _ in range(0, 2000):

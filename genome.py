@@ -122,14 +122,13 @@ class genome:
 
         return innovations
 
-    def mutateConnectionWeights(self, weightMutationRate, weightPerturbRate):
+    def mutateConnectionWeights(self, weightMutationRate):
         '''
         randomly changes weights of connections
         '''
-        if rand.uniform(0, 1) < weightPerturbRate:
-            for connection in self.getAllConnections():
-                if rand.uniform(0, 1) > weightMutationRate:
-                    connection.weight = rand.uniform(-1, 1)
+        for connection in self.getAllConnections():
+            if rand.uniform(0, 1) > weightMutationRate:
+                connection.weight = rand.uniform(-1, 1)
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''

@@ -21,12 +21,11 @@ class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate, selectionPressure):
+    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, selectionPressure):
         # hyper parameters
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
-        self.weightPerturbRate = weightPerturbRate
         self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
@@ -98,7 +97,8 @@ class evaluator:
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
                 child.mutateConnectionWeights(
-                    self.weightMutationRate, self.weightPerturbRate)
+                    # self.weightMutationRate, self.weightPerturbRate)
+                    self.weightMutationRate)
 
             else:
                 child = self.nuclei.crossover(
@@ -111,7 +111,7 @@ class evaluator:
                 child.addConnectionMutation(
                     self.connectionMutationRate, self.globalInnovations)
                 child.mutateConnectionWeights(
-                    self.weightMutationRate, self.weightPerturbRate)
+                    self.weightMutationRate)
 
         self.genepool.clear()
         self.genepool = nextPool.copy()
