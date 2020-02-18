@@ -20,11 +20,14 @@ import logging
 class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate):
+    # TODO: !DOCSTRING!
+    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate, selectionPressure):
+        # hyper parameters
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
         self.weightPerturbRate = weightPerturbRate
+        self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
         self.globalInnovations = globalConnections()
@@ -69,11 +72,11 @@ class evaluator:
             for ge in biasFitnessSelect:
                 self.nuclei.readyPrimalGenes(ge)
 
-            selection = self.selectBiasFitness(7)
+            selection = self.selectBiasFitness(self.selectionPressure)
 
             firstParent = biasFitnessSelect[selection]
 
-            selection = self.selectBiasFitness(6)
+            selection = self.selectBiasFitness(self.selectionPressure)
 
             secondParent = [
                 x for x in biasFitnessSelect if x is not firstParent][selection]
