@@ -4,9 +4,9 @@ from network import processSequences
 import random as rand
 from activationFunctions import softmax
 import logging
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
+# import numpy as np
+# import networkx as nx
+# import matplotlib.pyplot as plt
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
 # TODO: remove the many deprecated/unused methods and cleanup/refactor
@@ -122,13 +122,14 @@ class genome:
 
         return innovations
 
-    def mutateConnectionWeights(self, weightMutationRate):
+    def mutateConnectionWeights(self, weightMutationRate, weightPerturbRate):
         '''
         randomly changes weights of connections
         '''
-        for connection in self.getAllConnections():
-            if rand.uniform(0, 1) > weightMutationRate:
-                connection.weight = rand.uniform(-1, 1)
+        if rand.uniform(0, 1) > weightPerturbRate:
+            for conect in self.getAllConnections():
+                if rand.uniform(0, 1) > weightMutationRate:
+                    conect.weight = rand.uniform(-1, 1)
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
