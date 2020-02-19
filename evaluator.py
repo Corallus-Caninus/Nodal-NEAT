@@ -1,8 +1,10 @@
+from multiprocessing import Pool
+from functools import partial
+import logging
+import random as rand
 from genome import genome
 from innovation import globalConnections
 from nuclei import nuclei
-import random as rand
-import logging
 
 # DEFAULT FITNESS FUNCTION:
 # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
@@ -21,11 +23,12 @@ class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, selectionPressure):
+    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate, selectionPressure):
         # hyper parameters
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
+        self.weightPerturbRate = weightPerturbRate
         self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
@@ -33,6 +36,7 @@ class evaluator:
         self.nuclei = nuclei()
 
         genepool = []
+        # TODO: initialize in parallel and cleanup initial method
         for entry in range(0, population):
             logging.info('EVALUATOR: building a genome in genepool')
             genepool.append(
@@ -56,69 +60,58 @@ class evaluator:
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
 
-        print([x.fitness for x in self.genepool])
+        print(max([x.fitness for x in self.genepool]))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
 
         nextPool = []
+        swimmers = Pool()
+        cross = partial(self.nuclei.crossover,
+                        globalInnovations=self.globalInnovations)
+        biasFitnessSelect = sorted(
+            [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
+
+        self.nuclei.resetPrimalGenes()
+        for ge in biasFitnessSelect:
+            self.nuclei.readyPrimalGenes(ge)
 
         while len(nextPool) < len(self.genepool):
-            biasFitnessSelect = sorted(
-                [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
+            parent1, parent2 = [], []
 
-            self.nuclei.resetPrimalGenes()
-            for ge in biasFitnessSelect:
-                self.nuclei.readyPrimalGenes(ge)
+            for x in range(0, len(self.genepool) - len(nextPool)):
+                parent1.append(
+                    self.genepool[self.selectBiasFitness(self.selectionPressure)])
+                # NOTE: crosses over with self
+                parent2.append(
+                    self.genepool[self.selectBiasFitness(self.selectionPressure)])
 
-            selection = self.selectBiasFitness(self.selectionPressure)
+            rawNextPool = swimmers.starmap(
+                cross, zip(parent1, parent2))
 
-            firstParent = biasFitnessSelect[selection]
+            for x in rawNextPool:
+                if len(nextPool) == len(self.genepool):
+                    break
+                else:
+                    nextPool.append(x)
 
-            selection = self.selectBiasFitness(self.selectionPressure)
-
-            secondParent = [
-                x for x in biasFitnessSelect if x is not firstParent][selection]
-
-            if firstParent.fitness > secondParent.fitness:
-                child = self.nuclei.crossover(
-                    firstParent, secondParent, self.globalInnovations)
-
-                nextPool.append(child)
-
-                # add connection and nodes, kept here and not in crossover
-                # to retain all hyperparameters in evaluator and allow
-                # multiple calls in the future
-                #
-                # also allows crossover to happen seperate of mutations
-                # (which is supposed to create innovations)
-                child.addNodeMutation(
-                    self.nodeMutationRate, self.globalInnovations)
-                child.addConnectionMutation(
-                    self.connectionMutationRate, self.globalInnovations)
-                child.mutateConnectionWeights(
-                    # self.weightMutationRate, self.weightPerturbRate)
-                    self.weightMutationRate)
-
-            else:
-                child = self.nuclei.crossover(
-                    secondParent, firstParent, self.globalInnovations)
-
-                nextPool.append(child)
-
-                child.addNodeMutation(
-                    self.nodeMutationRate, self.globalInnovations)
-                child.addConnectionMutation(
-                    self.connectionMutationRate, self.globalInnovations)
-                child.mutateConnectionWeights(
-                    self.weightMutationRate)
+            swimmers.map(self.mutations, nextPool)
 
         self.genepool.clear()
         self.genepool = nextPool.copy()
         print('new genepool with {} members'.format(len(self.genepool)))
         nextPool.clear()
 
+        swimmers.close()
         return self.genepool
+
+    def mutations(self, child):
+        child.addNodeMutation(
+            self.nodeMutationRate, self.globalInnovations)
+        child.addConnectionMutation(
+            self.connectionMutationRate, self.globalInnovations)
+        child.mutateConnectionWeights(
+            self.weightMutationRate, self.weightPerturbRate)
 
     def selectBiasFitness(self, bias):
         '''
