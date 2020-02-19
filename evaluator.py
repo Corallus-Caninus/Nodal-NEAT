@@ -94,8 +94,8 @@ class evaluator:
                     break
                 else:
                     nextPool.append(x)
-
-            swimmers.map(self.mutations, nextPool)
+            for child in nextPool:
+                self.mutations(child)
 
         self.genepool.clear()
         self.genepool = nextPool.copy()
