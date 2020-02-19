@@ -98,13 +98,16 @@ class nuclei:
             moreFitParent = parent2
             lessFitParent = parent1
 
-        assert moreFitParent in self.primalGenes and lessFitParent in self.primalGenes, \
-            "genomes have not been preprocessed in nuclei for chromosome alignment"
-        # assert moreFitParent.fitness >= lessFitParent.fitness, \
-        #     "less fit parent passed into the wrong positional parameter"
+        # @DEPRECATED
+        # assert moreFitParent in self.primalGenes and lessFitParent in self.primalGenes, \
+        #     "genomes have not been preprocessed in nuclei for chromosome alignment"
 
         connectionBuffer = []
         curConnections = []
+        if moreFitParent not in self.primalGenes:
+            self.readyPrimalGenes(moreFitParent)
+        if lessFitParent not in self.primalGenes:
+            self.readyPrimalGenes(lessFitParent)
 
         moreFitGenes = self.primalGenes[moreFitParent].copy()
         lessFitGenes = self.primalGenes[lessFitParent].copy()

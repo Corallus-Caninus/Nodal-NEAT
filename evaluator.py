@@ -23,6 +23,7 @@ class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
+    # TODO: parallelize everything!
     def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate, selectionPressure):
         # hyper parameters
         self.connectionMutationRate = connectionMutationRate
@@ -57,6 +58,7 @@ class evaluator:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
         # TODO: continuously evaluate fitness
+        # TODO: evaluate genepool for fitness at end of generation
         for ge in self.genepool:
             ge.fitness = fitnessFunction(ge)
 
@@ -73,8 +75,9 @@ class evaluator:
             [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
 
         self.nuclei.resetPrimalGenes()
-        for ge in biasFitnessSelect:
-            self.nuclei.readyPrimalGenes(ge)
+        # @DEPRECATED
+        # for ge in biasFitnessSelect:
+        #     self.nuclei.readyPrimalGenes(ge)
 
         while len(nextPool) < len(self.genepool):
             parent1, parent2 = [], []
@@ -122,6 +125,7 @@ class evaluator:
         RETURNS:
             selection: an index in genepool list
         '''
+        # TODO: very small chance of collision
         selection = rand.randint(0, len(self.genepool))
 
         for _ in range(0, bias):
