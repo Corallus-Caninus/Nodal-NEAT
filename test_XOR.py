@@ -56,7 +56,7 @@ def myFunc(genome):
     # TODO: use python type enforcement since functional
     # (not necessarily ctypes but cython is a goal unless jax/numpy is sufficient)
     '''
-    example function for evaluation. always takes a genome and returns a float.
+    example fitness function for evaluation. always takes a genome and returns a float.
     '''
     numTries = 20
     score = 0
@@ -68,14 +68,14 @@ def myFunc(genome):
 
         output = genome.forwardProp([entry1, entry2])[0]
 
-        if output >= 0.5:
+        if output >= 0.05:
             if entry1 == 1 or entry2 == 1:
                 # one
                 if not entry1 == 1 and entry2 == 1:
                     score += 1
-        elif output < 0.5 and entry1 == 1 and entry2 == 1:
+        elif output < 0.05 and entry1 == 1 and entry2 == 1:
             score += 1
-        elif output < 0.5 and entry1 == 0 and entry2 == 0:
+        elif output < 0.05 and entry1 == 0 and entry2 == 0:
             score += 1
 
     score = score/numTries
@@ -91,17 +91,19 @@ class TestGenepool(unittest.TestCase):
         '''
         test crossover between two identical genomes. should result a topology with all nodes, possibly lost connections.
         '''
-        print('\nTESTING CLONE CROSSOVER:')
+        print('\nTESTING XOR EVALUATION:')
         # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
 
         configLogfile()
-        evaluation = evaluator(inputs=2, outputs=1, population=500,
-                               connectionMutationRate=0.02, nodeMutationRate=0.02,
-                               weightMutationRate=0.25, selectionPressure=4)
+        # configure Nodal-NEAT
+        evaluation = evaluator(inputs=2, outputs=1, population=2000,
+                               connectionMutationRate=0.02, nodeMutationRate=0.01,
+                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
         for _ in range(0, 2000):
             evaluation.nextGeneration(myFunc)
+
         for c in evaluation.genepool:
             graphvizNEAT(c, 'sample-genome' + str(uuid.uuid1()))
 
