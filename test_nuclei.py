@@ -123,7 +123,7 @@ class TestCrossover(unittest.TestCase):
 
         for par in evaluation.genepool[0].getAllConnections():
             if not par.exists(child.getAllConnections()):
-                print('\n\n MISSING CONNECTION IN CLONE CHILD \n\n')
+                raise Exception("ERROR: MISSING CONNECTION IN CLONE CHILD")
 
         print('number of nodes in child : {}'.format(
             len(child.hiddenNodes)))
