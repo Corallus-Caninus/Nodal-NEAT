@@ -53,10 +53,8 @@ def xor(solutionList):
 
 
 def myFunc(genome):
-    # TODO: use python type enforcement since functional
-    # (not necessarily ctypes but cython is a goal unless jax/numpy is sufficient)
     '''
-    example fitness function for evaluation. always takes a genome and returns a float.
+    takes a genome returns genome with fitness associated
     '''
     numTries = 20
     score = 0
@@ -79,7 +77,9 @@ def myFunc(genome):
             score += 1
 
     score = score/numTries
-    return score
+    # return score
+    genome.fitness = score
+    return genome
 
 
 class TestGenepool(unittest.TestCase):
@@ -96,16 +96,18 @@ class TestGenepool(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=2000,
-                               connectionMutationRate=0.02, nodeMutationRate=0.01,
-                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
+        evaluation = evaluator(inputs=2, outputs=1, population=100000,
+                               connectionMutationRate=0.1, nodeMutationRate=0.09,
+                               weightMutationRate=0.9, weightPerturbRate=0.6, selectionPressure=3)
 
         # evaluate 50 generations
-        for _ in range(0, 2000):
+        for _ in range(0, 1000):
             evaluation.nextGeneration(myFunc)
 
-        for c in evaluation.genepool:
-            graphvizNEAT(c, 'sample-genome' + str(uuid.uuid1()))
+        sortPool = sorted([x for x in evaluation.genepool],
+                          key=lambda x: x.fitness, reverse=True)
+        for c in sortPool[:10]:
+            graphvizNEAT(c, 'sample-genome_fitness-'+str(uuid.uuid1()))
 
 
 if __name__ == '__main__':
