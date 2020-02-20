@@ -4,6 +4,7 @@ from network import processSequences
 import random as rand
 from activationFunctions import softmax
 import logging
+from math import sqrt
 # import numpy as np
 # import networkx as nx
 # import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ class genome:
         # TODO: I dont like spawn's overloading for initialization. rewrite.
         #              this is all due to initialization of nodeId in globalInnovation
         '''
-        create a child genome without checking globalInnovation
+        create a child genome without checking nodeId globalInnovation
         '''
         self.inputNodes = []
         self.outputNodes = []
@@ -75,15 +76,14 @@ class genome:
                     rand.uniform(-1, 1), inNode, outNode))
 
     @classmethod
-    # TODO: get rid of this
+    # TODO: get rid of this. currently cant because of crossover starting from new genome object
     def initial(cls, inputSize, outputSize, globalInnovations):
         '''
-        spawn initial genomes for genepool
+        spawn initial genomes for genepool (sets nodeId based on initial topology)
         '''
         # TODO: this isnt the most flexible solution wrt globalConnections. remove globalConnections from here
 
         initNodeId = inputSize+outputSize
-
         globalInnovations.nodeId = initNodeId
 
         return cls(inputSize, outputSize, globalInnovations)
@@ -114,7 +114,7 @@ class genome:
 
     def geneticLocation(self):
         '''
-        returns the position of this genome 
+        returns the position of this genome
         *(used for hamming distance in speciation and location in PointsOfMutation)*
         '''
         connections = self.getAllConnections()
@@ -122,18 +122,100 @@ class genome:
 
         return innovations
 
+    def geneticDistance(self, otherGenome, c1, c2, c3):
+        '''
+        compute K.Stanley's distance metric traditionally used for speciation
+        PARAMETERS:
+            otherGenome: the genome this will be compared against
+            c1: coefficient for weighting excess genes
+            c2: coefficient for weighting disjoint genes
+            c3: coefficient for weighting average weight differences of matching genes
+        RETURNS:
+            the genomic distance from this genome to otherGenome
+        '''
+
+        thisMaxGene = max(self.geneticLocation())
+        otherMaxGene = max(self.geneticLocation())
+
+        if thisMaxGene >= otherMaxGene:
+            # self is larger than otherGenome
+            matchingGenes = [
+                x for x in otherGenome.geneticLocation() if x in self.geneticLocation()]
+
+            disjointGenes = [x for x in self.geneticLocation()
+                             if x not in otherGenome.geneticLocation()]
+
+            excessGenes = [x for x in self.geneticLocation()
+                           if x > otherMaxGene]
+
+            genomeSize = len(self.geneticLocation())
+        else:
+            # otherGenome is larger than self
+            matchingGenes = [
+                x for x in otherGenome.geneticLocation() if x in self.geneticLocation()]
+
+            disjointGenes = [x for x in self.geneticLocation()
+                             if x not in otherGenome.geneticLocation()]
+
+            excessGenes = [x for x in self.geneticLocation()
+                           if x > otherMaxGene]
+
+            genomeSize = len(otherGenome.geneticLocation())
+
+        # return matchingGenes, disjointGenes, excessGenes
+        excessTerm = c1*len(disjointGenes)/genomeSize
+        disjointTerm = c2*len(excessGenes)/genomeSize
+
+        thisMatchWeights = [
+            x.weight for x in self.getAllConnections() if x.innovation in matchingGenes]
+        otherMatchWeights = [
+            x.weight for x in otherGenome.getAllConnections() if x.innovation in matchingGenes]
+        differences = [x-y for x,
+                       y in zip(thisMatchWeights, otherMatchWeights)]
+
+        averageWeightTerm = sum(differences)/len(matchingGenes)
+        averageWeightTerm = c3*averageWeightTerm
+
+        return sqrt(excessTerm**2 + disjointTerm**2 + averageWeightTerm**2)
+
     def mutateConnectionWeights(self, weightMutationRate, weightPerturbRate):
         '''
         randomly changes weights of connections
         '''
-        if rand.uniform(0, 1) > weightPerturbRate:
+        if rand.uniform(0, 1) < weightPerturbRate:
             for conect in self.getAllConnections():
-                if rand.uniform(0, 1) > weightMutationRate:
+                if rand.uniform(0, 1) < weightMutationRate:
                     conect.weight = rand.uniform(-1, 1)
+
+    def addConnectionMutation(self, connectionMutationRate, globalInnovations):
+        '''
+        randomly adds a connection 
+        PARAMETERS:
+            connectionMutationRate: chance to add a connection
+            globalInnovations: innovation book keeping class for genes that have been discovered in all genomes
+        RETURNS:
+            adds a connection to this topology
+        '''
+        # NOTE: num nodes^2 is number of possible connections before depleted conventions.
+        #             so long as self connections and recurrent connections (but no parallel connections)
+        #             are allowed
+        if rand.uniform(0, 1) < connectionMutationRate:
+            # only allow certain node connection directions
+            allInNodes = self.inputNodes + self.hiddenNodes
+            allOutNodes = self.outputNodes + self.hiddenNodes
+            # TODO: should check before creating the object to prevent sudden initialization and removal
+            newConnection = connection(
+                rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
+            self.addConnection(newConnection, globalInnovations)
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
         '''
-        randomly adds a node, if successful returns the innovation adjustment for global innovation counter
+        randomly adds a node
+        PARAMETERS:
+            nodeMutationRate: chance to add a node
+            globalInnovations: innovation book keeping class for genes that have been discovered in all genomes
+        RETURNS:
+            adds a node to this genome topology
         '''
         if rand.uniform(0, 1) < nodeMutationRate:
             randNode = rand.choice(
@@ -149,22 +231,6 @@ class genome:
                 randConnection = rand.choice(randNode.outConnections)
 
             self.addNode(randConnection, globalInnovations)
-
-    def addConnectionMutation(self, connectionMutationRate, globalInnovations):
-        '''
-        randomly adds a connection connections to input and from output nodes are allowed (circularity at all nodes)
-        '''
-        # NOTE: num nodes^2 is number of possible connections before depleted conventions.
-        #             so long as self connections and recurrent connections (but no parallel connections)
-        #             are allowed
-        if rand.uniform(0, 1) < connectionMutationRate:
-            # only allow certain node connection directions
-            allInNodes = self.inputNodes + self.hiddenNodes
-            allOutNodes = self.outputNodes + self.hiddenNodes
-            # TODO: should check before creating the object to prevent sudden initialization and removal
-            newConnection = connection(
-                rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
-            self.addConnection(newConnection, globalInnovations)
 
     def addNode(self, replaceConnection, globalInnovations):
         '''
@@ -226,7 +292,7 @@ class genome:
     ###FORWARD PROPAGATION SPECIFIC OPERATIONS###
     def resetLoops(self):
         '''
-        resets all connections in this genome to connection.loop = False 
+        resets all connections in this genome to connection.loop = False
         unless obvious recursion (input is output)
         '''
         # reset all loops from previous topology
@@ -273,7 +339,7 @@ class genome:
         orders = processSequences(self)  # TODO: BUBBLES!!!!
         # TODO: reimpliment unreadyNodes. if connectionBuffer == step(connectionBuffer)
         #             nothing is happening and bubbles are in the pipe
-        #NOTE: Overestimate
+        # NOTE: Overestimate
         largestCircle = len(self.inputNodes) + \
             len(self.hiddenNodes) + len(self.outputNodes)
         currentLoopLength = largestCircle
