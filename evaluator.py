@@ -5,6 +5,7 @@ import random as rand
 from genome import genome
 from innovation import globalConnections
 from nuclei import nuclei
+from copy import deepcopy
 
 # DEFAULT FITNESS FUNCTION:
 # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
@@ -17,6 +18,12 @@ from nuclei import nuclei
 # TODO: add verbosity levels with logging for tracing at each level of encapsulation
 # TODO: can networkx be used for forward propagation given associative matrix?
 # TODO: implement this in Cython
+
+
+# def massSpawn(inputs, outputs, globalInnovations, count):
+# return genome.initial(inputs, outputs, globalInnovations)
+def massSpawn(genome, count):
+    return deepcopy(genome)
 
 
 class evaluator:
@@ -36,14 +43,19 @@ class evaluator:
         self.globalInnovations = globalConnections()
         self.nuclei = nuclei()
 
-        genepool = []
-        # TODO: initialize in parallel and cleanup initial method
-        for entry in range(0, population):
-            logging.info('EVALUATOR: building a genome in genepool')
-            genepool.append(
-                genome.initial(inputs, outputs, self.globalInnovations))
-        self.genepool = genepool
-        logging.info('EVALUATOR: done constructing evaluator')
+        # TODO: cleanup initial method
+        seed = genome.initial(inputs, outputs, self.globalInnovations)
+        massSpawner = partial(massSpawn, seed)
+
+        with Pool() as divers:
+            self.genepool = divers.map(massSpawner, range(population))
+
+        # @DEPRECATED
+        # genepool = []
+        # for entry in range(0, population):
+        #     genepool.append(
+        #         genome.initial(inputs, outputs, self.globalInnovations))
+        # self.genepool = genepool
 
     def nextGeneration(self, fitnessFunction):
         '''
@@ -52,30 +64,30 @@ class evaluator:
         biased to fitness.
 
         PARAMETERS:
-            fitnessFunction: a pure function to be evaluated against each genome. 
-                                      MUST take a genome and return a float (fitness score)
+            fitnessFunction: a function that takes a genome as a parameter and returns the genome 
+                                      with a fitness float local variable associated
         RETURNS:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
         # TODO: continuously evaluate fitness
         # TODO: evaluate genepool for fitness at end of generation
-        for ge in self.genepool:
-            ge.fitness = fitnessFunction(ge)
+
+        nextPool = []
+        cross = partial(self.nuclei.crossover,
+                        globalInnovations=self.globalInnovations)
+
+        with Pool() as swimmers:
+            self.genepool = swimmers.map(fitnessFunction, self.genepool)
 
         print(max([x.fitness for x in self.genepool]))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
 
-        nextPool = []
-        swimmers = Pool()
-        cross = partial(self.nuclei.crossover,
-                        globalInnovations=self.globalInnovations)
-        biasFitnessSelect = sorted(
-            [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
-
         self.nuclei.resetPrimalGenes()
         # @DEPRECATED
+        # biasFitnessSelect = sorted(
+        #     [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
         # for ge in biasFitnessSelect:
         #     self.nuclei.readyPrimalGenes(ge)
 
@@ -89,8 +101,9 @@ class evaluator:
                 parent2.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
 
-            rawNextPool = swimmers.starmap(
-                cross, zip(parent1, parent2))
+            with Pool() as sinkers:
+                rawNextPool = sinkers.starmap(
+                    cross, zip(parent1, parent2))
 
             for x in rawNextPool:
                 if len(nextPool) == len(self.genepool):
@@ -105,7 +118,6 @@ class evaluator:
         print('new genepool with {} members'.format(len(self.genepool)))
         nextPool.clear()
 
-        swimmers.close()
         return self.genepool
 
     def mutations(self, child):
