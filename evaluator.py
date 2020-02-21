@@ -31,8 +31,10 @@ class evaluator:
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
     # TODO: parallelize everything!
-    def __init__(self, inputs, outputs, population, connectionMutationRate, nodeMutationRate, weightMutationRate, weightPerturbRate, selectionPressure):
-        # hyper parameters
+    def __init__(self, inputs, outputs, population,
+                 connectionMutationRate, nodeMutationRate, weightMutationRate,
+                 weightPerturbRate, selectionPressure):
+        # hyperparameters
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
@@ -50,17 +52,10 @@ class evaluator:
         with Pool() as divers:
             self.genepool = divers.map(massSpawner, range(population))
 
-        # @DEPRECATED
-        # genepool = []
-        # for entry in range(0, population):
-        #     genepool.append(
-        #         genome.initial(inputs, outputs, self.globalInnovations))
-        # self.genepool = genepool
-
-    def nextGeneration(self, fitnessFunction):
+    def nextGeneration(self, fitnessFunction, fitnessObjective):
         '''
         step forward one generation. Processes each genome with the given 
-        fitnessFunction and Crosses over members of current genome, selecting parents
+        fitnessFunction and crosses over members of current genome, selecting parents
         biased to fitness.
 
         PARAMETERS:
@@ -69,17 +64,24 @@ class evaluator:
         RETURNS:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
+        # TODO: consider fitnessFunctions as an abstract base class for inheritance with prototype methods.
+        #              generates data and yields outputs as well as triggering fitness score return.
+
         # TODO: continuously evaluate fitness
         # TODO: evaluate genepool for fitness at end of generation
 
         nextPool = []
-        cross = partial(self.nuclei.crossover,
-                        globalInnovations=self.globalInnovations)
+        globalCrossover = partial(self.nuclei.crossover,
+                                  globalInnovations=self.globalInnovations)
 
         with Pool() as swimmers:
+            # TODO: need to ensure all genepools are operating on
+            #             fitnessFunction for swarm/multiagent environment optimization
             self.genepool = swimmers.map(fitnessFunction, self.genepool)
 
-        print(max([x.fitness for x in self.genepool]))
+        # print(max([x.fitness for x in self.genepool]))
+        if any([x.fitness == fitnessObjective for x in self.genepool]):
+            print('SOLVED')
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
@@ -91,6 +93,7 @@ class evaluator:
         # for ge in biasFitnessSelect:
         #     self.nuclei.readyPrimalGenes(ge)
 
+        # TODO: consider making crossover consistent to not have to loop.
         while len(nextPool) < len(self.genepool):
             parent1, parent2 = [], []
 
@@ -103,13 +106,15 @@ class evaluator:
 
             with Pool() as sinkers:
                 rawNextPool = sinkers.starmap(
-                    cross, zip(parent1, parent2))
+                    globalCrossover, zip(parent1, parent2))
 
             for x in rawNextPool:
                 if len(nextPool) == len(self.genepool):
                     break
                 else:
                     nextPool.append(x)
+
+            print('mutating..')
             for child in nextPool:
                 self.mutations(child)
 
@@ -118,9 +123,16 @@ class evaluator:
         print('new genepool with {} members'.format(len(self.genepool)))
         nextPool.clear()
 
-        return self.genepool
-
     def mutations(self, child):
+        '''
+        sequentially add mutations to a genome due to globalInnovation's current data structure.
+
+        PARAMETERS:
+            child: child genome to inherit mutations
+        RETURNS:
+            alters the genome stochastically adding a node, connection and changing weights of connections
+            in the genome
+        '''
         child.addNodeMutation(
             self.nodeMutationRate, self.globalInnovations)
         child.addConnectionMutation(
@@ -133,7 +145,7 @@ class evaluator:
         get a genome selection index.
 
         PARAMETERS:
-            bias: an integer for the level of bias for selecting for fitness
+            bias: an integer for the level of bias for selecting genomes based on fitness
         RETURNS:
             selection: an index in genepool list
         '''

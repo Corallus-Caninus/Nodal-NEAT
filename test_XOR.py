@@ -87,22 +87,23 @@ class TestGenepool(unittest.TestCase):
     test crossover of an entire generation in a genepool.
     '''
 
-    def test_clone(self):
+    def test_XOR(self):
         '''
-        test crossover between two identical genomes. should result a topology with all nodes, possibly lost connections.
+        trains a genepool to solve the XOR function.
         '''
         print('\nTESTING XOR EVALUATION:')
         # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=100000,
-                               connectionMutationRate=0.1, nodeMutationRate=0.09,
-                               weightMutationRate=0.9, weightPerturbRate=0.6, selectionPressure=3)
+        evaluation = evaluator(inputs=2, outputs=1, population=500,
+                               connectionMutationRate=0.05, nodeMutationRate=0.02,
+                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
-        for _ in range(0, 1000):
-            evaluation.nextGeneration(myFunc)
+        for x in range(0, 1000):
+            print('GENERATION: {}'.format(x))
+            evaluation.nextGeneration(myFunc, 1)
 
         sortPool = sorted([x for x in evaluation.genepool],
                           key=lambda x: x.fitness, reverse=True)

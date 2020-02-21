@@ -6,11 +6,8 @@ from activationFunctions import softmax
 import logging
 from math import sqrt
 # import numpy as np
-# import networkx as nx
-# import matplotlib.pyplot as plt
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
-# TODO: remove the many deprecated/unused methods and cleanup/refactor
 
 
 class genome:
@@ -30,12 +27,9 @@ class genome:
     # a spread of much more complex to much simpler topologies instead of just more complex. a configurable sliding window of complexity
     # helps to create definite and more robust fitness manifold vectors.
     #
-    # TODO: Tensorflow is a better solution given TVM, XLA and its ubiquity. NO Jax is changing this. Numpy is a base that will be supported
-    #               in future frameworks so write in numpy
+    # Use numpy recarray for compiling and slice. consider jax
     #
-    # Use numpy recarray for compiling and slice.
-    #
-    #  matrix into forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
+    #  create matrix from forward prop numpy.array steps. create a masking matrix for gatekeeping/recurrence
     #  and two float matrices for signal and weights (perform matrix-wise activation of the mat-mul result matrix)
     #   trace FSM manually before scripting attempt.
     '''
@@ -138,7 +132,7 @@ class genome:
         otherMaxGene = max(self.geneticLocation())
 
         if thisMaxGene >= otherMaxGene:
-            # self is larger than otherGenome
+            # self has more genes than otherGenome
             matchingGenes = [
                 x for x in otherGenome.geneticLocation() if x in self.geneticLocation()]
 
@@ -150,7 +144,7 @@ class genome:
 
             genomeSize = len(self.geneticLocation())
         else:
-            # otherGenome is larger than self
+            # otherGenome has more genes than self
             matchingGenes = [
                 x for x in otherGenome.geneticLocation() if x in self.geneticLocation()]
 
@@ -267,7 +261,6 @@ class genome:
         '''
         allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
         for checkNode in allNodes:
-            # TODO: the sum of these lists ~doubles the search space with repeats make this a set or unique
             if newConnection.exists(checkNode.outConnections + checkNode.inConnections) == True:
                     # TODO: this clips mutation rates probability distribution for cases:
                     #              connectionMutationRate>>nodeMutationRate and very small, sparse networks

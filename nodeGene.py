@@ -95,7 +95,7 @@ class nodeGene:
     def activate(self, signal):
         '''
         activate this neuron: 
-        1. matrix multiply incoming connection weights and signals 
+        1. matrix multiply incoming connection weights and signals
         2. reimman sum the results of 1
         3. call activation function for the result of 2
         4. copy result of 3 to all output connection's signal
@@ -142,7 +142,7 @@ class nodeGene:
             else:
                 for inc in [x for x in incs if x.signal is not None]:
                     activeSignal += inc.signal*inc.weight
-                    inc.signal = None
+                    # inc.signal = None
 
                 activeSignal = softmax(activeSignal)
 
@@ -169,7 +169,7 @@ class nodeGene:
                     #     # unready recurrent connection
                     #     continue
                     activeSignal += inc.signal*inc.weight
-                    inc.signal = None
+                    # inc.signal = None
 
                 activeSignal = softmax(activeSignal)
 
