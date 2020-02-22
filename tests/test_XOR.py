@@ -1,9 +1,9 @@
-from nuclei import nuclei
-from genome import genome
-from evaluator import evaluator
+from organisms.nuclei import nuclei
+from organisms.genome import genome
+from organisms.evaluator import evaluator
 import unittest
 import logging
-from network import graphvizNEAT
+from organisms.network import graphvizNEAT
 import uuid
 import random as rand
 import os
