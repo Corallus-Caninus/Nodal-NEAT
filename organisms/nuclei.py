@@ -7,6 +7,7 @@ from nodeGene import nodeGene
 
 
 class nuclei:
+    # TODO: losing too many connections
     # TODO: if innovation discovery doesnt happen this can occur in parallel
     # TODO: This needs to occur in parallel
     # TODO: need to cleanup this class (lots of refactoring)
@@ -35,8 +36,6 @@ class nuclei:
         '''
         # NOTE: now using list of lists to denote each depth in splits
         # these nodes contain all connections but may not have the supporting nodes.
-        # this needs to be resolved in crossover
-        # NOTE fun fact: initial topology is analogous to the equator of centromeres
         connectionBuffer = []
         curConnections = []
         curDepth = []
@@ -169,13 +168,7 @@ class nuclei:
 
                 for primal in curGenes:
                     for connect in curConnections:
-                        # TODO: is splitting node when already exists and found at a deeper depth desired? ensure this doesnt happen
-                        #               ensured with if gene.nodeId not in [x.nodeId for x in curGenes]
-                        #              (local alignment (last part of metaphase with alignNodeGene))
-                        #              this doesnt distinguish local excess genes (if len(moreFitGenes.pop() > len(lessFitGenes.pop())))
-                        #               not really important, most import excess/disjoint metric is depth of split (which promotes deeper networks)
-                        #           this is likely where novel nodes are discovered in crossover
-
+                        # TODO: verify novel nodes arent discovered in crossover or obey the algorithm
                         if primal.alignNodeGene(connect):
                             newNode = child.addNode(connect, globalInnovations)
 
@@ -192,6 +185,8 @@ class nuclei:
         return child
 
     def nextConnections(self, newNode, connectionBuffer):
+        #TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
+        #      instead of pass in mutating
         '''
         feed the connectionBuffer all incoming and outgoing connections from newNode
         '''
@@ -222,13 +217,15 @@ class nuclei:
 
     def inheritDisjointConnections(self, targetNode, child, moreFitParent, lessFitParent, globalInnovations):
         # TODO: inherit from lesserFitParent when not in moreFitParent (true disjoint not matching and moreFit)
-
-        # TODO: getting false recurrence verified in innovation
-        #               recurrent connections are also novel innovations
+        # TODO: rewrite this. need to review zip method for when connections in one node are greater.
+        #      also need to attempt true Nodal crossover (random chance for moreFit or lessFit connections
+        #      but not a mixing of both)
         '''
         inherit connections from disjoint nodeGenes (occuring in a primalGene depth represented in both parents).
         Obeys K.Stanley's random disjoint gene inheritance
         '''
+        #NOTE: this allows for discovering new expressions of a node as parent connections may not be added
+        #      later if not inherited. follows the pruning motif of Nodal_NEAT
         # print('\n\nDISJOINT: inheriting into targetNode.nodeId {}'.format(
         #     targetNode.nodeId))
 
@@ -244,9 +241,6 @@ class nuclei:
         if moreFitNode is None and lessFitNode is None:
             # TODO: this should be assertion
             return
-        # assert moreFitNode is not None and lessFitNode is not None, "missing child node in both parents"
-
-        # print(moreFitNode, lessFitNode)
 
         # orient parent's disjoint nodeGene
         if moreFitNode is None:
@@ -260,20 +254,31 @@ class nuclei:
             fitDisjoint = True
         else:
             # inherit matching genes
-            for fitOutc, lessOutc in zip(moreFitNode.outConnections, lessFitNode.outConnections):
-                if rand.uniform(0, 1) > 0.5:
-                    outc = fitOutc
-                else:
-                    outc = lessOutc
-                if outc not in inheritOuts:
-                    inheritOuts.append(outc)
-            for fitInc, lessInc in zip(moreFitNode.inConnections, lessFitNode.inConnections):
-                if rand.uniform(0, 1) > 0.5:
-                    inc = fitInc
-                else:
-                    inc = lessInc
-                if inc not in inheritIns:
-                    inheritIns.append(inc)
+            #TODO: inherit all connections of a node instead. trying to search for modular solutions
+            #      instead of connections. This may lead to multiple inheritance (add a node multiple times
+            #      at a split depth, generating 'layers' from a successful node solution)
+            if rand.uniform(0,1) > 0.5:
+                inheritOuts = moreFitNode.outConnections
+                inheritIns = moreFitNode.inConnections
+            else:
+                inheritOuts = lessFitNode.outConnections
+                inheritIns = lessFitNode.inConnections
+                
+            # for fitOutc, lessOutc in zip(moreFitNode.outConnections, lessFitNode.outConnections):
+            #     if rand.uniform(0, 1) > 0.5:
+            #         outc = fitOutc
+            #     else:
+            #         outc = lessOutc
+            #     if outc not in inheritOuts:
+            #         inheritOuts.append(outc)
+            # for fitInc, lessInc in zip(moreFitNode.inConnections, lessFitNode.inConnections):
+            #     if rand.uniform(0, 1) > 0.5:
+            #         inc = fitInc
+            #     else:
+            #         inc = lessInc
+            #     if inc not in inheritIns:
+            #         inheritIns.append(inc)
+
         # inherit outConnetions
         for outc in inheritOuts:
             self.inheritConnection(
