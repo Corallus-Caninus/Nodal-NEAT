@@ -1,5 +1,7 @@
 from organisms.evaluator import evaluator
+from organisms.network import graphvizNEAT
 import unittest
+import uuid
 
 class TestForwardProp(unittest.TestCase):
     def test_forwardProp(self):
@@ -21,6 +23,7 @@ class TestForwardProp(unittest.TestCase):
             print('{} Forward Prop of {} produced {} with d/dx {}'
                     .format(x, vals, outputs, [x - y for x,y in zip(outputs, lastOutputs)]))
             lastOutputs = outputs
+        graphvizNEAT(test, 'test-genome-{}'.format(uuid.uuid1()))
 
 if __name__=='__main__':
     unittest.main()
