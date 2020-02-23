@@ -1,20 +1,18 @@
 from organisms.nuclei import nuclei
 from organisms.genome import genome
 from organisms.evaluator import evaluator
+from organisms.network import graphvizNEAT
 import unittest
 import logging
-from organisms.network import graphvizNEAT
 import uuid
 import random as rand
 import os
 import re
 from copy import deepcopy
-
-# TODO: REALLY NEED TO DEBUG CONNECTION INNOVATION MATCH REMOVAL
-
+from functools import lru_cache
 
 def configLogfile():
-    # TODO: call a seperate logging file for each object. this will make the code easier to understand for first timers
+    # TODO: call a seperate logging file foru unittests. this will make the code easier to understand for first timers
     '''
     configures logFile name and directory
     '''
@@ -36,8 +34,8 @@ def configLogfile():
 
 def xor(solutionList):
     '''
-    0 0 | 0 1 | 1 0 | 11
-     0   |   1  |   1  |   0
+    0 0 | 0 1 | 1 0 | 1 1
+     0   |   1  |   1  |  0
 
     '''
     if solutionList is [0, 0]:
@@ -51,7 +49,7 @@ def xor(solutionList):
     else:
         raise Exception("wrong values sent to xor")
 
-
+@lru_cache(maxsize=None)
 def myFunc(genome):
     '''
     takes a genome returns genome with fitness associated
@@ -96,19 +94,21 @@ class TestGenepool(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=500,
-                               connectionMutationRate=0.05, nodeMutationRate=0.02,
-                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
+        evaluation = evaluator(inputs=2, outputs=1, population=1000,
+                               connectionMutationRate=0.2, nodeMutationRate=0.001,
+                               weightMutationRate=0.9, weightPerturbRate=0.5, selectionPressure=8)
 
-        # evaluate 50 generations
-        for x in range(0, 1000):
+        # evaluate 200 generations
+        evaluation.score(myFunc, 1)
+        for x in range(0, 200):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc, 1)
+            print('max fitness is: {}'.format(evaluation.getMaxFitness()))
 
-        sortPool = sorted([x for x in evaluation.genepool],
-                          key=lambda x: x.fitness, reverse=True)
-        for c in sortPool[:10]:
-            graphvizNEAT(c, 'sample-genome_fitness-'+str(uuid.uuid1()))
+        # sortPool = sorted([x for x in evaluation.genepool],
+        #                   key=lambda x: x.fitness, reverse=True)
+        for c in evaluation.genepool[:10]:
+            graphvizNEAT(c, 'sample-genome-'+str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

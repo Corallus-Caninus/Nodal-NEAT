@@ -14,7 +14,7 @@ from copy import deepcopy
 
 
 def configLogfile():
-    # TODO: call a seperate logging file for each object. this will make the code easier to understand for first timers
+    # TODO: call a seperate logging file for unittests. this will make the code easier to understand for first timers
     '''
     configures logFile name and directory
     '''
@@ -79,6 +79,7 @@ class TestMetrics(unittest.TestCase):
                                weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
+        evaluation.score(myFunc, 1)
         for x in range(0, 1000):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc, 1)

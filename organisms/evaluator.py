@@ -53,6 +53,19 @@ class evaluator:
         with Pool() as divers:
             self.genepool = divers.map(massSpawner, range(population))
 
+    def score(self, fitnessFunction, fitnessObjective):
+        '''
+        score genepool for initialization
+
+        PARAMETERS:
+            fitnessFunction: a function that takes a genome as a parameter and returns the genome 
+                                      with a fitness float local variable associated
+        RETURNS:
+            None, sets fitness on all members of genepool        
+        '''
+        with Pool() as swimmers:
+            self.genepool = swimmers.map(fitnessFunction, self.genepool)
+
     def nextGeneration(self, fitnessFunction, fitnessObjective):
         '''
         step forward one generation. Processes each genome with the given 
@@ -65,26 +78,21 @@ class evaluator:
         RETURNS:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
-        # TODO: consider fitnessFunctions as an abstract base class for inheritance with prototype methods.
-        #              generates data and yields outputs as well as triggering fitness score return.
+        # TODO: continuously evaluate fitness. Instead use async to prevent block pool evaluation chunking
 
-        # TODO: continuously evaluate fitness
         # TODO: evaluate genepool for fitness at end of generation
+        assert all([x.fitness is not 0 for x in self.genepool]), \
+            "need to initialize genepool scoring with a call to evaluator.score() before iterating generations"
 
         nextPool = []
         globalCrossover = partial(self.nuclei.crossover,
                                   globalInnovations=self.globalInnovations)
 
-        with Pool() as swimmers:
-            # TODO: need to ensure all genepools are operating on
-            #             fitnessFunction for swarm/multiagent environment optimization
-            self.genepool = swimmers.map(fitnessFunction, self.genepool)
-
-        # print(max([x.fitness for x in self.genepool]))
-        if any([x.fitness >= fitnessObjective for x in self.genepool]):
-            print('SOLVED {}'.format(max([x.fitness for x in self.genepool])))
-        print('max fitness in genepool: {}'.format(max([x.fitness for x in self.genepool])))
-        print('average fitness in genepool: {}'.format(sum([x.fitness for x in self.genepool])/len(self.genepool)))
+        #@DEPRECATED
+        # if any([x.fitness >= fitnessObjective for x in self.genepool]):
+        #     print('SOLVED {}'.format(max([x.fitness for x in self.genepool])))
+        # print('max fitness in genepool: {}'.format(max([x.fitness for x in self.genepool])))
+        # print('average fitness in genepool: {}'.format(sum([x.fitness for x in self.genepool])/len(self.genepool)))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
@@ -98,9 +106,11 @@ class evaluator:
             for x in range(0, len(self.genepool) - len(nextPool)):
                 parent1.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
+                # parent1.append(self.selectBiasFitness(self.selectionPressure))
                 # NOTE: crosses over with self
                 parent2.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
+                # parent2.append(self.selectBiasFitness(self.selectionPressure))
 
             with Pool() as sinkers:
                 rawNextPool = sinkers.starmap(
@@ -116,10 +126,10 @@ class evaluator:
             for child in nextPool:
                 self.mutations(child)
 
-        self.genepool.clear()
-        self.genepool = nextPool.copy()
-        print('new genepool with {} members'.format(len(self.genepool)))
-        nextPool.clear()
+        #evaluate fitness
+        with Pool() as swimmers:
+            self.genepool = swimmers.map(fitnessFunction, nextPool)
+
 
     def mutations(self, child):
         '''
@@ -149,7 +159,13 @@ class evaluator:
         '''
         selection = rand.uniform(0,1)**bias
         selection = int(selection*(len(self.genepool)-1))
-        # selection = np.random.choice(a=self.genepool, size=1, p=[x.fitness for x in self.genepool])
 
-        print('selecting: {} with fitness {}'.format(selection, self.genepool[selection].fitness))
+        # fitList = [x.fitness for x in self.genepool]
+        # biasList = [x/sum(fitList) for x in fitList]
+        # selection = np.random.choice(a=self.genepool, size=None, p=biasList)
+
+        # print('selecting: {} with fitness {}'.format(selection, self.genepool[selection].fitness))
         return selection
+
+    def getMaxFitness(self):
+        return max([x.fitness for x in self.genepool])
