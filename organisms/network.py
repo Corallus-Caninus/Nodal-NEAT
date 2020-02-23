@@ -105,6 +105,6 @@ def graphvizNEAT(network, filename):  # was sequences
             continue
         else:
             f.edge(str(c.input.nodeId), str(
-                c.output.nodeId), label=str(c.loop))
+                c.output.nodeId), label=str(c.loop) +' '+ str(c.weight))
 
     f.view()
