@@ -6,6 +6,8 @@ from genome import genome
 from innovation import globalConnections
 from nuclei import nuclei
 from copy import deepcopy
+import numpy as np
+
 
 # DEFAULT FITNESS FUNCTION:
 # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
@@ -92,7 +94,7 @@ class evaluator:
         # TODO: consider making crossover consistent to not have to loop.
         while len(nextPool) < len(self.genepool):
             parent1, parent2 = [], []
-
+            self.genepool = sorted(self.genepool, key=lambda x: x.fitness, reverse=True)
             for x in range(0, len(self.genepool) - len(nextPool)):
                 parent1.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
@@ -146,7 +148,8 @@ class evaluator:
             selection: an index in genepool list
         '''
         selection = rand.uniform(0,1)**bias
-        selection = int(selection*len(self.genepool)-1)
+        selection = int(selection*(len(self.genepool)-1))
+        # selection = np.random.choice(a=self.genepool, size=1, p=[x.fitness for x in self.genepool])
 
-        print('selecting: {}'.format(selection))
+        print('selecting: {} with fitness {}'.format(selection, self.genepool[selection].fitness))
         return selection
