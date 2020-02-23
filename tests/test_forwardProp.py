@@ -15,9 +15,12 @@ class TestForwardProp(unittest.TestCase):
             
         print('beginning forward propagation')
         vals = [1,2]
+        lastOutputs = [0,0]
         for x in range(0,10):
             outputs = test.forwardProp(vals)
-            print('{} Forward Prop of {} produced {}'.format(x, vals, outputs))
+            print('{} Forward Prop of {} produced {} with d/dx {}'
+                    .format(x, vals, outputs, [x - y for x,y in zip(outputs, lastOutputs)]))
+            lastOutputs = outputs
 
 if __name__=='__main__':
     unittest.main()
