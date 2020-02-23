@@ -30,7 +30,6 @@ class evaluator:
     # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
     # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
-    # TODO: parallelize everything!
     def __init__(self, inputs, outputs, population,
                  connectionMutationRate, nodeMutationRate, weightMutationRate,
                  weightPerturbRate, selectionPressure):
@@ -38,7 +37,7 @@ class evaluator:
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
-        self.weightPerturbRate = weightPerturbRate
+        self.weightPerturbRate = weightPerturbRate  # TODO: consider this always being 1
         self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalConnections
@@ -80,18 +79,15 @@ class evaluator:
             self.genepool = swimmers.map(fitnessFunction, self.genepool)
 
         # print(max([x.fitness for x in self.genepool]))
-        if any([x.fitness == fitnessObjective for x in self.genepool]):
-            print('SOLVED')
+        if any([x.fitness >= fitnessObjective for x in self.genepool]):
+            print('SOLVED {}'.format(max([x.fitness for x in self.genepool])))
+        print('max fitness in genepool: {}'.format(max([x.fitness for x in self.genepool])))
+        print('average fitness in genepool: {}'.format(sum([x.fitness for x in self.genepool])/len(self.genepool)))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
 
         self.nuclei.resetPrimalGenes()
-        # @DEPRECATED
-        # biasFitnessSelect = sorted(
-        #     [x for x in self.genepool], key=lambda x: x.fitness, reverse=True)
-        # for ge in biasFitnessSelect:
-        #     self.nuclei.readyPrimalGenes(ge)
 
         # TODO: consider making crossover consistent to not have to loop.
         while len(nextPool) < len(self.genepool):
@@ -149,9 +145,8 @@ class evaluator:
         RETURNS:
             selection: an index in genepool list
         '''
-        # TODO: very small chance of collision
-        selection = rand.randint(0, len(self.genepool))
+        selection = rand.uniform(0,1)**bias
+        selection = int(selection*len(self.genepool)-1)
 
-        for _ in range(0, bias):
-            selection = selection - rand.randint(0, selection)
+        print('selecting: {}'.format(selection))
         return selection
