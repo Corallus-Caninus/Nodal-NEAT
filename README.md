@@ -1,4 +1,5 @@
-![stability-wip](https://img.shields.io/badge/stability-work_in_progress-blue.svg)
+![stable](http://badges.github.io/stability-badges/dist/stable.svg)
+(needs cleanup/refactoring but working-- speciation is unimplemented but easily added)
 
 # Nodal-NEAT
 
