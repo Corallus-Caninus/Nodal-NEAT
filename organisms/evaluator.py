@@ -1,10 +1,10 @@
+from genome import genome
+from innovation import globalInnovations
+from nuclei import nuclei
 from multiprocessing import Pool
 from functools import partial
 import logging
 import random as rand
-from genome import genome
-from innovation import globalConnections
-from nuclei import nuclei
 from copy import deepcopy
 import numpy as np
 
@@ -42,8 +42,8 @@ class evaluator:
         self.weightPerturbRate = weightPerturbRate  # TODO: consider this always being 1
         self.selectionPressure = selectionPressure
 
-        # mutate self.innovation and self.nodeId in innovation.globalConnections
-        self.globalInnovations = globalConnections()
+        # mutate self.innovation and self.nodeId in innovation.globalInnovations
+        self.globalInnovations = globalInnovations()
         self.nuclei = nuclei()
 
         # TODO: cleanup initial method
@@ -79,7 +79,6 @@ class evaluator:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
         # TODO: continuously evaluate fitness. Instead use async to prevent block pool evaluation chunking
-
         # TODO: evaluate genepool for fitness at end of generation
         assert all([x.fitness is not 0 for x in self.genepool]), \
             "need to initialize genepool scoring with a call to evaluator.score() before iterating generations"

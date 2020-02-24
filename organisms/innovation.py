@@ -13,7 +13,7 @@ from copy import copy
 # NOTE: copying objects increases reference count and allows equivalence comparison in reflection
 
 
-class globalConnections:
+class globalInnovations:
     # TODO: refactor name since more than connections-- 'globalMaps'?
     '''
     keep a record of all connections and nodes that have been acquired by all genomes (global connections/nodes).

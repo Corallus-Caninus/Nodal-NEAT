@@ -75,7 +75,7 @@ class genome:
         '''
         spawn initial genomes for genepool (sets nodeId based on initial topology)
         '''
-        # TODO: this isnt the most flexible solution wrt globalConnections. remove globalConnections from here
+        # TODO: this isnt the most flexible solution wrt globalInnovations. remove globalInnovations from here
 
         initNodeId = inputSize+outputSize
         globalInnovations.nodeId = initNodeId

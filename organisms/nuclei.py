@@ -1,9 +1,8 @@
-import random as rand
-from copy import copy
 from genome import genome
-# import connectionGene
 from connectionGene import connectionGene
 from nodeGene import nodeGene
+import random as rand
+from copy import copy
 
 
 class nuclei:
