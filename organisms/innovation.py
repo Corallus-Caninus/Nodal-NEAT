@@ -59,6 +59,7 @@ class globalInnovations:
     def verifyNode(self, localParallelNodes, replaceConnection):
         '''
         check to see if a newly split connection has already occured
+
         PARAMETERS:
             localParallelNodes: all nodes local to the genome being compared that are created by splitting replaceConnection (parallel nodes).
             replaceConnection: the connection being split to create a new node.
@@ -91,13 +92,18 @@ class globalInnovations:
 
             # TODO: could be error when splitting loop connection
             self.innovation += 1
-            inConnection = connectionGene(
-                rand.uniform(-1, 1), inputNode, newNode)
+            inConnection = connectionGene(1.0, inputNode, newNode)
+                # rand.uniform(-1, 1), inputNode, newNode)
+            #TODO: could also be self.verifyConnection call test these cases
+            self.connections.append(copy(inConnection))
             inConnection.innovation = copy(self.innovation)
 
             self.innovation += 1
             outConnection = connectionGene(
                 copy(replaceConnection.weight), newNode, outputNode)
+
+            #TODO: could also be self.verifyConnection call test these cases
+            self.connections.append(copy(outConnection)) 
             outConnection.innovation = copy(self.innovation)
 
             logging.info('INNOVATION: Global node found: {} -> {} -> {}'.format(
@@ -127,8 +133,7 @@ class globalInnovations:
             logging.info('INNOVATION: node match {}'.format(
                 match[0].output.nodeId))
 
-            inConnection = connectionGene(
-                rand.uniform(-1, 1), inputNode, newNode)
+            inConnection = connectionGene(1.0, inputNode, newNode)
             inConnection.innovation = copy(match[0].innovation)
 
             outConnection = connectionGene(
@@ -139,3 +144,4 @@ class globalInnovations:
                 inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
 
             return newNode
+
