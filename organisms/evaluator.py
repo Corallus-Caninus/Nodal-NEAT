@@ -29,8 +29,6 @@ def massSpawn(genome, count):
 
 
 class evaluator:
-    # TODO: pass in inheritance rates (addNodeFitParent, addNodeLesserParent, (and possibly: addConnectionFitParent, addConnectionLesserParent))
-    # TODO: this is just inherit more/less connection since missing a connection prevents all subsequent splits
     # TODO: !DOCSTRING!
     def __init__(self, inputs, outputs, population,
                  connectionMutationRate, nodeMutationRate, weightMutationRate,
@@ -46,7 +44,6 @@ class evaluator:
         self.globalInnovations = globalInnovations()
         self.nuclei = nuclei()
 
-        # TODO: cleanup initial method
         seed = genome.initial(inputs, outputs, self.globalInnovations)
         massSpawner = partial(massSpawn, seed)
 
@@ -156,15 +153,15 @@ class evaluator:
         RETURNS:
             selection: an index in genepool list
         '''
-        selection = rand.uniform(0,1)**bias
-        selection = int(selection*(len(self.genepool)-1))
-
-        # fitList = [x.fitness for x in self.genepool]
-        # biasList = [x/sum(fitList) for x in fitList]
-        # selection = np.random.choice(a=self.genepool, size=None, p=biasList)
-
-        # print('selecting: {} with fitness {}'.format(selection, self.genepool[selection].fitness))
-        return selection
+        totalFitness = sum([x.fitness for x in self.genepool])
+        curFit = 0
+        targetFit = rand.uniform(0,1)*totalFitness
+        for ge in self.genepool:
+            curFit += ge.fitness
+            if curFit > targetFit:
+                # print('selecting', ge.fitness)
+                return self.genepool.index(ge)
+        return rand.randint(0, len(self.genepool)-1)
 
     def getMaxFitness(self):
         return max([x.fitness for x in self.genepool])
