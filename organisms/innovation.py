@@ -1,8 +1,9 @@
-from connectionGene import connectionGene
-from nodeGene import nodeGene
 import random as rand
 import logging
 from copy import copy
+
+from organisms.connectionGene import connectionGene
+from organisms.nodeGene import nodeGene
 # TODO: this is so inherent to creating connections it should be in the connectionGene constructor! maybe not..
 #               ConnectionGene construction is becoming spaghetti in higher order objects. Fix this.
 # TODO: is it simpler to just pass in list of all existing connections to connectionGene and check in constructor?

@@ -1,14 +1,15 @@
-from nuclei import nuclei
-from genome import genome
-from evaluator import evaluator
 import unittest
 import logging
-from network import graphvizNEAT
 import uuid
 import random as rand
 import os
 import re
 from copy import deepcopy
+
+from organisms.nuclei import nuclei
+from organisms.genome import genome
+from organisms.evaluator import evaluator
+from organisms.network import graphvizNEAT
 
 # TODO: REALLY NEED TO DEBUG CONNECTION INNOVATION MATCH REMOVAL
 
@@ -76,7 +77,7 @@ class TestMetrics(unittest.TestCase):
         # configure Nodal-NEAT
         evaluation = evaluator(inputs=2, outputs=1, population=500,
                                connectionMutationRate=0.05, nodeMutationRate=0.02,
-                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
+                               weightMutationRate=0.9, weightPerturbRate=0.3)
 
         # evaluate 50 generations
         evaluation.score(myFunc, 1)

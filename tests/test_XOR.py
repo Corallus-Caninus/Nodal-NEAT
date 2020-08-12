@@ -1,15 +1,21 @@
-from organisms.nuclei import nuclei
-from organisms.genome import genome
-from organisms.evaluator import evaluator
-from organisms.network import graphvizNEAT
-import unittest
 import logging
+import matplotlib.pyplot as plt
+import matplotlib.animation as anim
+from matplotlib import style
+import unittest
 import uuid
 import random as rand
 import os
 import re
 from copy import deepcopy
 from functools import lru_cache
+
+import numpy as np
+
+from organisms.nuclei import nuclei
+from organisms.genome import genome
+from organisms.evaluator import evaluator
+from organisms.network import graphvizNEAT
 
 def configLogfile():
     # TODO: call a seperate logging file foru unittests. this will make the code easier to understand for first timers
@@ -49,12 +55,14 @@ def xor(solutionList):
     else:
         raise Exception("wrong values sent to xor")
 
-@lru_cache(maxsize=None)
+#TODO: lru_cache here doesnt so anything really
+#       but is a good idea in other fit funcs.
+#@lru_cache(maxsize=None)
 def myFunc(genome):
     '''
     takes a genome returns genome with fitness associated
     '''
-    numTries = 20
+    numTries = 50
     score = 0
 
     # needs to be random to prevent memorizing order of input
@@ -64,14 +72,14 @@ def myFunc(genome):
 
         output = genome.forwardProp([entry1, entry2])[0]
 
-        if output >= 0.05:
+        if output >= 0.5:
             if entry1 == 1 or entry2 == 1:
                 # one
-                if not entry1 == 1 and entry2 == 1:
+                if entry1 != 1 and entry2 != 1:
                     score += 1
-        elif output < 0.05 and entry1 == 1 and entry2 == 1:
+        elif output < 0.5 and entry1 == 1 and entry2 == 1:
             score += 1
-        elif output < 0.05 and entry1 == 0 and entry2 == 0:
+        elif output < 0.5 and entry1 == 0 and entry2 == 0:
             score += 1
 
     score = score/numTries
@@ -84,31 +92,84 @@ class TestGenepool(unittest.TestCase):
     '''
     test crossover of an entire generation in a genepool.
     '''
-
     def test_XOR(self):
         '''
         trains a genepool to solve the XOR function.
         '''
+        generations = 10000
+
+        #Graph configuration
+        style.use('fivethirtyeight')
+        y = []
+        yAvg = []
+        nodes = []
+        connections = []
+        plt.ion()
+        
         print('\nTESTING XOR EVALUATION:')
         # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=1000,
-                               connectionMutationRate=0.2, nodeMutationRate=0.001,
-                               weightMutationRate=0.9, weightPerturbRate=0.5, selectionPressure=8)
+        evaluation = evaluator(inputs=2, outputs=1, population=800,
+                               connectionMutationRate=0.002, nodeMutationRate=0.0001,
+                               weightMutationRate=0.06, weightPerturbRate=0.9, selectionPressure=3)
 
         # evaluate 200 generations
         evaluation.score(myFunc, 1)
-        for x in range(0, 200):
+        #TODO: simple matplotlib real time graph
+        for x in range(0, generations):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc, 1)
-            print('max fitness is: {}'.format(evaluation.getMaxFitness()))
+            maxFit = evaluation.getMaxFitness()
+            print('max fitness is: {}'.format(maxFit))
+           
+            y_avg = 0
+            nodeAvg = 0
+            connectionAvg = 0
+            for g in evaluation.genepool:
+                y_avg += g.fitness
+                nodeAvg += len(g.hiddenNodes)
+                for n in g.hiddenNodes:
+                    connectionAvg += len(n.outConnections)
+                    connectionAvg += len(n.inConnections)
+
+            y_avg = y_avg/len(evaluation.genepool)
+            connectionAvg = connectionAvg/len(evaluation.genepool)
+            nodeAvg = nodeAvg/len(evaluation.genepool)
+
+            yAvg.append(y_avg)
+            connections.append(connectionAvg)
+            nodes.append(nodeAvg)
+
+            y.append(maxFit)
+            #TODO: average fitness graph line
+            plt.clf()
+
+            plt.subplot(221)
+            plt.title('max fitness')
+            plt.plot(y, 'b', linewidth=0.5)
+
+            plt.subplot(222)
+            plt.title('average fitness')
+            plt.plot(yAvg, 'black', linewidth=0.5)
+
+            plt.subplot(223)
+            plt.title('average connections in genepool')
+            plt.plot(connections, 'black', linewidth=1)
+
+            plt.subplot(224)
+            plt.title('average nodes in genepool')
+            plt.plot(nodes, 'r', linewidth=1)
+
+            plt.draw()
+            plt.pause(0.001)
+        plt.savefig('test_XOR')
 
         # sortPool = sorted([x for x in evaluation.genepool],
         #                   key=lambda x: x.fitness, reverse=True)
-        for c in evaluation.genepool[:10]:
-            graphvizNEAT(c, 'sample-genome-'+str(uuid.uuid1()))
+        #for c in evaluation.genepool[:10]:
+            #graphvizNEAT(c, 'sample-genome-'+str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

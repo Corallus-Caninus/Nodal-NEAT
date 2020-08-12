@@ -1,13 +1,14 @@
 from graphviz import Digraph
-import genome
+
+import organisms.genome
 
 
 # NOTE: this contains utility functions for graph analysis and analysing/preparing topologies for genetic operations
 #              it is understandably preferable to keep this all in genome.py as these methods operate on genome objects
 #              but genome.py will be large to the point of unreadable.
 
-# NOTE: Intra-extrema connections are no longer allowed due to complexity for very little simplification
-#            (a network with intra-extrema connections always has an equivalent with hidden layer only recursion)
+# NOTE: Intra-extrema connections are no longer allowed due to complexity for very little feature gain. since this is node oriented we need a node interface not a connection to harvest the network.
+#            (a network with intra-extrema connections always has an equivalent with hidden layer only loops)
 #           since this is about evolving deep direct NEAT networks, the slight simplification of the fitness landscape is not beneficial
 #           and will require more work for numpification (vectorization)
 

@@ -1,11 +1,12 @@
-from nodeGene import nodeGene as node
-from connectionGene import connectionGene as connection
-from network import processSequences
 import random as rand
-from activationFunctions import softmax
 import logging
 from math import sqrt
 # import numpy as np
+
+from organisms.nodeGene import nodeGene as node
+from organisms.connectionGene import connectionGene as connection
+from organisms.network import processSequences
+from organisms.activationFunctions import softmax
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
 
@@ -70,12 +71,14 @@ class genome:
                     rand.uniform(-1, 1), inNode, outNode))
 
     @classmethod
-    # TODO: get rid of this. currently cant because of crossover starting from new genome object
+    # TODO: get rid of this. currently cant because of crossover starting 
+    # from new genome object
     def initial(cls, inputSize, outputSize, globalInnovations):
         '''
         spawn initial genomes for genepool (sets nodeId based on initial topology)
         '''
-        # TODO: this isnt the most flexible solution wrt globalInnovations. remove globalInnovations from here
+        # TODO: this isnt the most flexible solution wrt globalInnovations. 
+        # remove globalInnovations from here
 
         initNodeId = inputSize+outputSize
         globalInnovations.nodeId = initNodeId
@@ -261,11 +264,15 @@ class genome:
         '''
         allNodes = self.hiddenNodes+self.outputNodes+self.inputNodes
         for checkNode in allNodes:
-            if newConnection.exists(checkNode.outConnections + checkNode.inConnections) == True:
-                    # TODO: this clips mutation rates probability distribution for cases:
-                    #              connectionMutationRate>>nodeMutationRate and very small, sparse networks
+            if newConnection.exists(checkNode.outConnections + \
+                    checkNode.inConnections) == True:
+                    # TODO: this clips mutation rates probability distribution 
+                    #for cases:
+                    #              connectionMutationRate>>nodeMutationRate and 
+                    #very small, sparse networks
                     #               instead check if numConnections = allNodes**2
-                    #               NEAT must be robust for further development wrt prob distribution in both
+                    #               NEAT must be robust for further development 
+                    #               wrt prob distribution in both
                     #               latent and environment sampling
                 logging.info('mutation Failed: already in this genome')
                 logging.info('{} {}'.format(newConnection.input.nodeId,
@@ -298,7 +305,7 @@ class genome:
 
     def resetSignals(self):
         '''
-        resets all connection signals in this genome (even recurrent)
+        resets all connection signals in this genome including recurrent.
         '''
         for node in self.inputNodes + self.outputNodes + self.hiddenNodes:
             for outc in node.outConnections:
@@ -314,7 +321,7 @@ class genome:
             activeNode.activated = False
 
     def forwardProp(self, signals):
-        assert len(signals) == len(self.inputNodes)
+        assert len(signals) == len(self.inputNodes), 'mismatch input tensor size'
 
         nextNodes = []
         nodeBuffer = []
@@ -332,7 +339,8 @@ class genome:
             # prevent reverb in forward prop
             for step in stepNodes:
                 if step not in nodeBuffer and step not in self.inputNodes:
-                    # let recurrent nodes get reappended and catch loop in activation condition
+                    # let recurrent nodes get reappended and catch loop in 
+                    # activation condition
                     nodeBuffer.append(step)
 
         # print('entering hidden layer..')
@@ -346,16 +354,20 @@ class genome:
                     nextNodes.remove(curNode)
 
                 for step in [x for x in stepNodes if x in self.hiddenNodes]:
-                    #TODO: activated condition should be redundant with nodeGene.activate method
+                    #TODO: activated condition should be redundant with 
+                    # nodeGene.activate method
                     if step not in nextNodes and step.activated is False:
                         nextNodes.append(step)
                         
             if nodeBuffer == nextNodes:
                 #TODO need to check if orders is appropriate
-                unreadyConnections = [x.getUnreadyConnections() for x in nodeBuffer]
+                unreadyConnections = [x.getUnreadyConnections() for \
+                        x in nodeBuffer]
                 unreadyConnections = [x for y in unreadyConnections for x in y]
+                #TODO why is min unassigned
                 min([x for x in unreadyConnections],
-                        key=lambda x: orders[x.input] if x.input in self.hiddenNodes else float('inf')).loop=True
+                        key=lambda x: orders[x.input] if x.input in \
+                        self.hiddenNodes else float('inf')).loop=True
             nodeBuffer.clear()
             nodeBuffer = nextNodes.copy()
             nextNodes.clear()

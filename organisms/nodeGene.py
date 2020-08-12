@@ -1,6 +1,6 @@
-from activationFunctions import softmax
 import logging
 
+from organisms.activationFunctions import softmax
 
 class nodeGene:
     '''
@@ -40,13 +40,17 @@ class nodeGene:
         '''
         removes an existing connection from this node
         '''
-        if self.nodeId is connectionGene.input.nodeId and self.nodeId is connectionGene.output.nodeId:
+        if self.nodeId is connectionGene.input.nodeId and \
+                self.nodeId is connectionGene.output.nodeId:
             self.outConnections.remove(connectionGene)
             self.inConnections.remove(connectionGene)
+
         elif self.nodeId is connectionGene.input.nodeId:
             self.outConnections.remove(connectionGene)
+
         elif self.nodeId is connectionGene.output.nodeId:
             self.inConnections.remove(connectionGene)
+
         else:  # default fallthrough error
             raise Exception('ERROR: cannot delete ',
                             connectionGene, ' from ', self)
@@ -86,7 +90,8 @@ class nodeGene:
 
         if any([x.signal is None and x.loop is False for x in incs]):
             blockages = [
-                x for x in self.inConnections if x.signal is None and x.loop is False]
+                x for x in self.inConnections if x.signal is None and \
+                        x.loop is False]
             return blockages
         else:
             raise Exception(
@@ -121,15 +126,13 @@ class nodeGene:
 
             for outc in [x for x in self.outConnections if x.disabled is False]:
                 outc.signal = activeSignal
-                # dampen reverb
                 if outc.output not in nextNodes and outc.output.activated is False:
                     nextNodes.append(outc.output)
             self.activated = True
 
         # OUTPUT NODE CASE
-        # TODO: use special output return type to
-        #             indicate output vector just like input parameter type
-
+        # passing False gives a psuedo activation for copying/harvesting signals
+        # at output Nodes
         elif signal is False:
             incs = [x for x in self.inConnections if x.disabled is False]
             if any([x.signal is None and x.loop is False for x in incs]):

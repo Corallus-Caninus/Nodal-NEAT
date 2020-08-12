@@ -1,8 +1,9 @@
-from genome import genome
-from connectionGene import connectionGene
-from nodeGene import nodeGene
 import random as rand
 from copy import copy
+
+from organisms.genome import genome
+from organisms.connectionGene import connectionGene
+from organisms.nodeGene import nodeGene
 
 
 class nuclei:
@@ -12,8 +13,10 @@ class nuclei:
     # TODO: need to cleanup this class (lots of refactoring)
 
     # TODO: handle connection reactivation
-    #               CORR: this isnt necessarily necessary for functional equivalence, skip connections still exist and a
-    #                           weight of 1 in a parallelNodes inConnection can make a node split essentially a skip connection
+    #               CORR: this isnt necessarily necessary for functional 
+    #               equivalence, skip connections still exist and a
+    #                           weight of 1 in a parallelNodes inConnection can 
+    #                           make a node split essentially a skip connection
     #               how does reactivation assist in traversing error manifold?
 
     '''

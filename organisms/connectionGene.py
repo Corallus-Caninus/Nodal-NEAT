@@ -52,7 +52,8 @@ class connectionGene:
         for node in localNodes:
             primalInput = node.inConnections[0].input.nodeId
             primalOutput = node.outConnections[0].output.nodeId
-            if self.input.nodeId == primalInput and self.output.nodeId == primalOutput:
+            if self.input.nodeId == primalInput and \
+                    self.output.nodeId == primalOutput:
                 splits.append(node)
         return splits
 

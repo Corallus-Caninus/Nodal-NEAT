@@ -1,15 +1,15 @@
-from nuclei import nuclei
-from genome import genome
-from evaluator import evaluator
 import unittest
 import logging
-from network import graphvizNEAT
 import uuid
 import sys
 import random as rand
 import os
 import re
 
+from organisms.nuclei import nuclei
+from organisms.genome import genome
+from organisms.evaluator import evaluator
+from organisms.network import graphvizNEAT
 
 def configLogfile():
     # TODO: no logging in unittests only in algorithm

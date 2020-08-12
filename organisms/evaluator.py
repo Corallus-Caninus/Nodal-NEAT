@@ -1,6 +1,3 @@
-from genome import genome
-from innovation import globalInnovations
-from nuclei import nuclei
 from multiprocessing import Pool
 from functools import partial
 import logging
@@ -8,11 +5,13 @@ import random as rand
 from copy import deepcopy
 import numpy as np
 
+from organisms.genome import genome
+from organisms.innovation import globalInnovations
+from organisms.nuclei import nuclei
 
 # DEFAULT FITNESS FUNCTION:
 # evaluate xor.. for debugging, dont let this turn into ROM/POM, build at least 2-3 test cases asap before feature addition
 
-# TODO: make a seperate NEAT package that is called in PoM/RoM. this allows seperate versioning :)
 # TODO: branch this off into a NEAT algorithm and PoM/RoM so PoM/RoM can be selectively merged with NEAT updates
 # TODO: how to make this safe for parallelism (e.g.: a connection is discovered in two seperate genomes concurrently.)
 #               how can this be interrupt handled post-generation?
@@ -20,7 +19,6 @@ import numpy as np
 # TODO: add verbosity levels with logging for tracing at each level of encapsulation
 # TODO: can networkx be used for forward propagation given associative matrix?
 # TODO: implement this in Cython
-
 
 # def massSpawn(inputs, outputs, globalInnovations, count):
 # return genome.initial(inputs, outputs, globalInnovations)
@@ -37,7 +35,8 @@ class evaluator:
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
-        self.weightPerturbRate = weightPerturbRate  # TODO: consider this always being 1
+        # TODO: consider this always being 1
+        self.weightPerturbRate = weightPerturbRate  
         self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalInnovations
@@ -144,19 +143,17 @@ class evaluator:
         child.mutateConnectionWeights(
             self.weightMutationRate, self.weightPerturbRate)
 
-    def selectBiasFitness(self, bias):
+    def selectBiasFitness(self, selectionPressure):
         '''
         get a genome selection index.
-
-        PARAMETERS:
-            bias: an integer for the level of bias for selecting genomes based on fitness
         RETURNS:
             selection: an index in genepool list
         '''
-        totalFitness = sum([x.fitness for x in self.genepool])
+        bias = len(self.genepool)//selectionPressure #cut off bottom half
+        totalFitness = sum([x.fitness for x in self.genepool[:bias]])
         curFit = 0
         targetFit = rand.uniform(0,1)*totalFitness
-        for ge in self.genepool:
+        for ge in self.genepool[:bias]:
             curFit += ge.fitness
             if curFit > targetFit:
                 # print('selecting', ge.fitness)
