@@ -27,6 +27,9 @@ class connectionGene:
             inNode.addConnection(self)
             outNode.addConnection(self)
 
+    def __str__(self):
+        return str(self.input.nodeId) + ' -> ' + str(self.output.nodeId)
+
     def remove(self):
         '''
         remove all references to this connection.

@@ -27,6 +27,11 @@ class TestForwardProp(unittest.TestCase):
                     .format(x, vals, outputs, [x - y for x,y in \
                             zip(outputs, lastOutputs)]))
             lastOutputs = outputs
+        for x in test.getAllConnections():
+            print(x)
+        for x in test.hiddenNodes:
+            print(x)
+
         graphvizNEAT(test, 'test-genome-{}'.format(uuid.uuid1()))
 
 if __name__=='__main__':
