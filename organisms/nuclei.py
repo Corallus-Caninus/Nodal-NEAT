@@ -5,9 +5,8 @@ from organisms.genome import genome
 from organisms.connectionGene import connectionGene
 from organisms.nodeGene import nodeGene
 
-
 class nuclei:
-    # TODO: losing too many connections
+    # TODO: losing too many connections (SOLVED with proper node inheritance)
     # TODO: if innovation discovery doesnt happen this can occur in parallel
     # TODO: This needs to occur in parallel
     # TODO: need to cleanup this class (lots of refactoring)

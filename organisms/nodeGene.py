@@ -2,6 +2,7 @@ import logging
 
 from organisms.activationFunctions import softmax
 
+
 class nodeGene:
     '''
     a neuron in the neural network. handles activation encapsulation and connection references. This is the
@@ -84,14 +85,15 @@ class nodeGene:
 
     def getUnreadyConnections(self):
         '''
-        returns all incoming connections at this node that dont have a signal (not considering loop connections)
+        returns all incoming connections at this node that dont have a signal 
+        (not considering loop connections)
         '''
         incs = [x for x in self.inConnections if x.disabled is False]
 
         if any([x.signal is None and x.loop is False for x in incs]):
             blockages = [
-                x for x in self.inConnections if x.signal is None and \
-                        x.loop is False]
+                x for x in self.inConnections if x.signal is None and
+                x.loop is False]
             return blockages
         else:
             raise Exception(
@@ -106,11 +108,14 @@ class nodeGene:
         4. copy result of 3 to all output connection's signal
 
         PARAMETERS:
-            signal: a signal directly to the neuron indicates it is an input neuron with no incoming connections
+            signal: a signal directly to the neuron indicates it is an input neuron with 
+                    no incoming connections
 
         RETURNS:
-            a list of nodes that have been sent signals to their incoming connections due to activating this neuron 
-            (used for chaining forward propagation activation without knowing layer depth of neurons)
+            a list of nodes that have been sent signals to their incoming connections due 
+            to activating this neuron 
+            (used for chaining forward propagation activation without knowing layer 
+            depth of neurons)
         '''
         activeSignal = 0
         nextNodes = []
@@ -138,9 +143,9 @@ class nodeGene:
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
                 # for inc in incs:
-                    # if inc.signal is None and inc.loop is False:
-                        # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
-                        #     inc.input.nodeId, inc.output.nodeId))
+                # if inc.signal is None and inc.loop is False:
+                # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                #     inc.input.nodeId, inc.output.nodeId))
                 return [self]
             else:
                 for inc in [x for x in incs if x.signal is not None]:
@@ -161,13 +166,14 @@ class nodeGene:
             if any([x.signal is None and x.loop is False for x in incs]):
                 # persist this node to next step due to skip connection
                 # for inc in incs:
-                    # if inc.signal is None and inc.loop is False:
-                        # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
-                        #     inc.input.nodeId, inc.output.nodeId))
+                # if inc.signal is None and inc.loop is False:
+                # print('awating a skip connection or stuck in recurrence.. {} -> {}'.format(
+                #     inc.input.nodeId, inc.output.nodeId))
                 return [self]
             else:
                 for inc in [x for x in incs if x.signal is not None]:
-                    # assert inc.signal is not None and inc.loop is False, " @ node {}".format(self.nodeId)
+                    # assert inc.signal is not None and inc.loop is False, " \
+                    # @ node {}".format(self.nodeId)
                     # if inc.signal is None:
                     #     # unready recurrent connection
                     #     continue

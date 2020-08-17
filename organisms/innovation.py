@@ -11,25 +11,47 @@ from organisms.nodeGene import nodeGene
 # TODO: Ensure copy is used properly.. ugh.. python.
 # TODO: write unittests for comparing innovation after simple mutations against expected returns
 
-# NOTE: copying objects increases reference count and allows equivalence comparison in reflection
+# TODO: parallel crossover doesnt get correct innovation updates. This never got solved.
+
+# NOTE: copying objects increases reference count and allows equivalence comparison in reflection. no.
+
+############################################################################################
+# TODO:  this bullshit gets tossed into the depths of the abyss all the while
+#       running in parallel
+#       causes same generation innovation race conditions. need to remove
+#       matches after crossover each generation.
+#       Crossover shouldnt be discovering innovations. (this was heavily tested previously)
+#       not as simple as using a parallel set. need a parallel DS (Queue) and ensure
+#       next innovation is safely compared.
+#
+#   getting unassigned innovation since innovation assignment doesnt occur in construction.
+#   (consider refactoring)
+############################################################################################
 
 
 class globalInnovations:
     # TODO: refactor name since more than connections-- 'globalMaps'?
     '''
-    keep a record of all connections and nodes that have been acquired by all genomes (global connections/nodes).
+    keep a record of all connections and nodes that have been acquired by all genomes 
+    (global connections/nodes).
     '''
 
     def __init__(self):
         # all novel connections
         self.connections = []
 
-        # used to keep track of node innovations splitConnection: (inConnection, outConnection)
+        # used to keep track of node innovations
+        # splitConnection: (inConnection, outConnection)
         self.splitConnections = {}
         # innovation metric for connection novelty
         self.innovation = 0
         # innovation metric for node novelty
         self.nodeId = 0
+        # TODO:
+        # TODO: this should probably be passed in since evaluator handles
+        #       coarse grained evaluation.
+        #self.lock = lock
+        # verify___ should call acquire and lock
 
     # called in addConnection
     def verifyConnection(self, verifyConnection):
@@ -40,21 +62,23 @@ class globalInnovations:
         RETURNS:
             verifyConnection with the proper innovation number associated.
         '''
-        # TODO: find a way to lambda function transform list and search for max more efficiently than iteration
+        # TODO: find a way to lambda function transform list and search for max
+        #       more efficiently than iteration
 
         # check all connections for matching input and output
         for connection in self.connections:
             # TODO: should be using connection.exists method
-            if verifyConnection.input.nodeId == connection.input.nodeId and verifyConnection.output.nodeId == connection.output.nodeId:
+            if verifyConnection.input.nodeId == connection.input.nodeId and \
+                    verifyConnection.output.nodeId == connection.output.nodeId:
                 logging.info('INNOVATION: connection match {}'.format([
                     x.innovation for x in self.connections]))
-                verifyConnection.innovation = copy(connection.innovation)
+                verifyConnection.innovation = connection.innovation
                 return verifyConnection
 
-        logging.info('INNOVATION: novel connection')
         self.innovation += 1
-        verifyConnection.innovation = copy(self.innovation)
-        self.connections.append(copy(verifyConnection))
+        logging.info('INNOVATION: novel connection ' + str(self.innovation))
+        verifyConnection.innovation = self.innovation
+        self.connections.append(verifyConnection)
         return verifyConnection
 
     def verifyNode(self, localParallelNodes, replaceConnection):
@@ -62,7 +86,8 @@ class globalInnovations:
         check to see if a newly split connection has already occured
 
         PARAMETERS:
-            localParallelNodes: all nodes local to the genome being compared that are created by splitting replaceConnection (parallel nodes).
+            localParallelNodes: all nodes local to the genome being compared that are created 
+            by splitting replaceConnection (parallel nodes).
             replaceConnection: the connection being split to create a new node.
         RETURNS:
             a newNode with proper innovation number associated (nodeId).
@@ -71,48 +96,54 @@ class globalInnovations:
         outputNode = replaceConnection.output
         globalMatches = []
         localSplits = len(localParallelNodes)
-        # TODO: constructed nodeGene object should be passed in here for verification just as connectionGene or
-        #             these two methods need to be extracted to nodeGene and connectionGene constructors, leaving innovation.py
-        #             as a class based data structure (not terrible since segues into RoM PoM paradigm but bloats gene classes)
+        # TODO: constructed nodeGene object should be passed in here for verification
+        #       just as connectionGene or
+        #             these two methods need to be extracted to nodeGene and
+        #             connectionGene constructors, leaving innovation.py
+        #
+        #             as a class based data structure (not terrible since segues into
+        #             RoM PoM paradigm but bloats gene classes)
 
         for split in self.splitConnections:
             if split == replaceConnection.innovation:
                 globalMatches = self.splitConnections[split]
                 break
 
-        logging.info('INNOVATION: verifying node @ connection{} -> {} : localSplits {}   global matches {}'
-                     .format(replaceConnection.input.nodeId, replaceConnection.output.nodeId,
-                             localSplits, len(globalMatches)))
+        logging.info('INNOVATION: verifying node @ connection{} -> {} : \
+                      localSplits {}   global matches {}'
+                     .format(replaceConnection.input.nodeId,
+                             replaceConnection.output.nodeId, localSplits,
+                             len(globalMatches)))
 
         if localSplits - len(globalMatches) >= 0:
             # NOVEL
-            # TODO: would rather move the node creation stuff to genome.addNode method. lots of jumping around
+            # TODO: would rather move the node creation stuff to genome.addNode method.
+            #       lots of jumping around
             self.nodeId += 1
-            newNode = nodeGene(copy(self.nodeId))
+            newNode = nodeGene(self.nodeId)
             # dont create split from global pool as will connect across genepool
 
             # TODO: could be error when splitting loop connection
             self.innovation += 1
             inConnection = connectionGene(1.0, inputNode, newNode)
-                # rand.uniform(-1, 1), inputNode, newNode)
-            #TODO: could also be self.verifyConnection call test these cases
-            self.connections.append(copy(inConnection))
-            inConnection.innovation = copy(self.innovation)
+            inConnection.innovation = self.innovation
+            self.connections.append(inConnection)
 
             self.innovation += 1
             outConnection = connectionGene(
                 copy(replaceConnection.weight), newNode, outputNode)
 
-            #TODO: could also be self.verifyConnection call test these cases
-            self.connections.append(copy(outConnection)) 
-            outConnection.innovation = copy(self.innovation)
+            outConnection.innovation = self.innovation
+            self.connections.append(outConnection)
 
             logging.info('INNOVATION: Global node found: {} -> {} -> {}'.format(
-                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+                inConnection.input.nodeId, inConnection.output.nodeId,
+                outConnection.output.nodeId))
 
             if replaceConnection.innovation in self.splitConnections:
                 self.splitConnections[replaceConnection.innovation].append(
-                    # TODO: dont need inConnection and outConnection here, split connection innovation is sufficient
+                    # TODO: dont need inConnection and outConnection here,
+                    #       split connection innovation is sufficient
                     (inConnection, outConnection))
             else:
                 self.splitConnections[replaceConnection.innovation] = [
@@ -127,22 +158,25 @@ class globalInnovations:
             for m in globalMatches:
                 if m[0].output.nodeId not in [x.nodeId for x in localParallelNodes]:
                     match = m
-                    # TODO: should be first match to keep iteration of parallel splits across genomes
+                    # TODO: should be first match to keep iteration of parallel
+                    #       splits across genomes
 
-            newNode = nodeGene(copy(match[0].output.nodeId))
+            newNode = nodeGene(match[0].output.nodeId)
 
             logging.info('INNOVATION: node match {}'.format(
                 match[0].output.nodeId))
 
             inConnection = connectionGene(1.0, inputNode, newNode)
-            inConnection.innovation = copy(match[0].innovation)
+            inConnection.innovation = match[0].innovation
 
             outConnection = connectionGene(
                 copy(replaceConnection.weight), newNode, outputNode)
-            outConnection.innovation = copy(match[1].innovation)
+            outConnection.innovation = match[1].innovation
 
-            logging.info('INNOVATION: Global node match exists: {} -> {} -> {}'.format(
-                inConnection.input.nodeId, inConnection.output.nodeId, outConnection.output.nodeId))
+            # logging.info('INNOVATION: Global node match exists: {} -> {} -> {}'.format(
+            logging.info('INNOVATION: Global node match exists: {} &  {} '.format(
+                inConnection, outConnection))
+            #inConnection.input.nodeId, inConnection.output.nodeId,
+            # outConnection.output.nodeId))
 
             return newNode
-

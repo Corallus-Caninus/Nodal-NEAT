@@ -13,7 +13,8 @@ class connectionGene:
         # assign this edge to nodes
         self.input = inNode
         self.output = outNode
-        # NEAT's deactivation for addNodeMutation (and potentially random deactivation pruning)
+        # NEAT's deactivation for addNodeMutation (and potentially random
+        # deactivation pruning)
         self.disabled = False
         # declares a connection as recursive for ease of forward propagation
         self.loop = False
@@ -59,22 +60,27 @@ class connectionGene:
 
     def exists(self, localConnections):
         '''
-        comparator for checking if a connection already exists. used for innovation assignment in evaluation crossover.
+        comparator for checking if a connection already exists. used for innovation
+        assignment in evaluation crossover.
 
         PARAMETERS:
-            localConnections: connections to be checked against this, can include this connection since discarded in comparison
+            localConnections: connections to be checked against this, can include this
+                              connection since discarded in comparison
         RETURNS:
             True if this connection is found in localConnections otherwise False
         '''
-        for potentialConnection in [x for x in localConnections if x is not self]:
-            if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
+        for potentialConnection in [
+                x for x in localConnections if x is not self]:
+            if self.input.nodeId == potentialConnection.input.nodeId and \
+                    self.output.nodeId == potentialConnection.output.nodeId:
                 return True
         return False
 
     #NOTE: unimplemented
     def matches(self, potentialConnection):
         '''
-        comparator for checking if a connection matches another connection. This is the singular case of exists.
+        comparator for checking if a connection matches another connection.
+        This is the singular case of exists.
         '''
         if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
             return True

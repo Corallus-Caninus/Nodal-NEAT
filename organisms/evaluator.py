@@ -22,12 +22,21 @@ from organisms.nuclei import nuclei
 
 # def massSpawn(inputs, outputs, globalInnovations, count):
 # return genome.initial(inputs, outputs, globalInnovations)
+
+
 def massSpawn(genome, count):
+    '''
+    used for parallel mapping to spawn a genome. count is ignored.
+    '''
     return deepcopy(genome)
 
 
 class evaluator:
-    # TODO: !DOCSTRING!
+    '''
+    create a genepool for evolution of a given fitness function. This is the main
+    class for NEAT.
+    '''
+
     def __init__(self, inputs, outputs, population,
                  connectionMutationRate, nodeMutationRate, weightMutationRate,
                  weightPerturbRate, selectionPressure):
@@ -35,8 +44,8 @@ class evaluator:
         self.connectionMutationRate = connectionMutationRate
         self.nodeMutationRate = nodeMutationRate
         self.weightMutationRate = weightMutationRate
-        # TODO: consider this always being 1
-        self.weightPerturbRate = weightPerturbRate  
+        # some kind of gradient descent might not be crazy here..
+        self.weightPerturbRate = weightPerturbRate
         self.selectionPressure = selectionPressure
 
         # mutate self.innovation and self.nodeId in innovation.globalInnovations
@@ -54,8 +63,8 @@ class evaluator:
         score genepool for initialization
 
         PARAMETERS:
-            fitnessFunction: a function that takes a genome as a parameter and returns the genome 
-                                      with a fitness float local variable associated
+            fitnessFunction: a function that takes a genome as a parameter and returns 
+                             the genome with a fitness float local variable associated
         RETURNS:
             None, sets fitness on all members of genepool        
         '''
@@ -69,25 +78,26 @@ class evaluator:
         biased to fitness.
 
         PARAMETERS:
-            fitnessFunction: a function that takes a genome as a parameter and returns the genome 
-                                      with a fitness float local variable associated
+            fitnessFunction: a function that takes a genome as a parameter and returns 
+            the genome with a fitness float local variable associated
         RETURNS:
             None, sets self.genepool to next generation offspring (no elitism crossover)
         '''
-        # TODO: continuously evaluate fitness. Instead use async to prevent block pool evaluation chunking
-        # TODO: evaluate genepool for fitness at end of generation
         assert all([x.fitness is not 0 for x in self.genepool]), \
-            "need to initialize genepool scoring with a call to evaluator.score() before iterating generations"
+            "need to initialize genepool scoring with a call to evaluator.score() \
+             before iterating generations"
 
         nextPool = []
         globalCrossover = partial(self.nuclei.crossover,
                                   globalInnovations=self.globalInnovations)
 
-        #@DEPRECATED
+        # @DEPRECATED
         # if any([x.fitness >= fitnessObjective for x in self.genepool]):
         #     print('SOLVED {}'.format(max([x.fitness for x in self.genepool])))
-        # print('max fitness in genepool: {}'.format(max([x.fitness for x in self.genepool])))
-        # print('average fitness in genepool: {}'.format(sum([x.fitness for x in self.genepool])/len(self.genepool)))
+        # print('max fitness in genepool: {}'.format(max([x.fitness for x in
+        #       self.genepool])))
+        # print('average fitness in genepool: {}'.format(sum([x.fitness for x in
+        #       self.genepool])/len(self.genepool)))
 
         assert all([x.fitness is not None for x in self.genepool]), \
             "missed fitness assignment in evaluator"
@@ -97,7 +107,8 @@ class evaluator:
         # TODO: consider making crossover consistent to not have to loop.
         while len(nextPool) < len(self.genepool):
             parent1, parent2 = [], []
-            self.genepool = sorted(self.genepool, key=lambda x: x.fitness, reverse=True)
+            self.genepool = sorted(
+                self.genepool, key=lambda x: x.fitness, reverse=True)
             for x in range(0, len(self.genepool) - len(nextPool)):
                 parent1.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
@@ -121,20 +132,20 @@ class evaluator:
             for child in nextPool:
                 self.mutations(child)
 
-        #evaluate fitness
+        # evaluate fitness
         with Pool() as swimmers:
             self.genepool = swimmers.map(fitnessFunction, nextPool)
 
-
     def mutations(self, child):
         '''
-        sequentially add mutations to a genome due to globalInnovation's current data structure.
+        sequentially add mutations to a genome due to globalInnovation's current 
+        data structure.
 
         PARAMETERS:
             child: child genome to inherit mutations
         RETURNS:
-            alters the genome stochastically adding a node, connection and changing weights of connections
-            in the genome
+            alters the genome stochastically adding a node, connection and changing 
+            weights of connections in the genome
         '''
         child.addNodeMutation(
             self.nodeMutationRate, self.globalInnovations)
@@ -149,14 +160,17 @@ class evaluator:
         RETURNS:
             selection: an index in genepool list
         '''
-        bias = len(self.genepool)//selectionPressure #cut off bottom half
+        # TODO: implement many different selection pressure methods
+        #       investigate the tournament selection method.
+        #           (probably not noteworthy #NFL)
+        # cull bottom nth of genepool
+        bias = len(self.genepool)//selectionPressure
         totalFitness = sum([x.fitness for x in self.genepool[:bias]])
         curFit = 0
-        targetFit = rand.uniform(0,1)*totalFitness
+        targetFit = rand.uniform(0, 1)*totalFitness
         for ge in self.genepool[:bias]:
             curFit += ge.fitness
             if curFit > targetFit:
-                # print('selecting', ge.fitness)
                 return self.genepool.index(ge)
         return rand.randint(0, len(self.genepool)-1)
 

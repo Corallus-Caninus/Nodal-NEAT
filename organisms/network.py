@@ -2,25 +2,34 @@ from graphviz import Digraph
 
 import organisms.genome
 
+# NOTE: this contains utility functions for graph analysis and analysing/preparing 
+# topologies for genetic operations
+# it is understandably preferable to keep this all in genome.py as these methods operate 
+# on genome objects but genome.py will be large to the point of unreadable.
 
-# NOTE: this contains utility functions for graph analysis and analysing/preparing topologies for genetic operations
-#              it is understandably preferable to keep this all in genome.py as these methods operate on genome objects
-#              but genome.py will be large to the point of unreadable.
-
-# NOTE: Intra-extrema connections are no longer allowed due to complexity for very little feature gain. since this is node oriented we need a node interface not a connection to harvest the network.
-#            (a network with intra-extrema connections always has an equivalent with hidden layer only loops)
-#           since this is about evolving deep direct NEAT networks, the slight simplification of the fitness landscape is not beneficial
-#           and will require more work for numpification (vectorization)
-
+# NOTE: Intra-extrema connections are no longer allowed due to feature complexity for very 
+# little feature gain. since this is node oriented we need a node interface not a 
+# connection to harvest the network.
+# (a network with intra-extrema connections always has an equivalent with hidden layer 
+# only loops)
+#
+# since this is about evolving deep direct NEAT networks, the slight simplification of 
+# the fitness landscape is not beneficial
+# and will require more work for numpification (vectorization)
 
 def processSequences(targetGenome):
-    # TODO: trace this out. if this worked there would never be unecessary loop detection (minimal number of loop connections to forward prop topo)
+    # TODO: trace this out. if this worked there would never be unecessary loop
+    #       detection (minimal number of loop connections to forward prop topo)
     #
-    # TODO: lots of operations but simple way is to set sequence based on depth and everytime a connection is added set
-    #             connection.output.depth to connection.input.depth + 1 if connection.output.depth <= connection.input.depth and repeat for all connections
-    #              until loop closure or no outnodes
+    # TODO: lots of operations but simple way is to set sequence based on depth
+    #       and everytime a connection is added set
+    #             connection.output.depth to connection.input.depth + 1 if
+    #             connection.output.depth <= connection.input.depth and repeat for
+    #             all connections
+    #             until loop closure or no outnodes
     '''
-    gets all split depths of all nodes in the given topology then assign node sequence by checking node depths for shorting connections.
+    gets all split depths of all nodes in the given topology then assign node sequence 
+    by checking node depths for shorting connections.
     PARAMETERS:
         targetGenome: the genome to be processed
     RETURNS:
@@ -32,7 +41,8 @@ def processSequences(targetGenome):
     hiddenNodes = targetGenome.hiddenNodes
 
     # ACQUIRE SPLIT DEPTHS FOR HIDDEN NODES
-    # TODO: extract splitDepths for crossover (chromosome alignment of skeleton/primal topologies)
+    # TODO: extract splitDepths for crossover (chromosome alignment of skeleton/primal
+    #       topologies)
     curDepth = 0
     for node in targetGenome.inputNodes:
         # add all initial topology connections
@@ -66,7 +76,8 @@ def processSequences(targetGenome):
                 # update sequences
                 sequences[node] = sequences[inConnection.input] + 1
 
-    # TODO: graph insight: can we say all connections with sequence[inConnection.output] < sequence[inConnection.input] are loops
+    # TODO: graph insight: can we say all connections with 
+    #       sequence[inConnection.output] < sequence[inConnection.input] are loops
     return sequences
 
 
@@ -106,6 +117,6 @@ def graphvizNEAT(network, filename):  # was sequences
             continue
         else:
             f.edge(str(c.input.nodeId), str(
-                c.output.nodeId), label=str(c.loop) +' '+ str(c.weight))
+                c.output.nodeId), label=str(c.loop) + ' ' + str(c.weight))
 
     f.view()
