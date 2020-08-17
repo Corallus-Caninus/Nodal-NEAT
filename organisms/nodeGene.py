@@ -20,6 +20,11 @@ class nodeGene:
         self.nodeId = identifier
         self.activated = False
 
+    def __str__(self):
+        inputs = str([x.input.nodeId for x in self.inConnections])
+        outputs = str([x.output.nodeId for x in self.outConnections])
+        return 'node: ' + str(self.nodeId) + '\n inputs: ' + inputs + '\n outputs: ' + outputs
+
     def addConnection(self, connectionGene):
         '''
         add a connection reference to this node and orient based on input or output direction.
