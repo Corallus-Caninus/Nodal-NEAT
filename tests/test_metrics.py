@@ -1,24 +1,23 @@
-import unittest
 import logging
-import uuid
-import random as rand
 import os
+import random as rand
 import re
-from copy import deepcopy
+import unittest
+import uuid
 
-from organisms.nuclei import nuclei
-from organisms.genome import genome
 from organisms.evaluator import evaluator
 from organisms.network import graphvizNEAT
+
 
 # TODO: REALLY NEED TO DEBUG CONNECTION INNOVATION MATCH REMOVAL
 
 
 def configLogfile():
-    # TODO: call a seperate logging file for unittests. this will make the code easier to understand for first timers
-    '''
+    # TODO: call a separate logging file for unittests. this will make the code easier to understand for first timers
+    """
     configures logFile name and directory
-    '''
+    """
+    biggestNum = 0
     for _, _, files in os.walk('logs'):
         fileNums = []
         if len(files) == 0:
@@ -30,15 +29,15 @@ def configLogfile():
 
             biggestNum = max(fileNums)
 
-    logFile = 'logs/test-{}.log'.format(biggestNum+1)
+    logFile = 'logs/test-{}.log'.format(biggestNum + 1)
     logging.basicConfig(
         filename=logFile, level=logging.INFO)
 
 
 def myFunc(genome):
-    '''
-    takes a genome returns genome with fitness associated
-    '''
+    """
+    takes a Genome returns Genome with fitness associated
+    """
     numTries = 20
     score = 0
 
@@ -59,25 +58,26 @@ def myFunc(genome):
         elif output < 0.05 and entry1 == 0 and entry2 == 0:
             score += 1
 
-    score = score/numTries
+    score = score / numTries
     # return score
     genome.fitness = score
     return genome
 
 
 class TestMetrics(unittest.TestCase):
-    '''
+    """
     test genetic metrics.
-    '''
+    """
 
     def test_distance(self):
-        # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
+        # NOTE: this test if a Genome is crossed over with itself the same Genome
+        # is produced as offspring (diversity singularity)
 
         configLogfile()
         # configure Nodal-NEAT
         evaluation = evaluator(inputs=2, outputs=1, population=500,
                                connectionMutationRate=0.05, nodeMutationRate=0.02,
-                               weightMutationRate=0.9, weightPerturbRate=0.3)
+                               weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
         evaluation.score(myFunc, 1)
@@ -88,9 +88,9 @@ class TestMetrics(unittest.TestCase):
                 evaluation.genepool[1], 1, 1, 1)))
 
         sortPool = sorted([x for x in evaluation.genepool],
-                          key=lambda x: x.fitness, reverse=True)
+                          key=lambda s: s.fitness, reverse=True)
         for c in sortPool[:10]:
-            graphvizNEAT(c, 'sample-genome_fitness-'+str(uuid.uuid1()))
+            graphvizNEAT(c, 'sample-genome_fitness-' + str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

@@ -1,21 +1,21 @@
-import unittest
 import logging
-import uuid
-import sys
-import random as rand
 import os
+import random as rand
 import re
+import unittest
+import uuid
 
-from organisms.nuclei import nuclei
-from organisms.genome import genome
 from organisms.evaluator import evaluator
 from organisms.network import graphvizNEAT
+from organisms.nuclei import nuclei
+
 
 def configLogfile():
     # TODO: no logging in unittests only in algorithm
-    '''
+    """
     configures logFile name and directory
-    '''
+    """
+    biggestNum = 0
     for _, _, files in os.walk('logs'):
         fileNums = []
         if len(files) == 0:
@@ -27,18 +27,15 @@ def configLogfile():
 
             biggestNum = max(fileNums)
 
-    logFile = 'logs/test-{}.log'.format(biggestNum+1)
+    logFile = 'logs/test-{}.log'.format(biggestNum + 1)
     logging.basicConfig(
         filename=logFile, level=logging.INFO)
 
 
 class TestCrossover(unittest.TestCase):
-    '''
+    """
     unittest for chromosome's crossover and supporting methods. Essentially a manual generation step.
-    '''
-    # TODO: recurring connectionGene removal BUG in start of evolution. need to debug this either just here or here and basic_trainning
-    #               this is likely to be during split of loop connection trace from globalInnovations. bug has occured long enough it could be a deep
-    #               feature
+    """
 
     def test_crossover(self):
         evaluation = evaluator(inputs=2, outputs=1, population=3,
@@ -63,8 +60,7 @@ class TestCrossover(unittest.TestCase):
                 0.01, evaluation.globalInnovations)
 
         for ge in evaluation.genepool:
-            rfit = rand.uniform(0, len(evaluation.genepool))
-            ge.fitness = rfit
+            ge.fitness = rand.uniform(0, len(evaluation.genepool))
 
         # NOTE: everything above is a test fixture for most things
 
@@ -74,8 +70,8 @@ class TestCrossover(unittest.TestCase):
 
         nextGeneration = []
         for _ in range(0, 5):
-            p1 = rand.randint(0, len(evaluation.genepool)-1)
-            p2 = rand.randint(0, len(evaluation.genepool)-1)
+            p1 = rand.randint(0, len(evaluation.genepool) - 1)
+            p2 = rand.randint(0, len(evaluation.genepool) - 1)
             if evaluation.genepool[p1].fitness >= evaluation.genepool[p2].fitness:
                 child = chromosomes.crossover(
                     evaluation.genepool[p1], evaluation.genepool[p2], evaluation.globalInnovations)
@@ -94,11 +90,13 @@ class TestCrossover(unittest.TestCase):
             graphvizNEAT(parent, 'parent' + str(uuid.uuid1()))
 
     def test_clone(self):
-        '''
-        test crossover between two identical genomes. should result a topology with all nodes, possibly lost connections.
-        '''
+        """
+        test crossover between two identical genomes. should result a topology with
+        all nodes, possibly lost connections.
+        """
         print('\nTESTING CLONE CROSSOVER:')
-        # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
+        # NOTE: this test if a Genome is crossed over with itself the same Genome is produced
+        #       as offspring (diversity singularity)
 
         configLogfile()
         evaluation = evaluator(inputs=2, outputs=1, population=1,

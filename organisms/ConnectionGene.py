@@ -1,10 +1,7 @@
-import random as rand
-
-
-class connectionGene:
-    '''
-    a connectionGene between two nodes in a genome (neural network topology)
-    '''
+class ConnectionGene:
+    """
+    a ConnectionGene between two nodes in a Genome (neural network topology)
+    """
 
     def __init__(self, weight, inNode, outNode):
         # initialize
@@ -16,11 +13,11 @@ class connectionGene:
         # NEAT's deactivation for addNodeMutation (and potentially random
         # deactivation pruning)
         self.disabled = False
-        # declares a connection as recursive for ease of forward propagation
+        # declares a Connection as recursive for ease of forward propagation
         self.loop = False
         self.innovation = 0
 
-        # add connection references in node objects
+        # add Connection references in Node objects
         # Check for recurrency
         if inNode.nodeId == outNode.nodeId:
             inNode.addConnection(self)
@@ -32,11 +29,12 @@ class connectionGene:
         return str(self.input.nodeId) + ' -> ' + str(self.output.nodeId)
 
     def remove(self):
-        '''
-        remove all references to this connection.
+        """
+        remove all references to this Connection.
 
-        *de-iterate references and call GC since each connection object exists only once in only one genome (no parallel edges)*
-        '''
+        *de-iterate references and call GC since each Connection object exists only
+         once in only one Genome (no parallel edges)*
+        """
         if self.input.nodeId == self.output.nodeId:
             self.input.removeConnection(self)
         else:
@@ -44,14 +42,16 @@ class connectionGene:
             self.output.removeConnection(self)
 
     def splits(self, localNodes):
-        '''
-        get all nodes (parallel nodes) created from splitting this connection with an addNode operation.
+        """
+        get all nodes (parallel nodes) created from splitting this Connection with
+        an addNode operation.
 
         PARAMETER:
-            localNodes: a list of nodes, used to check which nodes have been created from splitting this connection (addNode operations)
+            localNodes: a list of nodes, used to check which nodes have been created
+            from splitting this Connection (addNode operations)
         RETURNS:
-            splits: nodes that have resulted from splitting this connection
-        '''
+            splits: nodes that have resulted from splitting this Connection
+        """
         splits = []
         for node in localNodes:
             primalInput = node.inConnections[0].input.nodeId
@@ -62,16 +62,16 @@ class connectionGene:
         return splits
 
     def exists(self, localConnections):
-        '''
-        comparator for checking if a connection already exists. used for innovation
+        """
+        comparator for checking if a Connection already exists. used for innovation
         assignment in evaluation crossover.
 
         PARAMETERS:
             localConnections: connections to be checked against this, can include this
-                              connection since discarded in comparison
+                              Connection since discarded in comparison
         RETURNS:
-            True if this connection is found in localConnections otherwise False
-        '''
+            True if this Connection is found in localConnections otherwise False
+        """
         for potentialConnection in [
                 x for x in localConnections if x is not self]:
             if self.input.nodeId == potentialConnection.input.nodeId and \
@@ -79,12 +79,13 @@ class connectionGene:
                 return True
         return False
 
-    #NOTE: unimplemented
+    # NOTE: unimplemented
     def matches(self, potentialConnection):
-        '''
-        comparator for checking if a connection matches another connection.
+        """
+        comparator for checking if a Connection matches another Connection.
         This is the singular case of exists.
-        '''
-        if self.input.nodeId == potentialConnection.input.nodeId and self.output.nodeId == potentialConnection.output.nodeId:
+        """
+        if self.input.nodeId == potentialConnection.input.nodeId and \
+                self.output.nodeId == potentialConnection.output.nodeId:
             return True
         return False

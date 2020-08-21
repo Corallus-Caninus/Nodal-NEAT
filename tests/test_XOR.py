@@ -1,27 +1,21 @@
 import logging
-import matplotlib.pyplot as plt
-import matplotlib.animation as anim
-from matplotlib import style
-import unittest
-import uuid
-import random as rand
 import os
+import random as rand
 import re
-from copy import deepcopy
-from functools import lru_cache
+import unittest
 
-import numpy as np
-
-from organisms.nuclei import nuclei
-from organisms.genome import genome
+import matplotlib.pyplot as plt
+from matplotlib import style
 from organisms.evaluator import evaluator
-from organisms.network import graphvizNEAT
+
 
 def configLogfile():
-    # TODO: call a seperate logging file foru unittests. this will make the code easier to understand for first timers
-    '''
+    # TODO: call a separate logging file for unittests. this will make the code
+    # easier to understand for first timers
+    """
     configures logFile name and directory
-    '''
+    """
+    biggestNum = 1
     for _, _, files in os.walk('logs'):
         fileNums = []
         if len(files) == 0:
@@ -33,17 +27,17 @@ def configLogfile():
 
             biggestNum = max(fileNums)
 
-    logFile = 'logs/test-{}.log'.format(biggestNum+1)
+    logFile = 'logs/test-{}.log'.format(biggestNum + 1)
     logging.basicConfig(
         filename=logFile, level=logging.INFO)
 
 
 def xor(solutionList):
-    '''
+    """
     0 0 | 0 1 | 1 0 | 1 1
      0   |   1  |   1  |  0
 
-    '''
+    """
     if solutionList is [0, 0]:
         return 0
     elif solutionList is [0, 1]:
@@ -55,13 +49,14 @@ def xor(solutionList):
     else:
         raise Exception("wrong values sent to xor")
 
-#TODO: lru_cache here doesnt so anything really
+
+# TODO: lru_cache here doesnt so anything really
 #       but is a good idea in other fit funcs.
-#@lru_cache(maxsize=None)
+# @lru_cache(maxsize=None)
 def myFunc(genome):
-    '''
-    takes a genome returns genome with fitness associated
-    '''
+    """
+    takes a Genome returns Genome with fitness associated
+    """
     numTries = 50
     score = 0
 
@@ -82,48 +77,52 @@ def myFunc(genome):
         elif output < 0.5 and entry1 == 0 and entry2 == 0:
             score += 1
 
-    score = score/numTries
+    score = score / numTries
     # return score
     genome.fitness = score
     return genome
 
 
 class TestGenepool(unittest.TestCase):
-    '''
+    """
     test crossover of an entire generation in a genepool.
-    '''
+    """
+
     def test_XOR(self):
-        '''
+        """
         trains a genepool to solve the XOR function.
-        '''
+        """
         generations = 10000
 
-        #Graph configuration
+        # Graph configuration
         style.use('fivethirtyeight')
         y = []
         yAvg = []
         nodes = []
         connections = []
         plt.ion()
-        
+
         print('\nTESTING XOR EVALUATION:')
-        # NOTE: this test if a genome is crossed over with itself the same genome is produced as offspring (diversity singularity)
+        # NOTE: this test if a Genome is crossed over with itself the same Genome is
+        #       produced as offspring (diversity singularity)
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=2000,
+        evaluation = evaluator(inputs=2, outputs=1, population=3000,
                                connectionMutationRate=0.002, nodeMutationRate=0.0001,
-                               weightMutationRate=0.06, weightPerturbRate=0.9, selectionPressure=3)
+                               weightMutationRate=0.06, weightPerturbRate=0.9,
+                               selectionPressure=10)
 
         # evaluate 200 generations
         evaluation.score(myFunc, 1)
-        #TODO: simple matplotlib real time graph
+        # TODO: simple matplotlib real time graph
         for x in range(0, generations):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc, 1)
             maxFit = evaluation.getMaxFitness()
             print('max fitness is: {}'.format(maxFit))
-           
+
+            # format matplotlib subplots
             y_avg = 0
             nodeAvg = 0
             connectionAvg = 0
@@ -134,16 +133,16 @@ class TestGenepool(unittest.TestCase):
                     connectionAvg += len(n.outConnections)
                     connectionAvg += len(n.inConnections)
 
-            y_avg = y_avg/len(evaluation.genepool)
-            connectionAvg = connectionAvg/len(evaluation.genepool)
-            nodeAvg = nodeAvg/len(evaluation.genepool)
+            y_avg = y_avg / len(evaluation.genepool)
+            connectionAvg = connectionAvg / len(evaluation.genepool)
+            nodeAvg = nodeAvg / len(evaluation.genepool)
 
             yAvg.append(y_avg)
             connections.append(connectionAvg)
             nodes.append(nodeAvg)
 
             y.append(maxFit)
-            #TODO: average fitness graph line
+            # TODO: average fitness graph line
             plt.clf()
 
             plt.subplot(221)
@@ -168,8 +167,8 @@ class TestGenepool(unittest.TestCase):
 
         # sortPool = sorted([x for x in evaluation.genepool],
         #                   key=lambda x: x.fitness, reverse=True)
-        #for c in evaluation.genepool[:10]:
-            #graphvizNEAT(c, 'sample-genome-'+str(uuid.uuid1()))
+        # for c in evaluation.genepool[:10]:
+        # graphvizNEAT(c, 'sample-Genome-'+str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

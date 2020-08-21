@@ -1,70 +1,72 @@
-import random as rand
 import logging
+import random as rand
 from math import sqrt
+
+from organisms.activationFunctions import softmax
+from organisms.connectionGene import connectionGene as Connection
+from organisms.network import processSequences
+from organisms.nodeGene import nodeGene as Node
+
+
 # import numpy as np
 
-from organisms.nodeGene import nodeGene as node
-from organisms.connectionGene import connectionGene as connection
-from organisms.network import processSequences
-from organisms.activationFunctions import softmax
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
 
 
-class genome:
+class Genome:
     # TODO: rename to nodal-neat to emphasis chromosome alignment operation.
-    #              (pruning of dissimalar topologies to refine genepool error vector)
-    # NOTE: graphs are defined by their Node objects not Connections. 
+    #              (pruning of dissimilar topologies to refine genepool error vector)
+    # NOTE: graphs are defined by their Node objects not Connections.
     #       Node defined networks
-    # allow for more interesting encapsulation and swappable implementations 
+    # allow for more interesting encapsulation and swappable implementations
     # as well as make
-    #  recurrent, energy based etc. networks easier to implement. Connection 
+    #  recurrent, energy based etc. networks easier to implement. Connection
     #  defined topologies are skipped
-    #  in favor of a 'numpifier' which compiles the traced network down to a 
+    #  in favor of a 'numpifier' which compiles the traced network down to a
     #  series of almost if not
-    #  entirely numpy operations. This network is not lightweight nor ideal for 
+    #  entirely numpy operations. This network is not lightweight nor ideal for
     #  real time forward propagation
-    #  but prefered  for ease of crossover, mutability etc. (relatively low frequency 
+    #  but preferred  for ease of crossover, mutability etc. (relatively low frequency
     #  operations) and high level
-    #  exploration of network topologies. The graph executor would preferably be 
+    #  exploration of network topologies. The graph executor would preferably be
     #  written in the numpy C API
-    #  and embedded or saved in a npy format but this development should be 
+    #  and embedded or saved in a npy format but this development should be
     #  empirically justified.
     #
-    # even though this is node based, connection innovation numbers can be used for 
+    # even though this is Node based, Connection innovation numbers can be used for
     # genetic positioning (and therefore distance)
-    # considering nodeGenes allows for complete complexification considerations in 
+    # considering nodeGenes allows for complete complexification considerations in
     # crossover, allowing each generation to sample
-    # a spread of much more complex to much simpler topologies instead of just more 
+    # a spread of much more complex to much simpler topologies instead of just more
     # complex. a configurable sliding window of complexity
     # helps to create definite and more robust fitness manifold vectors.
     #
     # Use numpy recarray consider jax for scalability (not necessary for awhile).
     #
-    #  create matrix from forward prop numpy.array steps. create a masking matrix 
+    #  create matrix from forward prop numpy.array steps. create a masking matrix
     #  for gatekeeping/recurrence
-    #  and two float matrices for signal and weights (perform matrix-wise 
+    #  and two float matrices for signal and weights (perform matrix-wise
     #  activation of the mat-mul result matrix)
     #   trace FSM manually before scripting attempt.
-    '''
-    a genome built with fully connected initial topology
+    """
+    a Genome built with fully connected initial topology
 
     Parameters:
         inputSize: integer size of input nodes
         outputSize: integer size of output nodes
         globalInnovations: list of all connections to keep things consistent
-        nodeId: current highest nodeId counter for keeping globalInnovations
     Constructs:
         a fully connected topology of given input and output dimensions with random
         initial weights
-    '''
+    """
 
     def __init__(self, inputSize, outputSize, globalInnovations):
-        # TODO: I dont like spawn's overloading for initialization. rewrite.
+        # TODO: I don't like spawn's overloading for initialization. rewrite.
         # this is all due to initialization of nodeId in globalInnovation
-        '''
-        create a child genome without checking nodeId globalInnovation
-        '''
+        """
+        create a child Genome without checking nodeId globalInnovation
+        """
         self.inputNodes = []
         self.outputNodes = []
         self.hiddenNodes = []
@@ -73,26 +75,26 @@ class genome:
 
         for newNode in range(0, inputSize):
             initNodeId += 1
-            self.inputNodes.append(node(initNodeId))
+            self.inputNodes.append(Node(initNodeId))
 
         for outNode in range(0, outputSize):
             initNodeId += 1
-            self.outputNodes.append(node(initNodeId))
+            self.outputNodes.append(Node(initNodeId))
 
         for inNode in self.inputNodes:
             for outNode in self.outputNodes:
-                globalInnovations.verifyConnection(connection(
+                globalInnovations.verifyConnection(Connection(
                     rand.uniform(-1, 1), inNode, outNode))
 
     @classmethod
     # TODO: get rid of this. currently cant because of crossover starting
-    # from new genome object
+    # from new Genome object
     def initial(cls, inputSize, outputSize, globalInnovations):
-        '''
+        """
         spawn initial genomes for genepool (sets nodeId based on initial topology)
-        '''
-        # TODO: this isnt the most flexible solution wrt globalInnovations.
-        # remove globalInnovations from here
+        """
+        # TODO: this isn't the most flexible solution wrt GlobalInnovations.
+        # remove GlobalInnovations from here
 
         initNodeId = inputSize + outputSize
         globalInnovations.nodeId = initNodeId
@@ -100,18 +102,18 @@ class genome:
         return cls(inputSize, outputSize, globalInnovations)
 
     def getNode(self, nodeId):
-        '''
-        return the node object that has the given nodeId
-        '''
+        """
+        return the Node object that has the given nodeId
+        """
         allNodes = self.inputNodes + self.hiddenNodes + self.outputNodes
         for n in allNodes:
             if n.nodeId == nodeId:
                 return n
 
     def getAllConnections(self):
-        '''
+        """
         get all connections in this topology without repeats
-        '''
+        """
         allConnections = []
         for snode in self.inputNodes + self.hiddenNodes + self.outputNodes:
             for outc in snode.outConnections:
@@ -123,28 +125,28 @@ class genome:
 
         return allConnections
 
-    #TODO: no.
+    # TODO: no.
     def geneticPosition(self):
-        '''
-        returns the position of this genome
+        """
+        returns the position of this Genome
         *(used for hamming distance in speciation and location in PointsOfMutation)*
-        '''
+        """
         connections = self.getAllConnections()
         innovations = [x.innovation for x in connections]
 
         return innovations
 
     def geneticDistance(self, otherGenome, c1, c2, c3):
-        '''
+        """
         compute K.Stanley's distance metric traditionally used for speciation
         PARAMETERS:
-            otherGenome: the genome this will be compared against
+            otherGenome: the Genome this will be compared against
             c1: coefficient for weighting excess genes
             c2: coefficient for weighting disjoint genes
             c3: coefficient for weighting average weight differences of matching genes
         RETURNS:
-            the genomic distance from this genome to otherGenome
-        '''
+            the genomic distance from this Genome to otherGenome
+        """
 
         thisMaxGene = max(self.geneticPosition())
         otherMaxGene = max(self.geneticPosition())
@@ -181,58 +183,58 @@ class genome:
         thisMatchWeights = [
             x.weight for x in self.getAllConnections() if x.innovation in matchingGenes]
         otherMatchWeights = [
-            x.weight for x in otherGenome.getAllConnections() if 
-                x.innovation in matchingGenes]
+            x.weight for x in otherGenome.getAllConnections() if
+            x.innovation in matchingGenes]
         differences = [x - y for x,
-                       y in zip(thisMatchWeights, otherMatchWeights)]
+                                 y in zip(thisMatchWeights, otherMatchWeights)]
 
         averageWeightTerm = sum(differences) / len(matchingGenes)
         averageWeightTerm = c3 * averageWeightTerm
 
-        return sqrt(excessTerm**2 + disjointTerm**2 + averageWeightTerm**2)
+        return sqrt(excessTerm ** 2 + disjointTerm ** 2 + averageWeightTerm ** 2)
 
     def mutateConnectionWeights(self, weightMutationRate, weightPerturbRate):
-        '''
+        """
         randomly changes weights of connections
-        '''
+        """
         if rand.uniform(0, 1) < weightPerturbRate:
-            for conect in self.getAllConnections():
+            for con in self.getAllConnections():
                 if rand.uniform(0, 1) < weightMutationRate:
-                    conect.weight = rand.uniform(-1, 1)
+                    con.weight = rand.uniform(-1, 1)
 
     def addConnectionMutation(self, connectionMutationRate, globalInnovations):
-        '''
-        randomly adds a connection
+        """
+        randomly adds a Connection
         PARAMETERS:
-            connectionMutationRate: chance to add a connection
+            connectionMutationRate: chance to add a Connection
             globalInnovations: innovation book keeping class for genes that
                                have been discovered in all genomes
         RETURNS:
-            adds a connection to this topology
-        '''
+            adds a Connection to this topology
+        """
         # NOTE: num nodes^2 is number of possible connections before depleted conventions.
         #             so long as self connections and recurrent connections
         #             (but no parallel connections) are allowed
         if rand.uniform(0, 1) < connectionMutationRate:
-            # only allow certain node connection directions
+            # only allow certain Node Connection directions
             allInNodes = self.inputNodes + self.hiddenNodes
             allOutNodes = self.outputNodes + self.hiddenNodes
             # TODO: should check before creating the object to prevent sudden
             #       initialization and removal
-            newConnection = connection(
+            newConnection = Connection(
                 rand.uniform(-1, 1), rand.choice(allInNodes), rand.choice(allOutNodes))
             self.addConnection(newConnection, globalInnovations)
 
     def addNodeMutation(self, nodeMutationRate, globalInnovations):
-        '''
-        randomly adds a node
+        """
+        randomly adds a Node
         PARAMETERS:
-            nodeMutationRate: chance to add a node
+            nodeMutationRate: chance to add a Node
             globalInnovations: innovation book keeping class for genes that have
                                been discovered in all genomes
         RETURNS:
-            adds a node to this genome topology
-        '''
+            adds a Node to this Genome topology
+        """
         if rand.uniform(0, 1) < nodeMutationRate:
             randNode = rand.choice(
                 self.hiddenNodes + self.outputNodes + self.inputNodes)
@@ -249,13 +251,13 @@ class genome:
             self.addNode(randConnection, globalInnovations)
 
     def addNode(self, replaceConnection, globalInnovations):
-        '''
-        adds a node into the network by splitting a connection into two connections
-        adjoined by the new node
-        '''
+        """
+        adds a Node into the network by splitting a Connection into two connections
+        adjoined by the new Node
+        """
         # TODO: this is a little lopsided, addConnection contains loop logic and
         #       object creation
-        # whereas addNode sends these operations to globalInnovations
+        # whereas addNode sends these operations to GlobalInnovations
 
         replaceConnection.disabled = True
 
@@ -268,27 +270,27 @@ class genome:
 
         logging.info('newNode {}'.format(newNode.nodeId))
 
-        # add this genome
+        # add this Genome
         self.hiddenNodes.append(newNode)
 
-        # newly mutated genome is ready
+        # newly mutated Genome is ready
         self.resetLoops()
         self.resetSignals()
         return newNode
 
     def addConnection(self, newConnection, globalInnovations):
-        '''
-        add a unique connection into the network attaching two nodes, self connections
+        """
+        add a unique Connection into the network attaching two nodes, self connections
         and recurrent connections are allowed
 
-        Checks if a connection already exists locally (prevents parallel edges) or
+        Checks if a Connection already exists locally (prevents parallel edges) or
         globally (innovation consistency).
-        also checks if a connection creates a loop closure and marks it as recurrent.
-        '''
+        also checks if a Connection creates a loop closure and marks it as recurrent.
+        """
         allNodes = self.hiddenNodes + self.outputNodes + self.inputNodes
         for checkNode in allNodes:
             if newConnection.exists(checkNode.outConnections +
-                                    checkNode.inConnections) == True:
+                                    checkNode.inConnections):
                 # TODO: this clips mutation rates probability distribution
                 # for cases:
                 #              connectionMutationRate>>nodeMutationRate and
@@ -297,14 +299,14 @@ class genome:
                 #               NEAT must be robust for further development
                 #               wrt prob distribution in both
                 #               latent and environment sampling
-                logging.info('mutation Failed: already in this genome')
+                logging.info('mutation Failed: already in this Genome')
                 logging.info('{} {}'.format(newConnection.input.nodeId,
                                             newConnection.output.nodeId))
                 newConnection.remove()
                 return
 
         newConnection = globalInnovations.verifyConnection(newConnection)
-        logging.info('new connection acquired')
+        logging.info('new Connection acquired')
         logging.info('{} {}'.format(newConnection.input.nodeId,
                                     newConnection.output.nodeId))
 
@@ -312,12 +314,12 @@ class genome:
         self.resetLoops()
         self.resetSignals()
 
-    ###FORWARD PROPAGATION SPECIFIC OPERATIONS###
+    # FORWARD PROPAGATION SPECIFIC OPERATIONS  #
     def resetLoops(self):
-        '''
-        resets all connections in this genome to connection.loop = False
+        """
+        resets all connections in this Genome to Connection.loop = False
         unless obvious recursion (input is output)
-        '''
+        """
         # reset all loops from previous topology
         for node in self.inputNodes + self.outputNodes + self.hiddenNodes:
             for connect in node.inConnections + node.outConnections:
@@ -327,9 +329,9 @@ class genome:
                     connect.loop = False
 
     def resetSignals(self):
-        '''
-        resets all connection signals in this genome including recurrent.
-        '''
+        """
+        resets all Connection signals in this Genome including recurrent.
+        """
         for node in self.inputNodes + self.outputNodes + self.hiddenNodes:
             for outc in node.outConnections:
                 outc.signal = None
@@ -337,10 +339,10 @@ class genome:
                 inc.signal = None
 
     def resetNodes(self):
-        '''
-        reset all activated nodes in this genome. used once forward propagation 
+        """
+        reset all activated nodes in this Genome. used once forward propagation
         completes a cycle
-        '''
+        """
         for activeNode in self.inputNodes + self.outputNodes + self.hiddenNodes:
             activeNode.activated = False
 
@@ -351,22 +353,18 @@ class genome:
         nextNodes = []
         nodeBuffer = []  # TODO: this is a sloppy set
 
-        # TODO: use d/dx node buffer instead of largest loop?
-        #       push nodes into node buffer, when d/dx of nodebuffer is 0
-        #       get first node set all unready_connections to recurrent
-        #       reset all timers on all nodes and repeat
-        #TODO: extract loop detection to a seperate method.
-        # ALREADY IMPLELEMTED. IS NODETIMEOUT DEPRECATED?
-        nodeTimeout = {}
+        # TODO: extract loop detection to a separate method?
+        # TODO: is Node timeout deprecated?
+        # nodeTimeout = {}
         orders = processSequences(self)  # TODO: BUBBLES!!!!
 
         # NOTE: Overestimate
-        #TODO: DEPRECATED
-        largestCircle = len(self.inputNodes) + \
-            len(self.hiddenNodes) + len(self.outputNodes)
+        # TODO: DEPRECATED
+        # largestCircle = len(self.inputNodes) + \
+                        # len(self.hiddenNodes) + len(self.outputNodes)
 
         for inode, sig in zip(self.inputNodes, signals):
-            # print('input node is: {}'.format(inode.nodeId))
+            # print('input Node is: {}'.format(inode.nodeId))
             stepNodes = inode.activate(sig)
             # prevent reverb in forward prop
             for step in stepNodes:
@@ -387,11 +385,11 @@ class genome:
 
                 for step in [x for x in stepNodes if x in self.hiddenNodes]:
                     # TODO: activated condition should be redundant with
-                    # nodeGene.activate method
+                    # NodeGene.activate method
                     if step not in nextNodes and step.activated is False:
                         nextNodes.append(step)
 
-            #loop detection routine
+            # loop detection routine
             if nodeBuffer == nextNodes:
                 # TODO need to check if orders is appropriate
                 unreadyConnections = [x.getUnreadyConnections() for
@@ -400,7 +398,7 @@ class genome:
                 # add loop attribute to oldest unreadyConnection
                 min([x for x in unreadyConnections],
                     key=lambda x: orders[x.input] if x.input in
-                    self.hiddenNodes else float('inf')).loop=True
+                    self.hiddenNodes else float('inf')).loop = True
             nodeBuffer.clear()
             nodeBuffer = nextNodes.copy()
             nextNodes.clear()
