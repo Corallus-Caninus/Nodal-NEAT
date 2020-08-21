@@ -4,8 +4,8 @@ from functools import partial
 from multiprocessing import Pool
 
 from organisms.Genome import Genome
-from organisms.innovation import GlobalInnovations
 from organisms.Nuclei import Nuclei
+from organisms.innovation import GlobalInnovations
 
 
 # DEFAULT FITNESS FUNCTION:
