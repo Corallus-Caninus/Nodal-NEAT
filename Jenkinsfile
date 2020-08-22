@@ -8,12 +8,11 @@ pipeline {
                 steps {
                     sh 'pip install graphviz'
                     sh 'pip install matplotlib'
-                    }
                 }
-                stage('Test') {
-                    steps {
-                        sh 'python -m unittest'
-                    }
+            }
+            stage('Test') {
+                steps {
+                    sh 'python -m unittest'
                 }
             }
         }
