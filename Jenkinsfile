@@ -7,6 +7,7 @@ podTemplate(containers: [
                 //TODO: this is bloat. might as well use larger alpine image
                 //TODO: move this into docker image. Jenkins doesnt have
                 //      layered multistage build.
+                sh 'apt update'
                 sh 'apt install build-essential -y'
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
