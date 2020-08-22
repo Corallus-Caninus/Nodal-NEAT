@@ -4,6 +4,7 @@ pipeline {
             steps {
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
+            }
         }
         stage('Test') {
             steps {
