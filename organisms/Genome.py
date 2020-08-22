@@ -2,14 +2,13 @@ import logging
 import random as rand
 from math import sqrt
 
-from organisms.activationFunctions import softmax
 from organisms.ConnectionGene import ConnectionGene as Connection
-from organisms.network import processSequences
 from organisms.NodeGene import NodeGene as Node
-import numpy
+from organisms.activationFunctions import softmax
+from organisms.network import processSequences
+
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
-
 
 class Genome:
     # TODO: rename to nodal-neat to emphasis chromosome alignment operation.
@@ -358,7 +357,7 @@ class Genome:
         # NOTE: Overestimate
         # TODO: DEPRECATED
         # largestCircle = len(self.inputNodes) + \
-                        # len(self.hiddenNodes) + len(self.outputNodes)
+        # len(self.hiddenNodes) + len(self.outputNodes)
 
         for inode, sig in zip(self.inputNodes, signals):
             # print('input Node is: {}'.format(inode.nodeId))
@@ -395,7 +394,7 @@ class Genome:
                 # add loop attribute to oldest unreadyConnection
                 min([x for x in unreadyConnections],
                     key=lambda x: orders[x.input] if x.input in
-                    self.hiddenNodes else float('inf')).loop = True
+                                                     self.hiddenNodes else float('inf')).loop = True
             nodeBuffer.clear()
             nodeBuffer = nextNodes.copy()
             nextNodes.clear()
