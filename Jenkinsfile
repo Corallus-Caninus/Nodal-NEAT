@@ -16,7 +16,7 @@ podTemplate(containers: [
                 //TODO: this should be handled in setup.py
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
-                sh 'pip install Nodal_NEAT'
+                sh 'pip install ./Nodal_NEAT'
             }
         }
         container('python') {
