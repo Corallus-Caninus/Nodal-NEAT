@@ -4,7 +4,11 @@ podTemplate(containers: [
     node(POD_LABEL) {
         container('python') {
             stage('Build') {
+                //TODO: this is bloat. might as well use larger alpine image
+                //TODO: move this into docker image. Jenkins doesnt have
+                //      layered multistage build.
                 sh 'apk add --update alpine-sdk'
+                sh 'apk add zlib'
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
             }
