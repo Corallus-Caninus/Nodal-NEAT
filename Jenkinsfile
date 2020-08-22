@@ -11,12 +11,11 @@ podTemplate(containers: [
                 sh 'apt update'
                 sh 'apt install git -y'
                 sh 'git clone https://github.com/Corallus-Caninus/Nodal_NEAT.git'
-                sh 'cd Nodal_NEAT'
 
                 sh 'apt install build-essential -y'
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
-                sh 'pip install .'
+                sh 'pip install Nodal_NEAT'
             }
         }
         container('python') {
