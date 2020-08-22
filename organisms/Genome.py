@@ -6,10 +6,7 @@ from organisms.activationFunctions import softmax
 from organisms.ConnectionGene import ConnectionGene as Connection
 from organisms.network import processSequences
 from organisms.NodeGene import NodeGene as Node
-
-
-# import numpy as np
-
+import numpy
 
 # TODO: write unittests for forwardProp and loop detection (re-organize)
 
