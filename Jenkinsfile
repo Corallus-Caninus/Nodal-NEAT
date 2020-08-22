@@ -3,12 +3,11 @@ pipeline {
         kubernetes { }
     }
     stages {
-        container('python'){
+        container('python') {
             stage('Build'){
-                    steps {
-                        sh 'pip install graphviz'
-                        sh 'pip install matplotlib'
-                        }
+                steps {
+                    sh 'pip install graphviz'
+                    sh 'pip install matplotlib'
                     }
                 }
                 stage('Test') {
