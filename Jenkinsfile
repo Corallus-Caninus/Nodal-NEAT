@@ -4,17 +4,13 @@ podTemplate(containers: [
     node(POD_LABEL) {
         container('python') {
             stage('Build') {
-                steps {
-                    sh 'pip install graphviz'
-                    sh 'pip install matplotlib'
-                }
+                sh 'pip install graphviz'
+                sh 'pip install matplotlib'
             }
         }
         container('python') {
             stage('Test') {
-                steps {
-                    sh 'python -m unittest'
-                }
+                sh 'python -m unittest'
             }
         }
     }
