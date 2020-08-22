@@ -6,13 +6,13 @@ pipeline {
         }
     }
     stages {
-        stage('build'){
+        stage('Build'){
             steps {
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
             }
         }
-        stage('test') {
+        stage('Test') {
             steps {
                 sh 'python -m unittest'
             }
