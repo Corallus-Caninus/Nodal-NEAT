@@ -75,13 +75,13 @@ class TestMetrics(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = Evaluator(inputs=2, outputs=1, population=500,
-                               connectionMutationRate=0.05, nodeMutationRate=0.02,
+        evaluation = Evaluator(inputs=2, outputs=1, population=100,
+                               connectionMutationRate=0.5, nodeMutationRate=0.2,
                                weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
         evaluation.score(myFunc, 1)
-        for x in range(0, 1000):
+        for x in range(0, 10):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc, 1)
             print('Distance between first two genomes is: {}'.format(evaluation.genepool[0].geneticDistance(

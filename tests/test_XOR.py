@@ -108,7 +108,7 @@ class TestGenepool(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = Evaluator(inputs=2, outputs=1, population=3000,
+        evaluation = Evaluator(inputs=2, outputs=1, population=1000,
                                connectionMutationRate=0.002, nodeMutationRate=0.0001,
                                weightMutationRate=0.06, weightPerturbRate=0.9,
                                selectionPressure=10)
