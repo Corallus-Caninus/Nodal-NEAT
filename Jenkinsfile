@@ -3,14 +3,16 @@ pipeline {
         kubernetes { }
     }
     stages {
-        container('python') {
-            stage('Build'){
+        stage('Build'){
+            container('python') {
                 steps {
                     sh 'pip install graphviz'
                     sh 'pip install matplotlib'
                 }
             }
-            stage('Test') {
+        }
+        stage('Test') {
+            container('python') {
                 steps {
                     sh 'python -m unittest'
                 }
