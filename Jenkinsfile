@@ -21,6 +21,7 @@ podTemplate(containers: [
         }
         container('python') {
             stage('Test') {
+                cd './Nodal_NEAT'
                 sh 'python -m unittest'
             }
         }
