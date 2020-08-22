@@ -61,6 +61,9 @@ class Evaluator:
         # self.genepool = divers.map(massSpawner, range(population))
         self.genepool = self.standing.map(massSpawner, range(population))
 
+    def __del__(self):
+        self.standing.close()
+
     def score(self, fitnessFunction):
         """
         score genepool for initialization
