@@ -92,7 +92,7 @@ class TestGenepool(unittest.TestCase):
         """
         trains a genepool to solve the XOR function.
         """
-        generations = 10000
+        generations = 50
 
         # Graph configuration
         style.use('fivethirtyeight')
