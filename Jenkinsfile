@@ -14,7 +14,7 @@ podTemplate(containers: [
                 //TODO: this should be handled in setup.py
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
-                sh 'pip install /home/jenkins/agent/workspace/NEAT/Nodal_NEAT/'
+                sh 'pip install /home/jenkins/jobs/NEAT/Nodal_NEAT/'
             }
         }
         container('python') {
