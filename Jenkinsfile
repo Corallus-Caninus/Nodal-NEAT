@@ -11,14 +11,15 @@ podTemplate(containers: [
                 git 'https://github.com/Corallus-Caninus/Nodal_NEAT.git'
                 sh 'apt update'
                 sh 'apt install build-essential -y'
+                //TODO: this should be handled in setup.py
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
-                sh 'pip install Nodal_NEAT'
+                sh 'pip install /home/jenkins/agent/workspace/NEAT/Nodal_NEAT/'
             }
         }
         container('python') {
             stage('Test') {
-                sh 'python -m unittest'
+                sh 'python -m unittest Nodal_NEAT'
             }
         }
     }
