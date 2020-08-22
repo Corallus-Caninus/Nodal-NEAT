@@ -1,8 +1,8 @@
 import logging
 from copy import copy
 
-from organisms.connectionGene import connectionGene
-from organisms.nodeGene import nodeGene
+from organisms.ConnectionGene import ConnectionGene
+from organisms.NodeGene import NodeGene
 
 
 # TODO: this is so inherent to creating connections it should be in the ConnectionGene
@@ -116,18 +116,18 @@ class GlobalInnovations:
             # TODO: would rather move the Node creation stuff to Genome.addNode method.
             #       lots of jumping around
             self.nodeId += 1
-            newNode = nodeGene(self.nodeId)
+            newNode = NodeGene(self.nodeId)
             # don't create split from global pool as will connect across
             # genepool
 
             # TODO: could be error when splitting loop Connection
             self.innovation += 1
-            inConnection = connectionGene(1.0, inputNode, newNode)
+            inConnection = ConnectionGene(1.0, inputNode, newNode)
             inConnection.innovation = self.innovation
             self.connections.append(inConnection)
 
             self.innovation += 1
-            outConnection = connectionGene(
+            outConnection = ConnectionGene(
                 copy(replaceConnection.weight), newNode, outputNode)
 
             outConnection.innovation = self.innovation
@@ -162,15 +162,15 @@ class GlobalInnovations:
                     # TODO: should be first match to keep iteration of parallel
                     #       splits across genomes
 
-            newNode = nodeGene(match[0].output.nodeId)
+            newNode = NodeGene(match[0].output.nodeId)
 
             logging.info('INNOVATION: Node match {}'.format(
                 match[0].output.nodeId))
 
-            inConnection = connectionGene(1.0, inputNode, newNode)
+            inConnection = ConnectionGene(1.0, inputNode, newNode)
             inConnection.innovation = match[0].innovation
 
-            outConnection = connectionGene(
+            outConnection = ConnectionGene(
                 copy(replaceConnection.weight), newNode, outputNode)
             outConnection.innovation = match[1].innovation
 

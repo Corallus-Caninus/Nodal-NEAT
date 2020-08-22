@@ -6,7 +6,7 @@ import unittest
 
 import matplotlib.pyplot as plt
 from matplotlib import style
-from organisms.evaluator import evaluator
+from organisms.Evaluator import Evaluator
 
 
 def configLogfile():
@@ -108,7 +108,7 @@ class TestGenepool(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=3000,
+        evaluation = Evaluator(inputs=2, outputs=1, population=3000,
                                connectionMutationRate=0.002, nodeMutationRate=0.0001,
                                weightMutationRate=0.06, weightPerturbRate=0.9,
                                selectionPressure=10)

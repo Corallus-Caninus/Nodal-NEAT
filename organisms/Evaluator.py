@@ -3,9 +3,9 @@ from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool
 
-from organisms.genome import genome
-from organisms.innovation import globalInnovations
-from organisms.nuclei import nuclei
+from organisms.Genome import Genome
+from organisms.innovation import GlobalInnovations
+from organisms.Nuclei import Nuclei
 
 
 # DEFAULT FITNESS FUNCTION:
@@ -50,11 +50,11 @@ class Evaluator:
 
         # mutate self.innovation and self.nodeId in
         # innovation.GlobalInnovations
-        self.globalInnovations = globalInnovations()
-        self.nuclei = nuclei()
+        self.globalInnovations = GlobalInnovations()
+        self.nuclei = Nuclei()
         self.standing = Pool()
 
-        seed = genome.initial(inputs, outputs, self.globalInnovations)
+        seed = Genome.initial(inputs, outputs, self.globalInnovations)
         massSpawner = partial(massSpawn, seed)
 
         # with Pool() as divers:

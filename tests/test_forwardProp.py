@@ -1,14 +1,14 @@
 import unittest
 import uuid
 
-from organisms.evaluator import evaluator
+from organisms.Evaluator import Evaluator
 from organisms.network import graphvizNEAT
 
 
 class TestForwardProp(unittest.TestCase):
     def test_forwardProp(self):
         print('\n TESTING FORWARD PROPAGATION ')
-        evaluation = evaluator(inputs=2, outputs=2, population=100,
+        evaluation = Evaluator(inputs=2, outputs=2, population=100,
                                connectionMutationRate=0.3, nodeMutationRate=0.01, weightMutationRate=0.5,
                                weightPerturbRate=0.9, selectionPressure=3)
         test = evaluation.genepool[0]

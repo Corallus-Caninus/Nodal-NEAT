@@ -5,7 +5,7 @@ import re
 import unittest
 import uuid
 
-from organisms.evaluator import evaluator
+from organisms.Evaluator import Evaluator
 from organisms.network import graphvizNEAT
 
 
@@ -75,7 +75,7 @@ class TestMetrics(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = evaluator(inputs=2, outputs=1, population=500,
+        evaluation = Evaluator(inputs=2, outputs=1, population=500,
                                connectionMutationRate=0.05, nodeMutationRate=0.02,
                                weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 

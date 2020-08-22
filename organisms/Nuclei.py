@@ -1,8 +1,8 @@
 import random as rand
 from copy import copy
 
-from organisms.connectionGene import connectionGene
-from organisms.genome import genome
+from organisms.ConnectionGene import ConnectionGene
+from organisms.Genome import Genome
 
 
 def nextConnections(newNode, connectionBuffer):
@@ -34,11 +34,11 @@ def inheritConnection(
         nodeMatch = child.getNode(connect.input.nodeId)
     if nodeMatch is not None:
         if outConnection is True:
-            newConnection = connectionGene(
+            newConnection = ConnectionGene(
                 copy(connect.weight), targetNode, nodeMatch)
             child.addConnection(newConnection, globalInnovations)
         else:
-            newConnection = connectionGene(
+            newConnection = ConnectionGene(
                 copy(connect.weight), nodeMatch, targetNode)
             child.addConnection(newConnection, globalInnovations)
 
@@ -267,7 +267,7 @@ class Nuclei:
         # safe but sloppy
         """
         align chromosomes of two genomes based on their primalGene representation and
-        produce a child Genome with inherited genes (both nodeGenes and connectionGenes).
+        produce a child Genome with inherited genes (both nodeGenes and ConnectionGenes).
         """
 
         if parent1.fitness >= parent2.fitness:
@@ -293,7 +293,7 @@ class Nuclei:
         # configure excess gene orientation in chromosome alignment
         alignmentOffset = len(moreFitGenes) - len(lessFitGenes)
 
-        child = genome(len(moreFitParent.inputNodes), len(
+        child = Genome(len(moreFitParent.inputNodes), len(
             moreFitParent.outputNodes), globalInnovations)
 
         # TODO: add Node and Connection probability hyperparameters
@@ -350,7 +350,7 @@ class Nuclei:
                 for primal in curGenes:
                     for connect in curConnections:
                         # TODO: verify novel nodes arent discovered in
-                        # crossover or obey the algorithm
+                        #  crossover or obey the algorithm
                         if primal.alignNodeGene(connect):
                             newNode = child.addNode(connect, globalInnovations)
 
@@ -377,7 +377,7 @@ class Nuclei:
         curConnections = []
         primalGenes = self.primalGenes[targetGenome].copy()
 
-        child = genome(len(targetGenome.inputNodes), len(
+        child = Genome(len(targetGenome.inputNodes), len(
             targetGenome.outputNodes), globalInnovations)
 
         for inode in child.inputNodes:

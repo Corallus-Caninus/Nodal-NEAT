@@ -5,9 +5,9 @@ import re
 import unittest
 import uuid
 
-from organisms.evaluator import evaluator
+from organisms.Evaluator import Evaluator
 from organisms.network import graphvizNEAT
-from organisms.nuclei import nuclei
+from organisms.Nuclei import Nuclei
 
 
 def configLogfile():
@@ -38,7 +38,7 @@ class TestCrossover(unittest.TestCase):
     """
 
     def test_crossover(self):
-        evaluation = evaluator(inputs=2, outputs=1, population=3,
+        evaluation = Evaluator(inputs=2, outputs=1, population=3,
                                connectionMutationRate=0.1, nodeMutationRate=0.09,
                                weightMutationRate=0.9, weightPerturbRate=0.6, selectionPressure=3)
 
@@ -64,7 +64,7 @@ class TestCrossover(unittest.TestCase):
 
         # NOTE: everything above is a test fixture for most things
 
-        chromosomes = nuclei()
+        chromosomes = Nuclei()
         for ge in evaluation.genepool:
             chromosomes.readyPrimalGenes(ge)
 
@@ -99,7 +99,7 @@ class TestCrossover(unittest.TestCase):
         #       as offspring (diversity singularity)
 
         configLogfile()
-        evaluation = evaluator(inputs=2, outputs=1, population=1,
+        evaluation = Evaluator(inputs=2, outputs=1, population=1,
                                connectionMutationRate=0.1, nodeMutationRate=0.09,
                                weightMutationRate=0.9, weightPerturbRate=0.6, selectionPressure=3)
 
