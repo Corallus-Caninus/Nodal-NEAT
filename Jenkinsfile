@@ -4,6 +4,7 @@ podTemplate(containers: [
     node(POD_LABEL) {
         container('python') {
             stage('Build') {
+                sh 'apk add --update alpine-sdk'
                 sh 'pip install graphviz'
                 sh 'pip install matplotlib'
             }
