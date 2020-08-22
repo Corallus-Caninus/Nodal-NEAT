@@ -3,9 +3,9 @@ import random as rand
 from math import sqrt
 
 from organisms.activationFunctions import softmax
-from organisms.connectionGene import connectionGene as Connection
+from organisms.ConnectionGene import ConnectionGene as Connection
 from organisms.network import processSequences
-from organisms.nodeGene import nodeGene as Node
+from organisms.NodeGene import NodeGene as Node
 
 
 # import numpy as np
