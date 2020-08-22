@@ -114,11 +114,11 @@ class TestGenepool(unittest.TestCase):
                                selectionPressure=10)
 
         # evaluate 200 generations
-        evaluation.score(myFunc, 1)
+        evaluation.score(myFunc)
         # TODO: simple matplotlib real time graph
         for x in range(0, generations):
             print('GENERATION: {}'.format(x))
-            evaluation.nextGeneration(myFunc, 1)
+            evaluation.nextGeneration(myFunc)
             maxFit = evaluation.getMaxFitness()
             print('max fitness is: {}'.format(maxFit))
 
