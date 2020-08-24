@@ -5,20 +5,6 @@ from organisms.ConnectionGene import ConnectionGene
 from organisms.Genome import Genome
 
 
-def nextConnections(newNode, connectionBuffer):
-    # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
-    #      instead of pass in mutating
-    """
-    feed the connectionBuffer all incoming and outgoing connections from newNode
-    """
-    for outc in newNode.outConnections:
-        if outc not in connectionBuffer:
-            connectionBuffer.append(outc)
-    for inc in newNode.inConnections:
-        if inc not in connectionBuffer:
-            connectionBuffer.append(inc)
-
-
 def inheritConnection(
         child,
         connect,
@@ -98,49 +84,16 @@ def inheritDisjointConnections(
             inheritOuts = lessFitNode.outConnections
             inheritIns = lessFitNode.inConnections
 
-        # for fitOutc, lessOutc in zip(moreFitNode.outConnections, lessFitNode.outConnections):
-        #     if rand.uniform(0, 1) > 0.5:
-        #         outc = fitOutc
-        #     else:
-        #         outc = lessOutc
-        #     if outc not in inheritOuts:
-        #         inheritOuts.append(outc)
-        # for fitInc, lessInc in zip(moreFitNode.inConnections, lessFitNode.inConnections):
-        #     if rand.uniform(0, 1) > 0.5:
-        #         inc = fitInc
-        #     else:
-        #         inc = lessInc
-        #     if inc not in inheritIns:
-        #         inheritIns.append(inc)
 
     # inherit outConnections
     for outc in inheritOuts:
         inheritConnection(
             child, outc, True, targetNode, globalInnovations)
-        # if fitDisjoint is True and rand.uniform(0, 1) > 0.5:
-        #     self.inheritConnection(
-        #         child, outc, True, targetNode, GlobalInnovations)
-        # elif fitDisjoint is False and rand.uniform(0, 1) > 0.5:
-        #     self.inheritConnection(
-        #         child, outc, True, targetNode, GlobalInnovations)
-        # else:
-        #     self.inheritConnection(
-        #         child, outc, True, targetNode, GlobalInnovations)
 
     # inherit inConnections
     for inc in inheritIns:
         inheritConnection(
             child, inc, False, targetNode, globalInnovations)
-        # if fitDisjoint is True and rand.uniform(0, 1) > 0.5:
-        #     # if rand.uniform(0, 1) < 0.8:
-        #     self.inheritConnection(
-        #         child, inc, False, targetNode, GlobalInnovations)
-        # elif fitDisjoint is False and rand.uniform(0, 1) > 0.5:
-        #     self.inheritConnection(
-        #         child, inc, False, targetNode, GlobalInnovations)
-        # else:
-        #     self.inheritConnection(
-        #         child, inc, False, targetNode, GlobalInnovations)
 
 
 def inheritExcessConnections(
@@ -209,6 +162,7 @@ class Nuclei:
         curDepth = []
         self.primalGenes.update({targetGenome: []})
 
+        # get initial topology connections
         for inode in targetGenome.inputNodes:
             for outc in inode.outConnections[:len(targetGenome.outputNodes)]:
                 if outc not in curConnections:
@@ -223,7 +177,14 @@ class Nuclei:
                 # TODO: this code requires connections to be added while
                 # rebuilding from primalGenes
                 for split in splitNodes:
-                    nextConnections(split, connectionBuffer)
+                    # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
+                    #      instead of pass in mutating
+                    for outc1 in split.outConnections:
+                        if outc1 not in connectionBuffer:
+                            connectionBuffer.append(outc1)
+                    for inc in split.inConnections:
+                        if inc not in connectionBuffer:
+                            connectionBuffer.append(inc)
 
             self.primalGenes[targetGenome].append(curDepth.copy())
             curDepth.clear()
@@ -238,33 +199,16 @@ class Nuclei:
         self.primalGenes.clear()
 
     def crossover(self, parent1, parent2, globalInnovations):
-        #   NOTE: relatively large chance to miss shallow Node splits here, in which
-        #         subsequent splits will be missed.
-        #   should use exponential/logistic decay to reduce chance of adding based on depth
-        #   this is analogous to chromosome alignment given the spatial factor of 
-        #   combination
-        #   from the length of attachment (read more on this, however it is only 
-        #   abstractly pertinent)
-        #  this is more based in reduction division
-        #
-        #  should use logistic decay set by a hyperparameter for addConnections 
-        #   (more and less fit). since splitNodes are lost
-        # when connections to split arent present, not adding connections should be 
-        # sufficient for pruning behaviour
-        # crossover should also be performed with some amount of similarity metric 
-        # otherwise 'unstable' destructive
-        # crossover will produce child genomes with VERY few nodes and connections and 
-        # pull the genepool
-        #  back too far and too often
-        # TODO: hyperparameter isn't necessary. treat disjoint and excess depths exactly
-        # as k.stanley for now and investigate further
+        # TODO: crossover should also be performed with some amount of similarity metric
+        #       otherwise 'unstable' destructive (return to common ancestor may result
+        #       in oversimplification). this is solved with speciation.
+        # TODO: ensure disjoint and excess is implemented exactly as k.stanley for now
+        #       and investigate further
         #               NOTE: K.Stanley has a builtin chance for disjoint gene inheritance.
         #                           Currently testing hyperparameter inheritance next 
         #                           is k.stanley analogy
-        # NOTE: GlobalInnovations is an artifact for Genome and gene construction.
-        #       using k.stanley crossover never should allow
-        # innovation discovery even in Nodal-NEAT so this should be parallel
-        # safe but sloppy
+        # TODO: remove GlobalInnovations passthrough here, shouldnt be necessary. need
+        #       another method for addind connections here.
         """
         align chromosomes of two genomes based on their primalGene representation and
         produce a child Genome with inherited genes (both nodeGenes and ConnectionGenes).
@@ -276,10 +220,6 @@ class Nuclei:
         else:
             moreFitParent = parent2
             lessFitParent = parent1
-
-        # @DEPRECATED
-        # assert moreFitParent in self.primalGenes and lessFitParent in self.primalGenes, \
-        #     "genomes have not been preprocessed in Nuclei for chromosome alignment"
 
         connectionBuffer = []
         curConnections = []
@@ -296,15 +236,15 @@ class Nuclei:
         child = Genome(len(moreFitParent.inputNodes), len(
             moreFitParent.outputNodes), globalInnovations)
 
-        # TODO: add Node and Connection probability hyperparameters
-
         for inode in child.inputNodes:
-            for outc in inode.outConnections[:len(child.outputNodes)]:
-                if outc not in curConnections:
-                    curConnections.append(outc)
+            for initOutc in inode.outConnections[:len(child.outputNodes)]:
+                if initOutc not in curConnections:
+                    curConnections.append(initOutc)
 
         # handle disjoint Node genes first then excess
         while len(curConnections) > 0:
+            # done with alignment
+            # TODO: shouldnt iterate on curConnections since this is nodal.
             if len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
                 # Done with alignment TODO: last pass of connections?
                 curConnections.clear()
@@ -320,24 +260,14 @@ class Nuclei:
                             inheritExcessConnections(
                                 newNode, child, moreFitParent, globalInnovations)
 
-                            nextConnections(newNode, connectionBuffer)
+                            for outc in newNode.outConnections:
+                                if outc not in connectionBuffer:
+                                    connectionBuffer.append(outc)
+                            for inc in newNode.inConnections:
+                                if inc not in connectionBuffer:
+                                    connectionBuffer.append(inc)
                             break
-            # elif len(moreFitGenes) == 0 and alignmentOffset < 0:
-            # handle lessFit excess nodeGenes
             # TODO: check with K.Stanley but these should be thrown out
-            # curGenes = lessFitGenes.pop(0)
-            # for primal in curGenes:
-            #     if rand.uniform(0, 1) < 0.2:
-            #         for connect in curConnections:
-            #             if primal.alignNodeGene(connect):
-            #                 newNode = child.addNode(
-            #                     connect, GlobalInnovations)
-
-            #                 self.inheritExcessConnections(
-            # newNode, child, lessFitParent, GlobalInnovations)
-
-            #                 self.nextConnections(newNode, connectionBuffer)
-            # break
             else:
                 # handle matching/disjoint nodeGenes
                 curGenes = []
@@ -357,7 +287,14 @@ class Nuclei:
                             inheritDisjointConnections(
                                 newNode, child, moreFitParent, lessFitParent, globalInnovations)
 
-                            nextConnections(newNode, connectionBuffer)
+                            # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
+                            #      instead of pass in mutating
+                            for outc in newNode.outConnections:
+                                if outc not in connectionBuffer:
+                                    connectionBuffer.append(outc)
+                            for inc in newNode.inConnections:
+                                if inc not in connectionBuffer:
+                                    connectionBuffer.append(inc)
                             break
 
             curConnections.clear()
@@ -401,7 +338,14 @@ class Nuclei:
                         inheritDisjointConnections(
                             newNode, child, targetGenome, targetGenome, globalInnovations)
 
-                        nextConnections(newNode, connectionBuffer)
+                        # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
+                        #      instead of pass in mutating
+                        for outc1 in newNode.outConnections:
+                            if outc1 not in connectionBuffer:
+                                connectionBuffer.append(outc1)
+                        for inc in newNode.inConnections:
+                            if inc not in connectionBuffer:
+                                connectionBuffer.append(inc)
                         break
 
             curConnections.clear()
