@@ -121,6 +121,8 @@ class TestCrossover(unittest.TestCase):
         child = evaluation.nuclei.crossover(
             evaluation.genepool[0], evaluation.genepool[0], evaluation.globalInnovations)
 
+        assert child.geneticDistance(evaluation.genepool[0]) == 0, 'innovation changed during crossover!'
+
         for par in evaluation.genepool[0].getAllConnections():
             if not par.exists(child.getAllConnections()):
                 raise Exception("ERROR: MISSING CONNECTION IN CLONE CHILD")
