@@ -1,8 +1,9 @@
 import unittest
-import uuid
 
 from organisms.Evaluator import Evaluator
-from organisms.network import graphvizNEAT
+#@DEPRECATED
+#import uuid
+#from organisms.network import graphvizNEAT
 
 
 class TestForwardProp(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestForwardProp(unittest.TestCase):
         for x in test.hiddenNodes:
             print(x)
 
-        graphvizNEAT(test, 'test-Genome-{}'.format(uuid.uuid1()))
+        #graphvizNEAT(test, 'test-Genome-{}'.format(uuid.uuid1()))
 
 
 if __name__ == '__main__':

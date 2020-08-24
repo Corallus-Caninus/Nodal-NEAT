@@ -3,11 +3,13 @@ import os
 import random as rand
 import re
 import unittest
-import uuid
 
 from organisms.Evaluator import Evaluator
-from organisms.network import graphvizNEAT
+# from organisms.network import graphvizNEAT
 from organisms.Nuclei import Nuclei
+
+
+# import uuid
 
 
 def configLogfile():
@@ -84,10 +86,10 @@ class TestCrossover(unittest.TestCase):
         nextGeneration[0].forwardProp([1, 2])
         nextGeneration[0].forwardProp([1, 2])
 
-        for child in nextGeneration:
-            graphvizNEAT(child, 'child ' + str(uuid.uuid1()))
-        for parent in evaluation.genepool:
-            graphvizNEAT(parent, 'parent' + str(uuid.uuid1()))
+        # for child in nextGeneration:
+        #     graphvizNEAT(child, 'child ' + str(uuid.uuid1()))
+        # for parent in evaluation.genepool:
+        #     graphvizNEAT(parent, 'parent' + str(uuid.uuid1()))
 
     def test_clone(self):
         """
@@ -113,7 +115,7 @@ class TestCrossover(unittest.TestCase):
             target.fitness = rand.randint(0, 5)
         # NOTE: everything above is a test fixture for most things
 
-        graphvizNEAT(evaluation.genepool[0], 'originParent')
+        # graphvizNEAT(evaluation.genepool[0], 'originParent')
 
         evaluation.nuclei.readyPrimalGenes(evaluation.genepool[0])
         child = evaluation.nuclei.crossover(
@@ -135,7 +137,7 @@ class TestCrossover(unittest.TestCase):
               .format(len([x.outConnections for x in evaluation.genepool[0].hiddenNodes]) +
                       len([x.inConnections for x in evaluation.genepool[0].hiddenNodes])))
 
-        graphvizNEAT(child, 'child')
+        # graphvizNEAT(child, 'child')
 
 
 if __name__ == '__main__':

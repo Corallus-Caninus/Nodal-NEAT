@@ -199,9 +199,10 @@ class Nuclei:
         self.primalGenes.clear()
 
     def crossover(self, parent1, parent2, globalInnovations):
-        # TODO: crossover should also be performed with some amount of similarity metric
-        #       otherwise 'unstable' destructive (return to common ancestor may result
-        #       in oversimplification). this is solved with speciation.
+        # NOTE: crossover should also be performed with some amount of similarity metric
+        #       otherwise 'unstable' destructive crossover will occur
+        #       (return to common ancestor may result in oversimplification). this is solved
+        #       with speciation.
         # TODO: ensure disjoint and excess is implemented exactly as k.stanley for now
         #       and investigate further
         #               NOTE: K.Stanley has a builtin chance for disjoint gene inheritance.
@@ -236,6 +237,7 @@ class Nuclei:
         child = Genome(len(moreFitParent.inputNodes), len(
             moreFitParent.outputNodes), globalInnovations)
 
+        # get initial topology connections
         for inode in child.inputNodes:
             for initOutc in inode.outConnections[:len(child.outputNodes)]:
                 if initOutc not in curConnections:
@@ -244,9 +246,9 @@ class Nuclei:
         # handle disjoint Node genes first then excess
         while len(curConnections) > 0:
             # done with alignment
-            # TODO: shouldnt iterate on curConnections since this is nodal.
+            # TODO: extract this into while condition
             if len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
-                # Done with alignment TODO: last pass of connections?
+                # Done with alignment TODO: last pass of connections? yes. (frontier connections)
                 curConnections.clear()
                 break
             elif len(lessFitGenes) == 0 and alignmentOffset > 0:
@@ -288,7 +290,7 @@ class Nuclei:
                                 newNode, child, moreFitParent, lessFitParent, globalInnovations)
 
                             # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
-                            #      instead of pass in mutating
+                            #      instead of append
                             for outc in newNode.outConnections:
                                 if outc not in connectionBuffer:
                                     connectionBuffer.append(outc)

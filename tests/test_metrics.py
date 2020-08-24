@@ -3,13 +3,13 @@ import os
 import random as rand
 import re
 import unittest
-import uuid
 
 from organisms.Evaluator import Evaluator
-from organisms.network import graphvizNEAT
 
 
-# TODO: REALLY NEED TO DEBUG CONNECTION INNOVATION MATCH REMOVAL
+# @DEPRECATED
+# import uuid
+# from organisms.network import graphvizNEAT
 
 
 def configLogfile():
@@ -70,7 +70,8 @@ class TestMetrics(unittest.TestCase):
     """
 
     def test_distance(self):
-        # NOTE: this test if a Genome is crossed over with itself the same Genome
+        # TODO: repeated in test_nuclei. rework this unittest.
+        # NOTE: this tests if a Genome is crossed over with itself the same Genome
         # is produced as offspring (diversity singularity)
 
         configLogfile()
@@ -80,17 +81,21 @@ class TestMetrics(unittest.TestCase):
                                weightMutationRate=0.9, weightPerturbRate=0.3, selectionPressure=3)
 
         # evaluate 50 generations
-        evaluation.score(myFunc, 1)
+        evaluation.score(myFunc)
         for x in range(0, 10):
             print('GENERATION: {}'.format(x))
-            evaluation.nextGeneration(myFunc, 1)
-            print('Distance between first two genomes is: {}'.format(evaluation.genepool[0].geneticDistance(
-                evaluation.genepool[1], 1, 1, 1)))
+            evaluation.nextGeneration(myFunc)
+            print('Distance between first two genomes is: {}'.format(
+                evaluation.genepool[0].geneticDistance(
+                    evaluation.genepool[1], 1, 1, 1)))
+            # Ensure distance is 0 else some novelty occurred (self crossover doesnt produce replication)
+            assert evaluation.genepool[0].geneticDistance(evaluation.genepool[1], 1, 1, 1) == 0, \
+                'novelty from crossover!'
 
-        sortPool = sorted([x for x in evaluation.genepool],
-                          key=lambda s: s.fitness, reverse=True)
-        for c in sortPool[:10]:
-            graphvizNEAT(c, 'sample-genome_fitness-' + str(uuid.uuid1()))
+        # sortPool = sorted([x for x in evaluation.genepool],
+        # key=lambda s: s.fitness, reverse=True)
+        # for c in sortPool[:10]:
+        # graphvizNEAT(c, 'sample-genome_fitness-' + str(uuid.uuid1()))
 
 
 if __name__ == '__main__':
