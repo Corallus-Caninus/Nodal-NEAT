@@ -250,9 +250,9 @@ class Nuclei:
             # done with alignment
             # TODO: extract this into while condition
             if (len(moreFitGenes) == 0 and len(lessFitGenes) == 0) or \
-                    (len(moreFitGenes == 0) and alignmentOffset < 0):
+                    (len(moreFitGenes) == 0 and alignmentOffset < 0):
                 # Done with alignment, curConnections is frontier connections or
-                # excess less fit genes which are thrown out as per k.stanley.
+                # throw out excess less fit genes which as per k.stanley.
                 curConnections.clear()
                 break
             elif len(lessFitGenes) == 0 and alignmentOffset > 0:
