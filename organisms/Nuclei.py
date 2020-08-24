@@ -84,7 +84,6 @@ def inheritDisjointConnections(
             inheritOuts = lessFitNode.outConnections
             inheritIns = lessFitNode.inConnections
 
-
     # inherit outConnections
     for outc in inheritOuts:
         inheritConnection(
@@ -250,8 +249,8 @@ class Nuclei:
         while len(curConnections) > 0:
             # done with alignment
             # TODO: extract this into while condition
-            if len(moreFitGenes) == 0 and len(lessFitGenes) == 0 or \
-                    len(moreFitGenes == 0 and alignmentOffset < 0):
+            if (len(moreFitGenes) == 0 and len(lessFitGenes) == 0) or \
+                    (len(moreFitGenes == 0) and alignmentOffset < 0):
                 # Done with alignment, curConnections is frontier connections or
                 # excess less fit genes which are thrown out as per k.stanley.
                 curConnections.clear()
