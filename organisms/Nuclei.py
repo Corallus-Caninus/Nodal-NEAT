@@ -198,6 +198,9 @@ class Nuclei:
         """
         self.primalGenes.clear()
 
+    # TODO: would be better to store tree representation of primals in genome while
+    #       complexifying since this is list search time (only matters at very large scale
+    #       but thats the point)
     def crossover(self, parent1, parent2, globalInnovations):
         # NOTE: crossover should also be performed with some amount of similarity metric
         #       otherwise 'unstable' destructive crossover will occur
@@ -247,8 +250,10 @@ class Nuclei:
         while len(curConnections) > 0:
             # done with alignment
             # TODO: extract this into while condition
-            if len(moreFitGenes) == 0 and len(lessFitGenes) == 0:
-                # Done with alignment TODO: last pass of connections? yes. (frontier connections)
+            if len(moreFitGenes) == 0 and len(lessFitGenes) == 0 or \
+                    len(moreFitGenes == 0 and alignmentOffset < 0):
+                # Done with alignment, curConnections is frontier connections or
+                # excess less fit genes which are thrown out as per k.stanley.
                 curConnections.clear()
                 break
             elif len(lessFitGenes) == 0 and alignmentOffset > 0:
@@ -269,7 +274,6 @@ class Nuclei:
                                 if inc not in connectionBuffer:
                                     connectionBuffer.append(inc)
                             break
-            # TODO: check with K.Stanley but these should be thrown out
             else:
                 # handle matching/disjoint nodeGenes
                 curGenes = []
