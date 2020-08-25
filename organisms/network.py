@@ -1,85 +1,9 @@
 from graphviz import Digraph
 
 
-# NOTE: this contains utility functions for graph analysis and analysing/preparing
-# topologies for genetic operations
-# it is understandably preferable to keep this all in Genome.py as these methods operate
-# on Genome objects but Genome.py will be large to the point of unreadable.
-
-# NOTE: Intra-extrema connections are no longer allowed due to feature complexity for very
-# little feature gain. since this is Node oriented we need a Node interface not a
-# Connection to harvest the network.
-# (a network with intra-extrema connections always has an equivalent with hidden layer
-# only loops)
-#
 # since this is about evolving deep direct NEAT networks, the slight simplification of
 # the fitness landscape is not beneficial
 # and will require more work for numpification (vectorization)
-
-
-def processSequences(targetGenome):
-    # TODO: trace this out. if this worked there would never be unnecessary loop
-    #       detection (minimal number of loop connections to forward prop topo)
-    #
-    # TODO: lots of operations but simple way is to set sequence based on depth
-    #       and everytime a Connection is added set
-    #             Connection.output.depth to Connection.input.depth + 1 if
-    #             Connection.output.depth <= Connection.input.depth and repeat for
-    #             all connections
-    #             until loop closure or no outnodes
-    """
-    gets all split depths of all nodes in the given topology then assign Node sequence
-    by checking Node depths for shorting connections.
-    PARAMETERS:
-        targetGenome: the Genome to be processed
-    RETURNS:
-        sequences: order of arrival for each Node that will be found in forward propagation.
-    """
-    sequences = {}
-    connectionBuffer = []
-    curConnections = []
-    hiddenNodes = targetGenome.hiddenNodes
-
-    # ACQUIRE SPLIT DEPTHS FOR HIDDEN NODES
-    # TODO: extract splitDepths for crossover (chromosome alignment of skeleton/primal
-    #       topologies)
-    curDepth = 0
-    for node in targetGenome.inputNodes:
-        # add all initial topology connections
-        sequences.update({node: curDepth})
-        for outc in node.outConnections[:len(targetGenome.outputNodes)]:
-            curConnections.append(outc)
-
-    while len(curConnections) > 0:
-        curDepth += 1
-        for connection in curConnections:
-            splitNode = connection.splits(hiddenNodes)
-
-            for node in splitNode:
-                for outConnection in node.outConnections:
-                    connectionBuffer.append(outConnection)
-                for inConnection in node.inConnections:
-                    connectionBuffer.append(inConnection)
-
-                # TODO: does this cause duplicate entries for a Node
-                sequences.update({node: curDepth})
-
-        curConnections.clear()
-        curConnections = connectionBuffer.copy()
-        connectionBuffer.clear()
-
-    # SHORT ALL DEPTHS BY INCOMING CONNECTIONS
-    for node in sequences:
-        for inConnection in [
-                x for x in node.inConnections if x.disabled is False]:
-            # get incoming Connection with lowest sequence/depth
-            if sequences[inConnection.input] + 1 < sequences[node]:
-                # update sequences
-                sequences[node] = sequences[inConnection.input] + 1
-
-    # TODO: graph insight: can we say all connections with
-    # sequence[inConnection.output] < sequence[inConnection.input] are loops
-    return sequences
 
 
 def graphvizNEAT(network, filename):  # was sequences

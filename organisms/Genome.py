@@ -5,46 +5,20 @@ from math import sqrt
 from organisms.ConnectionGene import ConnectionGene as Connection
 from organisms.NodeGene import NodeGene as Node
 from organisms.activationFunctions import softmax
-from organisms.network import processSequences
+#from organisms.network import processSequences
 
 
-# TODO: write unittests for forwardProp and loop detection (re-organize)
+# TODO: write unittest for recurrence
+# NOTE: doesnt support extrema connections. (connections betwen inputs and outputs)
+#       this simplifies the implementation but should be changed when numpified or
+#       low level genome changes.
 
 class Genome:
-    # TODO: rename to nodal-neat to emphasis chromosome alignment operation.
-    #              (pruning of dissimilar topologies to refine genepool error vector)
-    # NOTE: graphs are defined by their Node objects not Connections.
-    #       Node defined networks
-    # allow for more interesting encapsulation and swappable implementations
-    # as well as make
-    #  recurrent, energy based etc. networks easier to implement. Connection
-    #  defined topologies are skipped
-    #  in favor of a 'numpifier' which compiles the traced network down to a
-    #  series of almost if not
-    #  entirely numpy operations. This network is not lightweight nor ideal for
-    #  real time forward propagation
-    #  but preferred  for ease of crossover, mutability etc. (relatively low frequency
-    #  operations) and high level
-    #  exploration of network topologies. The graph executor would preferably be
-    #  written in the numpy C API
-    #  and embedded or saved in a npy format but this development should be
-    #  empirically justified.
-    #
-    # even though this is Node based, Connection innovation numbers can be used for
-    # genetic positioning (and therefore distance)
-    # considering nodeGenes allows for complete complexification considerations in
-    # crossover, allowing each generation to sample
-    # a spread of much more complex to much simpler topologies instead of just more
-    # complex. a configurable sliding window of complexity
-    # helps to create definite and more robust fitness manifold vectors.
-    #
-    # Use numpy recarray consider jax for scalability (not necessary for awhile).
-    #
+    # TODO: Use numpy recarray (consider jax for scalability not necessary for awhile).
     #  create matrix from forward prop numpy.array steps. create a masking matrix
-    #  for gatekeeping/recurrence
-    #  and two float matrices for signal and weights (perform matrix-wise
-    #  activation of the mat-mul result matrix)
-    #   trace FSM manually before scripting attempt.
+    #  for recurrence and two float matrices for signal and weights (perform matrix-wise
+    #  activation of the mat-mul result matrix) trace FSM manually before scripting attempt.
+    #       dont be a chicken. implement all genetic ops and crossover with numpy array.
     """
     a Genome built with fully connected initial topology
 
@@ -82,15 +56,14 @@ class Genome:
                 globalInnovations.verifyConnection(Connection(
                     rand.uniform(-1, 1), inNode, outNode))
 
+    # TODO: I dont like this.. think of a way to clean this up a little
     @classmethod
-    # TODO: get rid of this. currently cant because of crossover starting
-    # from new Genome object
     def initial(cls, inputSize, outputSize, globalInnovations):
         """
         spawn initial genomes for genepool (sets nodeId based on initial topology)
         """
         # TODO: this isn't the most flexible solution wrt GlobalInnovations.
-        # remove GlobalInnovations from here
+        #       remove GlobalInnovations from here
 
         initNodeId = inputSize + outputSize
         globalInnovations.nodeId = initNodeId
@@ -121,7 +94,7 @@ class Genome:
 
         return allConnections
 
-    # TODO: no.
+    # TODO: no. Technically yes but no.
     def geneticPosition(self):
         """
         returns the position of this Genome
@@ -132,6 +105,10 @@ class Genome:
 
         return innovations
 
+    # TODO: searches such as this dont scale. need to store this information
+    #       with more geneticPosition features during construction to
+    #       simply subtract two genomes e.g.:
+    #       distance = first.geneticPosition() - second.geneticPosition()
     def geneticDistance(self, otherGenome, c1, c2, c3):
         """
         compute K.Stanley's distance metric traditionally used for speciation
@@ -352,7 +329,7 @@ class Genome:
         # TODO: extract loop detection to a separate method?
         # TODO: is Node timeout deprecated?
         # nodeTimeout = {}
-        orders = processSequences(self)  # TODO: BUBBLES!!!!
+        orders = self.processSequences()  # TODO: BUBBLES!!!!
 
         # NOTE: Overestimate
         # TODO: DEPRECATED
@@ -420,3 +397,67 @@ class Genome:
                 x.signal = None
 
         return outputs
+
+    def processSequences(self):
+        # TODO: trace this out. if this worked there would never be unnecessary loop
+        #       detection (minimal number of loop connections to forward prop topo)
+        #
+        # TODO: lots of operations but simple way is to set sequence based on depth
+        #       and everytime a Connection is added set
+        #             Connection.output.depth to Connection.input.depth + 1 if
+        #             Connection.output.depth <= Connection.input.depth and repeat for
+        #             all connections
+        #             until loop closure or no outnodes
+        """
+        gets all split depths of all nodes in the given topology then assign Node sequence
+        by checking Node depths for shorting connections. Essentially assigns layers.
+        PARAMETERS:
+            self: the Genome to be processed
+        RETURNS:
+            sequences: order of arrival for each Node that will be found in forward propagation.
+        """
+        sequences = {}
+        connectionBuffer = []
+        curConnections = []
+        hiddenNodes = self.hiddenNodes
+
+        # ACQUIRE SPLIT DEPTHS FOR HIDDEN NODES
+        # TODO: extract splitDepths for crossover (chromosome alignment of skeleton/primal
+        #       topologies)
+        curDepth = 0
+        for node in self.inputNodes:
+            # add all initial topology connections
+            sequences.update({node: curDepth})
+            for outc in node.outConnections[:len(self.outputNodes)]:
+                curConnections.append(outc)
+
+        while len(curConnections) > 0:
+            curDepth += 1
+            for connection in curConnections:
+                splitNode = connection.splits(hiddenNodes)
+
+                for node in splitNode:
+                    for outConnection in node.outConnections:
+                        connectionBuffer.append(outConnection)
+                    for inConnection in node.inConnections:
+                        connectionBuffer.append(inConnection)
+
+                    # TODO: does this cause duplicate entries for a Node
+                    sequences.update({node: curDepth})
+
+            curConnections.clear()
+            curConnections = connectionBuffer.copy()
+            connectionBuffer.clear()
+
+        # SHORT ALL DEPTHS BY INCOMING CONNECTIONS
+        for node in sequences:
+            for inConnection in [
+                x for x in node.inConnections if x.disabled is False]:
+                # get incoming Connection with lowest sequence/depth
+                if sequences[inConnection.input] + 1 < sequences[node]:
+                    # update sequences
+                    sequences[node] = sequences[inConnection.input] + 1
+
+        # TODO: graph insight: can we say all connections with
+        # sequence[inConnection.output] < sequence[inConnection.input] are loops
+        return sequences
