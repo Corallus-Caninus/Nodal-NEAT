@@ -32,6 +32,13 @@ class TestGenome(unittest.TestCase):
             candidate.resetSignals()
             candidate.resetNodes()
             candidate.resetLoops()
+            candidate.forwardProp([0.5, 0.5, 0.5])
+
+            # prepare loop check comparison
+            first_loops = []
+            for c in candidate.getAllConnections():
+                if c.loop:
+                    first_loops.append(c.innovation)
 
             first = candidate.processSequences()
 
@@ -41,10 +48,19 @@ class TestGenome(unittest.TestCase):
 
             second = candidate.processSequences()
 
+            # compare loops
+            if len([x.loop for x in candidate.getAllConnections()]) != \
+                    len(first_loops):
+                raise Exception("non-deterministic loop detection!")
+
+            for c in candidate.getAllConnections():
+                if c.innovation not in first_loops:
+                    raise Exception("non-deterministic loop detection!")
+
             print('testing sequencing @ generation {}..'.format(generation))
-            assert all([first[x] in second.values for x in first]), \
+            assert all([first[x] in second.values() for x in first]), \
                 'non-deterministic sequencing with key! (depth)'
-            assert all([x in second.keys for x in first]), \
+            assert all([x in second.keys() for x in first]), \
                 'non-deterministic sequencing with values! (primal connections)'
 
     # def test_phenome(self):
