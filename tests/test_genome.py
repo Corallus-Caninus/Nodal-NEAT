@@ -26,10 +26,10 @@ class TestGenome(unittest.TestCase):
 
         for generation in range(generations):
             tester.nextGeneration(myFunc)
-            print('new generation.. sampled node_count: {} sampled connection_count: {}'
-                  .format(len(tester.genepool[0].getAllConnections()), len(tester.genepool[0].hiddenNodes)))
 
             candidate = tester.genepool[0]
+            print('new generation.. sampled node_count: {} sampled connection_count: {}'
+                  .format(len(candidate.getAllConnections()), len(candidate.hiddenNodes)))
 
             # uninitialize the topology
             candidate.resetSignals()
@@ -37,14 +37,8 @@ class TestGenome(unittest.TestCase):
             candidate.resetLoops()
             candidate.forwardProp([0.5, 0.5, 0.5])
 
-            # @DEPRECATED
-            # first_loops = []
-            # for c in candidate.getAllConnections():
-            #     if c.loop:
-            #         first_loops.append(c.innovation)
-
             first = candidate.processSequences()
-            first_loops = [x.loop for x in candidate.getAllConnections()]
+            first_loops = [x.loop for x in candidate.getAllConnections()].copy()
 
             candidate.resetSignals()
             candidate.resetNodes()
