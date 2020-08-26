@@ -120,8 +120,9 @@ class TestNuclei(unittest.TestCase):
         child = evaluation.nuclei.crossover(
             evaluation.genepool[0], evaluation.genepool[0], evaluation.globalInnovations)
 
-        assert child.geneticDistance(evaluation.genepool[0], c1=1, c2=1,
-                                     c3=1) == 0, 'innovation changed during crossover!'
+        distance = evaluation.genepool[0].geneticDistance(evaluation.genepool[0], c1=1, c2=1, c3=1)
+        print('genetic distance is: ', distance)
+        assert distance == 0, 'innovation changed during crossover!'
 
         for par in evaluation.genepool[0].getAllConnections():
             if not par.exists(child.getAllConnections()):
