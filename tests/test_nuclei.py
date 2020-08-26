@@ -5,7 +5,7 @@ import re
 import unittest
 
 from organisms.Evaluator import Evaluator
-# from organisms.network import graphvizNEAT
+# from organisms.util import graphvizNEAT
 from organisms.Nuclei import Nuclei
 
 
@@ -13,7 +13,6 @@ from organisms.Nuclei import Nuclei
 
 
 def configLogfile():
-    # TODO: no logging in unittests only in algorithm
     """
     configures logFile name and directory
     """
@@ -34,7 +33,7 @@ def configLogfile():
         filename=logFile, level=logging.INFO)
 
 
-class TestCrossover(unittest.TestCase):
+class TestNuclei(unittest.TestCase):
     """
     unittest for chromosome's crossover and supporting methods. Essentially a manual generation step.
     """
@@ -121,7 +120,8 @@ class TestCrossover(unittest.TestCase):
         child = evaluation.nuclei.crossover(
             evaluation.genepool[0], evaluation.genepool[0], evaluation.globalInnovations)
 
-        assert child.geneticDistance(evaluation.genepool[0]) == 0, 'innovation changed during crossover!'
+        assert child.geneticDistance(evaluation.genepool[0], c1=1, c2=1,
+                                     c3=1) == 0, 'innovation changed during crossover!'
 
         for par in evaluation.genepool[0].getAllConnections():
             if not par.exists(child.getAllConnections()):
