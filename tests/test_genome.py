@@ -17,6 +17,7 @@ class TestGenome(unittest.TestCase):
         #       check if same connection loop attribute result from a
         #       given genome. Scale Genomes sufficiently to ensure all
         #       edge cases (parallel nodes with recurrence etc.)
+        print('\n TESTING SEQUENCING AND LOOP DETECTION')
         generations = 50
         tester = Evaluator(inputs=3, outputs=1,
                            population=10, connectionMutationRate=0.3,
@@ -34,34 +35,40 @@ class TestGenome(unittest.TestCase):
             candidate.resetLoops()
             candidate.forwardProp([0.5, 0.5, 0.5])
 
-            # prepare loop check comparison
-            first_loops = []
-            for c in candidate.getAllConnections():
-                if c.loop:
-                    first_loops.append(c.innovation)
+            # @DEPRECATED
+            # first_loops = []
+            # for c in candidate.getAllConnections():
+            #     if c.loop:
+            #         first_loops.append(c.innovation)
 
             first = candidate.processSequences()
+            first_loops = [x.loop for x in candidate.getAllConnections()]
 
             candidate.resetSignals()
             candidate.resetNodes()
             candidate.resetLoops()
 
             second = candidate.processSequences()
+            second_loops = [x.loop for x in candidate.getAllConnections()]
 
+            print('testing loop detection @ generation {}..'.format(generation))
             # compare loops
-            if len([x.loop for x in candidate.getAllConnections()]) != \
+            if len(second_loops) != \
                     len(first_loops):
-                raise Exception("non-deterministic loop detection!")
-
-            for c in candidate.getAllConnections():
-                if c.innovation not in first_loops:
-                    raise Exception("non-deterministic loop detection!")
+                raise Exception("non-deterministic loop detection! \n first_loops: {} \n second_loops: {}"
+                                .format(first_loops, second_loops))
+            for c in second_loops:
+                if c not in first_loops:
+                    raise Exception("non-deterministic loop detection! \n first_loops: {} \n second_loops: {}"
+                                    .format(first_loops, second_loops))
 
             print('testing sequencing @ generation {}..'.format(generation))
             assert all([first[x] in second.values() for x in first]), \
-                'non-deterministic sequencing with key! (depth)'
+                'non-deterministic sequencing with key! (depth) first_sequence: {} second_sequence: {}' \
+                    .format(first, second)
             assert all([x in second.keys() for x in first]), \
-                'non-deterministic sequencing with values! (primal connections)'
+                'non-deterministic sequencing with values! (primal connections) first_sequence: {} second_sequence: {}'\
+                    .format(first, second)
 
     # def test_phenome(self):
     #     """
