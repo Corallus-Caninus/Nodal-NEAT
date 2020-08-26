@@ -3,15 +3,19 @@ import unittest
 from organisms.Evaluator import Evaluator
 
 
+def myFunc(x):
+    return x / (x + 1)
+
+
 class TestGenome(unittest.TestCase):
     def test_sequencing(self):
         """
         check layer detection and ensure it is deterministic.
         """
         # TODO: call forwardPropagation with processSequences and
-        #       check if same result from a given genome. Scale Genomes
-        #       sufficiently to ensure all edge cases (parallel nodes with
-        #       recurrence etc.)
+        #       check if same connection loop attribute result from a
+        #       given genome. Scale Genomes sufficiently to ensure all
+        #       edge cases (parallel nodes with recurrence etc.)
         generations = 50
         tester = Evaluator(inputs=3, outputs=1,
                            population=10, connectionMutationRate=0.3,
@@ -19,7 +23,7 @@ class TestGenome(unittest.TestCase):
                            weightPerturbRate=0.9, selectionPressure=2)
 
         for generation in range(generations):
-            tester.nextGeneration(lambda x: 2)
+            tester.nextGeneration(myFunc)
 
             candidate = tester.genepool[0]
 
