@@ -83,7 +83,7 @@ def myFunc(genome):
     return genome
 
 
-class TestGenepool(unittest.TestCase):
+class TestXOR(unittest.TestCase):
     """
     test crossover of an entire generation in a genepool.
     """
@@ -108,7 +108,7 @@ class TestGenepool(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = Evaluator(inputs=2, outputs=1, population=1000,
+        evaluation = Evaluator(inputs=2, outputs=1, population=100,
                                connectionMutationRate=0.002, nodeMutationRate=0.0001,
                                weightMutationRate=0.06, weightPerturbRate=0.9,
                                selectionPressure=10)
@@ -142,7 +142,7 @@ class TestGenepool(unittest.TestCase):
             nodes.append(nodeAvg)
 
             y.append(maxFit)
-            # TODO: average fitness graph line
+
             plt.clf()
 
             plt.subplot(221)
