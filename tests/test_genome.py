@@ -42,9 +42,9 @@ class TestGenome(unittest.TestCase):
             second = candidate.processSequences()
 
             print('testing sequencing @ generation {}..'.format(generation))
-            assert all([x.key in second.keys for x in first]), \
+            assert all([first[x] in second.values for x in first]), \
                 'non-deterministic sequencing with key! (depth)'
-            assert all([x.value in second.values for x in first]), \
+            assert all([x in second.keys for x in first]), \
                 'non-deterministic sequencing with values! (primal connections)'
 
     # def test_phenome(self):
