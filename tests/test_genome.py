@@ -4,7 +4,8 @@ from organisms.Evaluator import Evaluator
 
 
 def myFunc(x):
-    return x / (x + 1)
+    x.fitness = 0.999999
+    return x
 
 
 class TestGenome(unittest.TestCase):
