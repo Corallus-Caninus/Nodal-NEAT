@@ -26,6 +26,8 @@ class TestGenome(unittest.TestCase):
 
         for generation in range(generations):
             tester.nextGeneration(myFunc)
+            print('new generation.. sampled node_count: {} sampled connection_count: {}'
+                  .format(len(tester.genepool[0].getAllConnections()), len(tester.genepool[0].hiddenNodes)))
 
             candidate = tester.genepool[0]
 
@@ -67,7 +69,7 @@ class TestGenome(unittest.TestCase):
                 'non-deterministic sequencing with key! (depth) first_sequence: {} second_sequence: {}' \
                     .format(first, second)
             assert all([x in second.keys() for x in first]), \
-                'non-deterministic sequencing with values! (primal connections) first_sequence: {} second_sequence: {}'\
+                'non-deterministic sequencing with values! (primal connections) first_sequence: {} second_sequence: {}' \
                     .format(first, second)
 
     # def test_phenome(self):
