@@ -13,15 +13,15 @@ class TestGenome(unittest.TestCase):
         #       sufficiently to ensure all edge cases (parallel nodes with
         #       recurrence etc.)
         generations = 50
-        eval = Evaluator(inputs=3, outputs=1,
-                         population=10, connectionMutationRate=0.3,
-                         nodeMutationRate=0.5, weightMutationRate=0.2,
-                         weightPerturbRate=0.9, selectionPressure=2)
+        tester = Evaluator(inputs=3, outputs=1,
+                           population=10, connectionMutationRate=0.3,
+                           nodeMutationRate=0.5, weightMutationRate=0.2,
+                           weightPerturbRate=0.9, selectionPressure=2)
 
         for generation in range(generations):
-            eval.nextGeneration(lambda x: 2)
+            tester.nextGeneration(lambda x: 2)
 
-            candidate = eval.genepool[0]
+            candidate = tester.genepool[0]
 
             # uninitialize the topology
             candidate.resetSignals()
@@ -48,3 +48,7 @@ class TestGenome(unittest.TestCase):
     #     attributes.
     #     """
     #     pass
+
+
+if __name__ == '__main__':
+    unittest.main()
