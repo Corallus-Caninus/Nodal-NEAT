@@ -5,11 +5,12 @@ from math import sqrt
 from organisms.ConnectionGene import ConnectionGene as Connection
 from organisms.NodeGene import NodeGene as Node
 from organisms.activationFunctions import softmax
-#from organisms.network import processSequences
 
 
-# TODO: write unittest for recurrence
-# NOTE: doesnt support extrema connections. (connections betwen inputs and outputs)
+# from organisms.network import processSequences
+
+
+# NOTE: doesnt support extrema connections. (connections between inputs and outputs)
 #       this simplifies the implementation but should be changed when numpified or
 #       low level genome changes.
 
@@ -56,7 +57,8 @@ class Genome:
                 globalInnovations.verifyConnection(Connection(
                     rand.uniform(-1, 1), inNode, outNode))
 
-    # TODO: I dont like this.. think of a way to clean this up a little
+    # TODO: I dont like this.. think of a way to clean this up a little.
+    #       This breaks passed in globalInnovation
     @classmethod
     def initial(cls, inputSize, outputSize, globalInnovations):
         """
@@ -65,8 +67,10 @@ class Genome:
         # TODO: this isn't the most flexible solution wrt GlobalInnovations.
         #       remove GlobalInnovations from here
 
-        initNodeId = inputSize + outputSize
-        globalInnovations.nodeId = initNodeId
+        # TODO: this is a hack and needs to be reworked
+        if globalInnovations.nodeId == 0:
+            initNodeId = inputSize + outputSize
+            globalInnovations.nodeId = initNodeId
 
         return cls(inputSize, outputSize, globalInnovations)
 
