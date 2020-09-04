@@ -67,7 +67,8 @@ class Genome:
         # TODO: this isn't the most flexible solution wrt GlobalInnovations.
         #       remove GlobalInnovations from here
 
-        # TODO: this is a hack and needs to be reworked
+        # TODO: this is a hack and needs to be reworked. when reworked just cleanup
+        #       as mentioned in above TODO
         if globalInnovations.nodeId == 0:
             initNodeId = inputSize + outputSize
             globalInnovations.nodeId = initNodeId
@@ -113,6 +114,8 @@ class Genome:
     #       with more geneticPosition features during construction to
     #       simply subtract two genomes e.g.:
     #       distance = first.geneticPosition() - second.geneticPosition()
+    # TODO: I've always had a problem with connection checksum as a weight position.
+    #       connections are vectors, magnitude is a lossy representation in terms of position.
     def geneticDistance(self, otherGenome, c1, c2, c3):
         """
         compute K.Stanley's distance metric traditionally used for speciation

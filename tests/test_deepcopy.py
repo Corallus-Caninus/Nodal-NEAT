@@ -9,7 +9,7 @@ from organisms.Evaluator import Evaluator
 
 class TestDeepcopy(unittest.TestCase):
     def test_deepcopy(self):
-        print('\n TESTING deepcopy operation PROPAGATION ')
+        print('\n TESTING DEEPCOPY OPERATION PROPAGATION ')
         evaluation = Evaluator(inputs=2, outputs=2, population=100,
                                connectionMutationRate=0.3, nodeMutationRate=0.01, weightMutationRate=0.5,
                                weightPerturbRate=0.9, selectionPressure=3)

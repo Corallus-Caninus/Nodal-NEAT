@@ -147,7 +147,16 @@ class Evaluator:
             # evaluate fitness
             # with Pool() as swimmers:
             # self.genepool = swimmers.map(fitnessFunction, nextPool)
-            self.genepool = self.standing.map(fitnessFunction, nextPool)
+            # print('size of nextPool: {} size of genepool: {}'.format(len(nextPool), len(self.genepool)))
+            # self.genepool = self.standing.map(fitnessFunction, nextPool)
+            # @DEPRECATED
+            # TODO: this doesnt solve the error just makes it more verbose
+            self.genepool = []
+            for g in nextPool:
+                # print('evaluating {} on genome: {}'.format(fitnessFunction, g))
+                self.genepool.append(fitnessFunction(g))
+            # with Pool() as m:
+            #     self.genepool = m.map(fitnessFunction, nextPool)
 
     def mutations(self, child):
         """

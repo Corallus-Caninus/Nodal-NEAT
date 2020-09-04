@@ -73,7 +73,7 @@ class ConnectionGene:
             True if this Connection is found in localConnections otherwise False
         """
         for potentialConnection in [
-                x for x in localConnections if x is not self]:
+            x for x in localConnections if x is not self]:
             if self.input.nodeId == potentialConnection.input.nodeId and \
                     self.output.nodeId == potentialConnection.output.nodeId:
                 return True

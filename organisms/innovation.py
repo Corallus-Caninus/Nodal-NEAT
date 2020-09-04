@@ -77,6 +77,8 @@ class GlobalInnovations:
         self.connections.append(verifyConnection)
         return verifyConnection
 
+    # TODO: should keep track of nodes locally just as with connections or better use
+    #       existing connection's nodes
     def verifyNode(self, localParallelNodes, replaceConnection):
         """
         check to see if a newly split Connection has already occurred

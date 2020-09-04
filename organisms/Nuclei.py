@@ -144,7 +144,7 @@ class Nuclei:
         self.primalGenes = {}  # dictionary of {genomes: skeleton topologies}
 
     # TODO: need to perform object data storage for split depths on construction
-    #               instead of object data inference processing at crossover time
+    #               instead of object data processing at crossover time
     #               (readyPrimalGenes is inefficient). Inherently memory constrained so
     #               this is debatable.
 
@@ -306,55 +306,5 @@ class Nuclei:
             curConnections = connectionBuffer.copy()
             connectionBuffer.clear()
 
-        return child
-
-    def test_rebuildPrimalGenes(self, targetGenome, globalInnovations):
-        # TODO: extract to test code
-        """
-        test code to rebuild a Genome from a primalGenes (split depth Genome representation) data structure.
-        """
-
-        assert targetGenome in self.primalGenes, "Genome has not been preprocessed in Nuclei for chromosome alignment"
-        connectionBuffer = []
-        curConnections = []
-        primalGenes = self.primalGenes[targetGenome].copy()
-
-        child = Genome(len(targetGenome.inputNodes), len(
-            targetGenome.outputNodes), globalInnovations)
-
-        for inode in child.inputNodes:
-            for outc in inode.outConnections[:len(child.outputNodes)]:
-                if outc not in curConnections:
-                    curConnections.append(outc)
-
-        while len(curConnections) > 0:
-            if len(primalGenes) == 0:
-                curConnections.clear()
-                break
-            else:
-                curGenes = primalGenes.pop(0)
-            for primal in curGenes:
-                for connect in curConnections:
-                    # TODO: finding novel nodes. BUG in innovation return to here after
-                    # DE-BUG innovation but still getting novel nodes
-                    if primal.alignNodeGene(connect):
-                        newNode = child.addNode(connect, globalInnovations)
-
-                        inheritDisjointConnections(
-                            newNode, child, targetGenome, targetGenome, globalInnovations)
-
-                        # TODO: I feel like this should be a connectionBuffer.extend(returnedBuffer)
-                        #      instead of pass in mutating
-                        for outc1 in newNode.outConnections:
-                            if outc1 not in connectionBuffer:
-                                connectionBuffer.append(outc1)
-                        for inc in newNode.inConnections:
-                            if inc not in connectionBuffer:
-                                connectionBuffer.append(inc)
-                        break
-
-            curConnections.clear()
-            curConnections = connectionBuffer.copy()
-            connectionBuffer.clear()
-
+        # TODO: add some assertions to ensure genome is properly connected.
         return child
