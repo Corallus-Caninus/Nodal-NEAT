@@ -3,6 +3,7 @@ import os
 import random as rand
 import re
 import unittest
+from math import sqrt
 
 import matplotlib.pyplot as plt
 from matplotlib import style
@@ -66,16 +67,12 @@ def myFunc(genome):
         entry2 = rand.randint(0, 1)
 
         output = genome.forwardProp([entry1, entry2])[0]
-
-        if output >= 0.5:
-            if entry1 == 1 or entry2 == 1:
-                # one
-                if entry1 != 1 and entry2 != 1:
-                    score += 1
-        elif output < 0.5 and entry1 == 1 and entry2 == 1:
-            score += 1
-        elif output < 0.5 and entry1 == 0 and entry2 == 0:
-            score += 1
+        solution = entry1 ^ entry2
+        score += 1 - (sqrt((output - solution)**2))
+        # TODO: dont round? apparantly this is linearly seperable
+        #       because init topology gets >95 with numtries==50
+        # if round(output) == entry1^entry2:
+        #     score+=1
 
     score = score / numTries
     # return score
@@ -92,7 +89,7 @@ class TestXOR(unittest.TestCase):
         """
         trains a genepool to solve the XOR function.
         """
-        generations = 50
+        generations = 500
 
         # Graph configuration
         style.use('fivethirtyeight')
@@ -108,14 +105,15 @@ class TestXOR(unittest.TestCase):
 
         configLogfile()
         # configure Nodal-NEAT
-        evaluation = Evaluator(inputs=2, outputs=1, population=100,
-                               connectionMutationRate=0.002, nodeMutationRate=0.0001,
-                               weightMutationRate=0.06, weightPerturbRate=0.9,
-                               selectionPressure=10)
+        # NOTE: selectionPressure sets a betavariate distribution,
+        #       the lower the value the more selection pressure
+        evaluation = Evaluator(inputs=2, outputs=1, population=1000,
+                               connectionMutationRate=0.02, nodeMutationRate=0.01,
+                               weightMutationRate=0.1, weightPerturbRate=0.9,
+                               selectionPressure=0.15)
 
-        # evaluate 200 generations
+        # evaluate
         evaluation.score(myFunc)
-        # TODO: simple matplotlib real time graph
         for x in range(0, generations):
             print('GENERATION: {}'.format(x))
             evaluation.nextGeneration(myFunc)
@@ -164,11 +162,6 @@ class TestXOR(unittest.TestCase):
             plt.draw()
             plt.pause(0.001)
         plt.savefig('test_XOR')
-
-        # sortPool = sorted([x for x in evaluation.genepool],
-        #                   key=lambda x: x.fitness, reverse=True)
-        # for c in evaluation.genepool[:10]:
-        # graphvizNEAT(c, 'sample-Genome-'+str(uuid.uuid1()))
 
 
 if __name__ == '__main__':

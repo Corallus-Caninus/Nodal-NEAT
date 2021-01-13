@@ -1,4 +1,5 @@
 import random as rand
+import logging
 from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool
@@ -52,7 +53,7 @@ class Evaluator:
         # innovation.GlobalInnovations
         self.globalInnovations = GlobalInnovations()
         self.nuclei = Nuclei()
-        self.standing = Pool()
+        self.standing = Pool(processes=200)
 
         seed = Genome.initial(inputs, outputs, self.globalInnovations)
         massSpawner = partial(massSpawn, seed)
@@ -120,13 +121,18 @@ class Evaluator:
             self.genepool = sorted(
                 self.genepool, key=lambda x: x.fitness, reverse=True)
             for x in range(0, len(self.genepool) - len(nextPool)):
+                # TODO: dont pass in self to method..
                 parent1.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
-                # parent1.append(self.selectBiasFitness(self.selectionPressure))
-                # NOTE: crosses over with self
+                # NOTE: crosses over with self which is fine just slows down 
+                #       evolution as pressure increases due to scaling elitism.
+                #       not true elitism since still a candidate for mutation 
+                #       sampling, just doesn't crossover.
+                #       this is good since sampling should be highly pressurized with
+                #       just enough tail in the distribution to sparesely inject 
+                #       diversity (in my opinion of genetic search vs gradient search).
                 parent2.append(
                     self.genepool[self.selectBiasFitness(self.selectionPressure)])
-                # parent2.append(self.selectBiasFitness(self.selectionPressure))
 
                 # with Pool() as sinkers:
                 rawNextPool = self.standing.starmap(
@@ -180,21 +186,32 @@ class Evaluator:
         """
         get a Genome selection index.
         RETURNS:
-            selection: an index in genepool list
+            selectionPressure: the betavariate distribution, a 
+            lower value biases selecting the fit candidates more 
+            often. 
         """
-        # TODO: implement many different selection pressure methods
-        #       investigate the tournament selection method.
-        #           (probably not noteworthy #NFL)
+        # since genepool is sorted, we can just select from 
+        # it given the bias towards index.
+        distribution = rand.betavariate(selectionPressure, 1)
+        selection = round((len(self.genepool)-1)*distribution) 
+        return selection
+
+        # TODO: @DEPRECATED
+        # bias = len(self.genepool) // selectionPressure
         # cull bottom nth of genepool
-        bias = len(self.genepool) // selectionPressure
-        totalFitness = sum([x.fitness for x in self.genepool[:bias]])
-        curFit = 0
-        targetFit = rand.uniform(0, 1) * totalFitness
-        for ge in self.genepool[:bias]:
-            curFit += ge.fitness
-            if curFit > targetFit:
-                return self.genepool.index(ge)
-        return rand.randint(0, len(self.genepool) - 1)
+        # totalFitness = sum([x.fitness for x in self.genepool[:bias]])
+        # totalFitness = sum([x.fitness for x in self.genepool])
+        # curFit = 0
+        # targetFit = rand.uniform(0, 1) * totalFitness
+        # targetFit = totalFitness*distribution
+        # since genepool is sorted, the smaller targetFit this higher
+        # the selection bias to fit members of the genepool
+        # for ge in self.genepool[:bias]:
+        # for ge in self.genepool:
+        #     curFit += ge.fitness
+        #     if curFit > targetFit:
+        #         return self.genepool.index(ge)
+        # return rand.randint(0, len(self.genepool) - 1)
 
     def getMaxFitness(self):
         return max([x.fitness for x in self.genepool])
